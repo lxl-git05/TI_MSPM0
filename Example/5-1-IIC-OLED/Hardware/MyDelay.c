@@ -25,7 +25,7 @@ void Delay_us_cyc(uint32_t us)
 void Delay_ms_tim(uint32_t ms)
 {
     uint32_t time_goal = total_ms + ms ;
-    while (total_ms <= time_goal) ;
+    while (total_ms < time_goal) ;
 }
 
 

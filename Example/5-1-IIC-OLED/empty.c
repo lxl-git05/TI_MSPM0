@@ -32,21 +32,34 @@
 
 #include "ti_msp_dl_config.h"
 #include "MyDelay.h"
+#include "oled_hardware_i2c.h"
 
 int main(void)
 {
     SYSCFG_DL_init();
+    // OLED初始化
+    OLED_Init();
+    
+    int t=' ';
 
     while (1) 
     {
-        
+        Timer_Cnt_Fuc(10);
+        // 打印字符
+        OLED_ShowString(0, 0, (uint8_t *)("Hello"), 8) ;
+        OLED_ShowChar(48,6,t,16);
+        // 展示数字
+        OLED_ShowNum(103,6,t++,3,16);
+        // 延时
+        Delay_ms_tim(500);
     }
 }
 
 void SysTick_Handler(void)
 {
+    // 必须有:总时间累积
     Timer_Update_1ms() ;
-    
+    // 操作1:LED闪烁
     static int cnt = 0 ;
     cnt ++ ;
     // 操作

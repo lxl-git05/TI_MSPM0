@@ -11,7 +11,7 @@ extern uint32_t total_ms ;
 extern uint32_t time_fuc_us   ;        // 一个函数两次调用间隔的时间
 extern uint32_t time_line_us  ;        // 两行之间运行时间
 
-// 初始化
+// 初始化:不需要
 // void Timer_Cnt_init(void) ;
 
 // 不精确延时
