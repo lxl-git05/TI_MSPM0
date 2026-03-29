@@ -32,7 +32,12 @@
 
 #include "ti_msp_dl_config.h"
 
-volatile uint8_t gEchoData = 0;
+//串口发送单个字符
+void uart0_send_char(char ch);
+//串口发送字符串
+void uart0_send_string(char* str);
+
+uint8_t gEchoData = 0;
 
 int main(void)
 {
@@ -42,7 +47,9 @@ int main(void)
     NVIC_ClearPendingIRQ(UART_0_INST_INT_IRQN);
     NVIC_EnableIRQ(UART_0_INST_INT_IRQN);
 
-    while (1) {
+    uart0_send_string("uart0 start work\r\n");
+    while (1) 
+    {
         
     }
 }
@@ -53,11 +60,31 @@ void UART_0_INST_IRQHandler(void)
     {
         // 接收中断
         case DL_UART_MAIN_IIDX_RX:
-            DL_GPIO_togglePins(GPIO_LEDS_PORT,GPIO_LEDS_PIN_LED_1_PIN);
-            gEchoData = DL_UART_Main_receiveData(UART_0_INST);  // 必须存储接收到信息,即使不使用,否则中断FIFO存不下，再也进不去中断了
-            DL_UART_Main_transmitData(UART_0_INST, gEchoData);
+            // 必须存储接收到信息,即使不使用,否则中断FIFO存不下，再也进不去中断了
+            gEchoData = DL_UART_Main_receiveData(UART_0_INST);  
+            uart0_send_char(gEchoData);
             break;
         default:
             break;
+    }
+}
+
+//串口发送单个字符
+void uart0_send_char(char ch)
+{
+    //当串口0忙的时候等待，不忙的时候再发送传进来的字符
+    while( DL_UART_isBusy(UART_0_INST) == true );
+    //发送单个字符
+    DL_UART_Main_transmitData(UART_0_INST, ch);
+}
+
+//串口发送字符串
+void uart0_send_string(char* str)
+{
+    //当前字符串地址不在结尾 并且 字符串首地址不为空
+    while(*str!=0&&str!=0)
+    {
+        //发送字符串首地址中的字符，并且在发送完成之后首地址自增
+        uart0_send_char(*str++);
     }
 }
