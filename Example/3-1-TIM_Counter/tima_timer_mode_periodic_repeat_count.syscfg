@@ -22,28 +22,28 @@ GPIO1.$name                          = "GPIO_LEDS";
 GPIO1.associatedPins[0].$name        = "USER_LED_1";
 GPIO1.associatedPins[0].initialValue = "SET";
 GPIO1.associatedPins[0].assignedPort = "PORTB";
-GPIO1.associatedPins[0].assignedPin  = "14";
+GPIO1.associatedPins[0].assignedPin  = "22";
 
 const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
 
 SYSCTL.forceDefaultClkConfig = true;
 SYSCTL.clockTreeEn           = true;
 
-TIMER1.$name               = "TIMER_0";
-TIMER1.timerClkSrc         = "LFCLK";
-TIMER1.timerMode           = "PERIODIC";
-TIMER1.interrupts          = ["REPC"];
-TIMER1.timerPeriod         = "500ms";
-TIMER1.enableRepeatCounter = true;
-TIMER1.repeatCounter       = 2;
+TIMER1.$name              = "TIMER_0";
+TIMER1.timerClkDiv        = 8;
+TIMER1.timerClkPrescale   = 100;
+TIMER1.timerMode          = "PERIODIC";
+TIMER1.timerStartTimer    = true;
+TIMER1.interrupts         = ["ZERO"];
+TIMER1.timerPeriod        = "1000 ms";
+TIMER1.peripheral.$assign = "TIMG0";
 
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
  * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
  * re-solve from scratch.
  */
-GPIO1.associatedPins[0].pin.$suggestSolution = "PB14";
+GPIO1.associatedPins[0].pin.$suggestSolution = "PB22";
 Board.peripheral.$suggestSolution            = "DEBUGSS";
 Board.peripheral.swclkPin.$suggestSolution   = "PA20";
 Board.peripheral.swdioPin.$suggestSolution   = "PA19";
-TIMER1.peripheral.$suggestSolution           = "TIMA0";

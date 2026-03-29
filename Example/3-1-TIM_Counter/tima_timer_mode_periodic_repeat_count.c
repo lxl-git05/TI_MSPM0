@@ -46,17 +46,18 @@ int main(void)
     }
 }
 
-// 本TIM0定时中断是2分频，所以是500ms * 2 = 1s进入一次中断
+//定时器的中断服务函数 已配置为1秒的周期
 void TIMER_0_INST_IRQHandler(void)
 {
-    switch (DL_TimerA_getPendingInterrupt(TIMER_0_INST)) // 中断查询状态
+    //如果产生了定时器中断
+    switch( DL_TimerG_getPendingInterrupt(TIMER_0_INST) )
     {
-        case DL_TIMERA_IIDX_REPEAT_COUNT:                // 检测到重复计数模式
-        {
-            DL_GPIO_togglePins(GPIO_LEDS_PORT,GPIO_LEDS_USER_LED_1_PIN);
+        case DL_TIMER_IIDX_ZERO://如果是0溢出中断
+            //将LED灯的状态翻转
+            DL_GPIO_togglePins(GPIO_LEDS_PORT, GPIO_LEDS_USER_LED_1_PIN);
             break;
-        }
-        default:
+
+        default://其他的定时器中断
             break;
     }
 }
