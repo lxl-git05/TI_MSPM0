@@ -32,28 +32,31 @@
 
 #include "ti_msp_dl_config.h"
 
-int PWM_0 = 0 ;
+int status = 0 ;
 
 int main(void)
 {
     SYSCFG_DL_init();
 
-    // 初始化
-    DL_TimerG_startCounter(PWM_0_INST);
+    int i = 0 ;    
 
     while (1) 
     {
-        // 配置占空比
-        DL_TimerG_setCaptureCompareValue(PWM_0_INST, PWM_0, DL_TIMER_CC_0_INDEX);
-        // 自设频率
-        // DL_TimerG_setLoadValue(PWM_0_INST , 2000) ;
-
-        // 点灯展示
-        PWM_0 += 100 ;
-        if (PWM_0 >= 1000)
+        // 呼吸灯渐亮过程
+        for (i = 0; i <= 999; i++)
         {
-            PWM_0 = 0 ;
+            // 设置 LED 亮度
+            DL_TimerG_setCaptureCompareValue(PWM_LED_INST,i,GPIO_PWM_LED_C1_IDX);
+            delay_cycles(32000);  // 延迟以控制亮度变化速度
+            status = 1 ;    // 指示呼吸灯渐亮过程
         }
-        delay_cycles(CPUCLK_FREQ / 2) ;
+        // 呼吸灯渐暗过程
+        for (i = 999; i > 0; i--)
+        {
+            // 设置 LED 亮度
+            DL_TimerG_setCaptureCompareValue(PWM_LED_INST,i,GPIO_PWM_LED_C1_IDX);
+            delay_cycles(32000);  // 延迟以控制亮度变化速度
+            status = 0 ;     // 指示呼吸灯渐暗过程
+        }
     }
 }
