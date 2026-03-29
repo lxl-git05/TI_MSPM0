@@ -32,54 +32,26 @@
 
 #include "ti_msp_dl_config.h"
 
-// extern volatile uint32_t interruptVectors[];
-
-int a ;
-uint32_t status ;   // 读取PB21引脚的中断状态,这里设置为全局变量是为了读清楚整个流程
-
 int main(void)
 {
     SYSCFG_DL_init();
-
-    /*
-     * Turn OFF LED if SW is open, ON if SW is closed.
-     * LED starts OFF by default.
-     */
-    // 开启按键(GPIOB)的触发中断,实际上是开启NVIC的Group1内的GPIOB的触发中断
-    NVIC_EnableIRQ(GPIO_SWITCHES_INT_IRQN);
+    NVIC_EnableIRQ(GPIO_KEY_INT_IRQN); // 开启按键引脚的GPIOA端口中断(上拉按键,下降沿触发)
 
     while (1) 
     {
-        status = DL_GPIO_getEnabledInterruptStatus(GPIO_SWITCHES_PORT,GPIO_SWITCHES_USER_SWITCH_1_PIN) ;
+
     }
 }
 
-// GPIOA和GPIOB的触发中断都存在于GRP1中，所以触发句柄都是GRP1
+// GPIO都是Group1的中断服务函数
 void GROUP1_IRQHandler(void)
 {
-    // 检查是谁开启的中断
-    switch (DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1)) 
+    // 读取Group1的中断寄存器并清除中断标志位
+    switch( DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1))
     {
-        // 这个其实是封装过了,应该是GPIOB的IIDX：DL_INTERRUPT_GROUP1_IIDX_GPIOB
-        case GPIO_SWITCHES_INT_IIDX:
-            // 检测是GPIOB的哪一个引脚触发的中断,返回值：GPIO_PIN
-            status = DL_GPIO_getEnabledInterruptStatus(GPIO_SWITCHES_PORT,GPIO_SWITCHES_USER_SWITCH_1_PIN) ;
-            if (status & GPIO_SWITCHES_USER_SWITCH_1_PIN)
-            {
-                /* If SW is high, turn the LED off */
-                if (DL_GPIO_readPins(GPIO_SWITCHES_PORT, GPIO_SWITCHES_USER_SWITCH_1_PIN))  // 捕获到边缘，并且肯定是：上升沿，且值为1
-                {
-                    a++ ;
-                    DL_GPIO_setPins(GPIO_LEDS_PORT, GPIO_LEDS_USER_LED_1_PIN);
-                }
-                /* Otherwise, turn the LED on */
-                else 
-                {                                                                      // 捕获到边缘，并且肯定是：下降沿，且值为0
-                    a-- ;
-                    DL_GPIO_clearPins(GPIO_LEDS_PORT, GPIO_LEDS_USER_LED_1_PIN);
-                }
-                DL_GPIO_clearInterruptStatus(GPIO_SWITCHES_PORT,GPIO_SWITCHES_USER_SWITCH_1_PIN);
-            }
-            break;
+        // 检查是否是KEY的GPIOB端口中断，注意是IIDX，不是IRQN
+        case GPIO_KEY_INT_IIDX:
+            DL_GPIO_togglePins(GPIO_LEDS_PORT, GPIO_LEDS_USER_LED_1_PIN);
+        break;
     }
 }
