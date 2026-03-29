@@ -38,12 +38,12 @@ int main(void)
 
     while (1) 
     {
-        if (!DL_GPIO_readPins(GPIO_BUTTON_PORT , GPIO_BUTTON_PIN_B_0_PIN))
+        if (!DL_GPIO_readPins(GPIO_KEY_PORT , GPIO_KEY_KEY_PIN_0_PIN))
         {
-            DL_GPIO_setPins(GPIO_LED_PIN_LED_0_PORT, GPIO_LED_PIN_LED_0_PIN) ;
+            DL_GPIO_setPins(GPIO_LED_PORT, GPIO_LED_LED_PIN_0_PIN) ;
         }
         else {
-            DL_GPIO_clearPins(GPIO_LED_PIN_LED_0_PORT, GPIO_LED_PIN_LED_0_PIN) ;
+            DL_GPIO_clearPins(GPIO_LED_PORT, GPIO_LED_LED_PIN_0_PIN) ;
         }
     }
 }

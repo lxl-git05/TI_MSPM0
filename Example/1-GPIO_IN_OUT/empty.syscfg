@@ -18,29 +18,18 @@ const SYSCTL = scripting.addModule("/ti/driverlib/SYSCTL");
  * Write custom configuration values to the imported modules.
  */
 GPIO1.$name                          = "GPIO_LED";
-GPIO1.associatedPins.create(2);
-GPIO1.associatedPins[0].$name        = "PIN_LED_0";
-GPIO1.associatedPins[0].assignedPin  = "14";
 GPIO1.associatedPins[0].assignedPort = "PORTB";
-GPIO1.associatedPins[1].assignedPort = "PORTA";
-GPIO1.associatedPins[1].assignedPin  = "1";
-GPIO1.associatedPins[1].$name        = "PIN_LED_1";
+GPIO1.associatedPins[0].assignedPin  = "22";
+GPIO1.associatedPins[0].$name        = "LED_PIN_0";
 
 const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
 
-GPIO2.$name                              = "GPIO_BUTTON";
 GPIO2.port                               = "PORTB";
-GPIO2.associatedPins.create(2);
-GPIO2.associatedPins[0].$name            = "PIN_B_0";
+GPIO2.$name                              = "GPIO_KEY";
 GPIO2.associatedPins[0].direction        = "INPUT";
-GPIO2.associatedPins[0].assignedPort     = "PORTB";
 GPIO2.associatedPins[0].assignedPin      = "21";
 GPIO2.associatedPins[0].internalResistor = "PULL_UP";
-GPIO2.associatedPins[1].$name            = "PIN_B_1";
-GPIO2.associatedPins[1].direction        = "INPUT";
-GPIO2.associatedPins[1].internalResistor = "PULL_UP";
-GPIO2.associatedPins[1].assignedPort     = "PORTB";
-GPIO2.associatedPins[1].assignedPin      = "1";
+GPIO2.associatedPins[0].$name            = "KEY_PIN_0";
 
 SYSCTL.forceDefaultClkConfig = true;
 
@@ -49,11 +38,9 @@ SYSCTL.forceDefaultClkConfig = true;
  * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
  * re-solve from scratch.
  */
-GPIO1.associatedPins[0].pin.$suggestSolution = "PB14";
-GPIO1.associatedPins[1].pin.$suggestSolution = "PA1";
+GPIO1.associatedPins[0].pin.$suggestSolution = "PB22";
 Board.peripheral.$suggestSolution            = "DEBUGSS";
 Board.peripheral.swclkPin.$suggestSolution   = "PA20";
 Board.peripheral.swdioPin.$suggestSolution   = "PA19";
 GPIO2.associatedPins[0].pin.$suggestSolution = "PB21";
-GPIO2.associatedPins[1].pin.$suggestSolution = "PB1";
 SYSCTL.peripheral.$suggestSolution           = "SYSCTL";
