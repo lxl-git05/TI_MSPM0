@@ -345,16 +345,11 @@ bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , in
 	}
 }
 
-int i = 0 ;
-
-
 // DMA完成搬运中断(单字符搬运后就触发中断)
 void UART_0_INST_IRQHandler(void)
 {
     switch (DL_UART_Main_getPendingInterrupt(Serial1.uart_INST)) {
         case DL_UART_MAIN_IIDX_DMA_DONE_RX:
-			i ++ ;
-
 			#ifdef Serial1_Enable
 
 			#ifdef Serial_Debug
@@ -378,7 +373,7 @@ void UART_0_INST_IRQHandler(void)
 				// 开始处理原始数据包:ABC
 				Serial_Data_Check_ABC(&Serial1) ;
 			} 
-				
+
 			#endif
 
             break;
