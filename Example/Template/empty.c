@@ -1,8 +1,6 @@
 #include "ti_msp_dl_config.h"
 #include "AllHeader.h"
 
-#include "Key_Check.h"
-
 int a =  0 ;
 
 int main(void)
@@ -39,5 +37,6 @@ void Timer_0_Callback(void)
     // 功能2:按键
     Key_Tick() ;
 
+    // 功能3:LED闪烁
     Flash_Mode_Tick() ;
 }

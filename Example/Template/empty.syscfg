@@ -21,9 +21,13 @@ const TIMER1 = TIMER.addInstance();
  * Write custom configuration values to the imported modules.
  */
 GPIO1.$name                          = "GPIO_LED";
+GPIO1.associatedPins.create(2);
 GPIO1.associatedPins[0].$name        = "LED_PIN_0";
 GPIO1.associatedPins[0].assignedPort = "PORTB";
 GPIO1.associatedPins[0].assignedPin  = "22";
+GPIO1.associatedPins[1].$name        = "LED_CHECK";
+GPIO1.associatedPins[1].assignedPort = "PORTA";
+GPIO1.associatedPins[1].assignedPin  = "27";
 
 const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
 
@@ -60,6 +64,7 @@ TIMER1.peripheral.$assign = "TIMG0";
  * re-solve from scratch.
  */
 GPIO1.associatedPins[0].pin.$suggestSolution = "PB22";
+GPIO1.associatedPins[1].pin.$suggestSolution = "PA27";
 Board.peripheral.$suggestSolution            = "DEBUGSS";
 Board.peripheral.swclkPin.$suggestSolution   = "PA20";
 Board.peripheral.swdioPin.$suggestSolution   = "PA19";
