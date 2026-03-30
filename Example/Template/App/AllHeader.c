@@ -1,0 +1,10 @@
+#include "AllHeader.h"
+
+void Initial_All(void)
+{
+    // hardware
+    OLED_Init() ;
+    
+    // 定时器初始化(放在最后面)
+    Timer_0_Init();
+}
