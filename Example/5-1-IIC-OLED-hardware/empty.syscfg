@@ -9,28 +9,17 @@
 /**
  * Import the modules used in this configuration.
  */
-const GPIO    = scripting.addModule("/ti/driverlib/GPIO", {}, false);
-const GPIO1   = GPIO.addInstance();
-const I2C     = scripting.addModule("/ti/driverlib/I2C", {}, false);
-const I2C1    = I2C.addInstance();
-const SYSCTL  = scripting.addModule("/ti/driverlib/SYSCTL");
-const SYSTICK = scripting.addModule("/ti/driverlib/SYSTICK");
+const I2C    = scripting.addModule("/ti/driverlib/I2C", {}, false);
+const I2C1   = I2C.addInstance();
+const SYSCTL = scripting.addModule("/ti/driverlib/SYSCTL");
 
 /**
  * Write custom configuration values to the imported modules.
  */
-GPIO1.$name                         = "GPIO_LEDS";
-GPIO1.port                          = "PORTB";
-GPIO1.associatedPins[0].$name       = "PIN_LED_0";
-GPIO1.associatedPins[0].assignedPin = "14";
-
-const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
-
 I2C1.$name                             = "I2C_OLED";
 I2C1.basicEnableController             = true;
 I2C1.basicControllerStandardBusSpeed   = "Fast";
-I2C1.peripheral.sdaPin.$assign         = "PB3";
-I2C1.peripheral.sclPin.$assign         = "PB2";
+I2C1.peripheral.$assign                = "I2C0";
 I2C1.sdaPinConfig.$name                = "ti_driverlib_gpio_GPIOPinGeneric0";
 I2C1.sdaPinConfig.hideOutputInversion  = scripting.forceWrite(false);
 I2C1.sdaPinConfig.onlyInternalResistor = scripting.forceWrite(false);
@@ -40,22 +29,18 @@ I2C1.sclPinConfig.hideOutputInversion  = scripting.forceWrite(false);
 I2C1.sclPinConfig.onlyInternalResistor = scripting.forceWrite(false);
 I2C1.sclPinConfig.passedPeripheralType = scripting.forceWrite("Digital");
 
-SYSCTL.forceDefaultClkConfig = true;
+const Board = scripting.addModule("/ti/driverlib/Board", {}, false);
 
-SYSTICK.periodEnable      = true;
-SYSTICK.period            = 32000;
-SYSTICK.interruptEnable   = true;
-SYSTICK.systickEnable     = true;
-SYSTICK.interruptPriority = "0";
+SYSCTL.forceDefaultClkConfig = true;
 
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
  * version of the tool will not impact the pinmux you originally saw.  These lines can be completely deleted in order to
  * re-solve from scratch.
  */
-GPIO1.associatedPins[0].pin.$suggestSolution = "PB14";
-Board.peripheral.$suggestSolution            = "DEBUGSS";
-Board.peripheral.swclkPin.$suggestSolution   = "PA20";
-Board.peripheral.swdioPin.$suggestSolution   = "PA19";
-I2C1.peripheral.$suggestSolution             = "I2C1";
-SYSCTL.peripheral.$suggestSolution           = "SYSCTL";
+I2C1.peripheral.sdaPin.$suggestSolution    = "PA0";
+I2C1.peripheral.sclPin.$suggestSolution    = "PA1";
+Board.peripheral.$suggestSolution          = "DEBUGSS";
+Board.peripheral.swclkPin.$suggestSolution = "PA20";
+Board.peripheral.swdioPin.$suggestSolution = "PA19";
+SYSCTL.peripheral.$suggestSolution         = "SYSCTL";

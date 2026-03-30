@@ -31,42 +31,20 @@
  */
 
 #include "ti_msp_dl_config.h"
-#include "MyDelay.h"
-#include "oled_hardware_i2c.h"
+#include "OLED.h"
+
+// 这里是硬件IIC实现OLED的显示,先将数据存入FIFO,然后当FIFO空闲的时候发送数据(FIFO最大8字节)
 
 int main(void)
 {
     SYSCFG_DL_init();
-    // OLED初始化
-    OLED_Init();
+    int a = 0 ;
     
-    int t=' ';
-
+    OLED_Init();
     while (1) 
     {
-        Timer_Cnt_Fuc(10);
-        // 打印字符
-        OLED_ShowString(0, 0, (uint8_t *)("Hello"), 8) ;
-        OLED_ShowChar(48,6,t,16);
-        // 展示数字
-        OLED_ShowNum(103,6,t++,3,16);
-        // 延时
-        Delay_ms_tim(500);
+        OLED_ShowNum(0, 0, a++, 4, OLED_6X8);
+        OLED_ShowString(0 , 20 , "GUGUGAGA", OLED_8X16);
+        OLED_Update() ;
     }
-}
-
-void SysTick_Handler(void)
-{
-    // 必须有:总时间累积
-    Timer_Update_1ms() ;
-    // 操作1:LED闪烁
-    static int cnt = 0 ;
-    cnt ++ ;
-    // 操作
-    if (cnt >= 1000)
-    {
-        DL_GPIO_togglePins(GPIO_LEDS_PORT, GPIO_LEDS_PIN_LED_0_PIN);
-        cnt = 0 ;
-    }
-    
 }
