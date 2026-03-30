@@ -23,6 +23,8 @@ int Serial_Count = 0 ;
 Serial_Agreement_HEX_TypeDef 	Serial_Agreement_HEX ;		// 串口数据通信协议:HEX
 Serial_Agreement_ABC_TypeDef 	Serial_Agreement_ABC ;		// 串口数据通信协议:ABC
 
+// ====================== 代码固定部分,不要修改(除非是Initial) ======================
+
 // ============== 函数:初始化 ==============
 // 串口协议初始化:HEX
 void Serial_Agreement_HEX_Init(Serial_Agreement_HEX_TypeDef *pSerial_Agreement)
@@ -76,20 +78,6 @@ static void Serial_Initial(Serial_Typedef *pSerial , UART_Regs * const uart_INST
 
     // 使能中断,这里比较特殊,不进行一般化处理了,需要自己特别注意!!!
     NVIC_EnableIRQ(pSerial->uart_int_IRQN);
-}
-
-// 串口初始化:外部调用
-void Serial_Init(void)
-{
-	#ifdef Serial1_Enable
-	Serial_Initial(&Serial1 , UART_0_INST , DMA , DMA_CH0_CHAN_ID , UART_0_INST_INT_IRQN) ;	// 串口协议初始化
-	#endif
-	#ifdef Serial2_Enable
-	Serial_Initial(&Serial2 , USART2 , &huart2 ) ;	// 串口协议初始化
-	#endif
-	#ifdef Serial3_Enable
-	Serial_Initial(&Serial3 , USART3 , &huart3 ) ;	// 串口协议初始化
-	#endif
 }
 
 // 从高8位和低8位合成一个数据
@@ -345,18 +333,33 @@ bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , in
 	}
 }
 
+// ====================== 代码一般性修改部分 ======================
+
+// 串口初始化:外部调用
+void Serial_Init(void)
+{
+	#ifdef Serial1_Enable
+	Serial_Initial(&Serial1 , UART_0_INST , DMA , DMA_CH0_CHAN_ID , UART_0_INST_INT_IRQN) ;	// 串口协议初始化
+	#endif
+	#ifdef Serial2_Enable
+	Serial_Initial(&Serial2 , UART_1_INST , DMA , DMA_CH1_CHAN_ID , UART_1_INST_INT_IRQN) ;	// 串口协议初始化
+	#endif
+	#ifdef Serial3_Enable
+	Serial_Initial(&Serial3 , USART3 , &huart3 ) ;	// 串口协议初始化
+	#endif
+}
+
 // DMA完成搬运中断(单字符搬运后就触发中断)
 void UART_0_INST_IRQHandler(void)
 {
+#ifdef Serial1_Enable
+	static Serial_RX_FLAG_Typedef Serial1_Rx_State;		// 数据接收情况标志位-枚举
     switch (DL_UART_Main_getPendingInterrupt(Serial1.uart_INST)) {
         case DL_UART_MAIN_IIDX_DMA_DONE_RX:
-			#ifdef Serial1_Enable
 
 			#ifdef Serial_Debug
 			Serial_check[Serial_Count++] = Serial1.rx_temp ;	// 得到所有接收到的数据
 			#endif 
-			
-			static Serial_RX_FLAG_Typedef Serial1_Rx_State;		// 数据接收情况标志位-枚举
 			
 			// 获得串口数据传输状态(更新)
 			Serial1_Rx_State = Serial_Rx_State_Check(&Serial1);
@@ -374,10 +377,38 @@ void UART_0_INST_IRQHandler(void)
 				Serial_Data_Check_ABC(&Serial1) ;
 			} 
 
-			#endif
-
             break;
         default:
             break;
     }
+#endif
+}
+
+
+void UART_1_INST_IRQHandler(void)
+{
+#ifdef Serial2_Enable
+    Serial_RX_FLAG_Typedef Serial2_Rx_State;
+
+    switch (DL_UART_Main_getPendingInterrupt(Serial2.uart_INST)) 
+    {
+        case DL_UART_MAIN_IIDX_DMA_DONE_RX:
+
+            Serial2_Rx_State = Serial_Rx_State_Check(&Serial2);
+
+            if (Serial2_Rx_State == RX_OK_HEX)
+            {
+                Serial_Data_Check_HEX(&Serial2);
+            }
+            else if (Serial2_Rx_State == RX_OK_ABC)
+            {
+                Serial_Data_Check_ABC(&Serial2);
+            }
+
+            break;
+
+        default:
+            break;
+    }
+#endif
 }

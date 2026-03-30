@@ -16,11 +16,11 @@ int main(void)
             Flash_Mode_Set(Flash_Mode_Fast) ;
         }
 
-        if (Serial_GetNewPackageFlag_HEX(&Serial1))
+        if (Serial_GetNewPackageFlag_HEX(&Serial2))
         {
-            OLED_ShowNum(0,  0, Serial1.Hex_Data.Serial_New_Package[0], 4, OLED_8X16) ;
-            OLED_ShowNum(0, 15, Serial1.Hex_Data.Serial_New_Package[1], 4, OLED_8X16) ;
-            OLED_ShowNum(0, 30, Serial1.Hex_Data.Serial_New_Package[2], 4, OLED_8X16) ;
+            OLED_ShowNum(0,  0, Serial2.Hex_Data.Serial_New_Package[0], 4, OLED_8X16) ;
+            OLED_ShowNum(0, 15, Serial2.Hex_Data.Serial_New_Package[1], 4, OLED_8X16) ;
+            OLED_ShowNum(0, 30, Serial2.Hex_Data.Serial_New_Package[2], 4, OLED_8X16) ;
         }
 
         if (Serial_GetNewPackageFlag_ABC(&Serial1))
