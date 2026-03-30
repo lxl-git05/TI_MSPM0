@@ -1,5 +1,6 @@
 #include "ti_msp_dl_config.h"
 #include "AllHeader.h"
+#include "Serial.h"
 
 int a =  0 ;
 
@@ -7,6 +8,7 @@ int main(void)
 {
     SYSCFG_DL_init();
     Initial_All() ;    
+    Serial_Init();
     while (1) 
     {
         if (Key_Check(KEY_1, KEY_SINGLE))
@@ -38,3 +40,4 @@ void Timer_0_Callback(void)
     // 功能3:LED闪烁监控
     Flash_Mode_Tick() ;
 }
+
