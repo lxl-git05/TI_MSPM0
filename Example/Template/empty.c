@@ -6,8 +6,7 @@ int a =  0 ;
 int main(void)
 {
     SYSCFG_DL_init();
-    Initial_All() ;
-    
+    Initial_All() ;    
     while (1) 
     {
         if (Key_Check(KEY_1, KEY_SINGLE))
@@ -31,12 +30,11 @@ void Timer_0_Callback(void)
     if (cnt >= 1000 -1)
     {
         cnt = 0 ;
-        
     }
 
     // 功能2:按键
     Key_Tick() ;
 
-    // 功能3:LED闪烁
+    // 功能3:LED闪烁监控
     Flash_Mode_Tick() ;
 }

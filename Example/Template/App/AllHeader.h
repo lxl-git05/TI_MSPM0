@@ -5,6 +5,7 @@
 
 // System层
 #include "Tim.h"
+#include "PWM.h"
 
 // Hardware层
 #include "Key.h"
