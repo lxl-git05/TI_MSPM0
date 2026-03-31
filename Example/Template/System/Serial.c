@@ -411,10 +411,10 @@ void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...)
 void Serial_Init(void)
 {
 	#ifdef Serial1_Enable
-	Serial_Initial(&Serial1 , UART_0_INST , DMA , DMA_CH0_CHAN_ID , UART_0_INST_INT_IRQN , DMA ,  DMA_CH2_CHAN_ID) ;	// 串口协议初始化
+	Serial_Initial(&Serial1 , UART_0_INST , DMA , DMA_UART_0_RX_Channel_CHAN_ID , UART_0_INST_INT_IRQN , DMA ,  DMA_UART_0_TX_Channel_CHAN_ID) ;	// 串口协议初始化
 	#endif
 	#ifdef Serial2_Enable
-	Serial_Initial(&Serial2 , UART_1_INST , DMA , DMA_CH1_CHAN_ID , UART_1_INST_INT_IRQN , DMA , 0) ;	// 串口协议初始化
+	Serial_Initial(&Serial2 , UART_1_INST , DMA , DMA_CH1_CHAN_ID , UART_1_INST_INT_IRQN , DMA , -1) ;	// 串口协议初始化
 	#endif
 	#ifdef Serial3_Enable
 	Serial_Initial(&Serial3 , USART3 , &huart3 ) ;	// 串口协议初始化
