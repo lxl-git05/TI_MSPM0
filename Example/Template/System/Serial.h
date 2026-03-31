@@ -11,7 +11,7 @@
 // #define Serial_Debug							// Debug模式
 
 #define Serial1_Enable							// USART1串口DMA模式开启
-// #define Serial2_Enable							// USART2串口DMA模式开启
+#define Serial2_Enable							// USART2串口DMA模式开启
 //#define Serial3_Enable						// USART3串口DMA模式开启
 
 #define RX_Serial_LEN 40				// DMA接收数组长度,一次接受的数据不能大于这个长度
@@ -93,6 +93,8 @@ typedef struct
 	DMA_Regs *tx_dma;       					// 可能和 dma 一样，也可能不同
 	uint8_t tx_channelNum;   					// TX DMA 通道
 
+	// From ST
+
 	uint8_t rx_temp;							// DMA传输给temp暂存,并且很快将被保存在rxBuf中
 	uint8_t rxCnt;								// Cnt记录DMA传输了多少位数据
 	uint8_t rxBuf[RX_Serial_LEN];				// 接收缓冲区,接收temp数据
@@ -119,9 +121,6 @@ extern Serial_Typedef 		 Serial3 ; 		// 串口3
 // DMA串口接收初始化
 void Serial_Init(void) ;
 
-// 串口发送数组
-// void Serial_SendData_DMA(Serial_Typedef *pSerial , uint8_t *pData, uint16_t Size) ;
-
 // HEX:得到串口接收标志位
 uint8_t Serial_GetNewPackageFlag_HEX(Serial_Typedef *pSerial) ;
 
@@ -141,7 +140,13 @@ bool Serial_SetFloatData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , 
 // 文本:2. 封装一个函数,实现简易整数变量调试
 bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , int *Data) ;
 
+
+//串口发送字符串
+void Serial_send_string(Serial_Typedef *pSerial,char* str) ;
+
+void Serial_Printf_Normal(Serial_Typedef *pSerial, const char *fmt, ...) ;
+
 // 打印数据,记得加减乘除都要在后方进行而不是""里面进行
-void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...);
+void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...);	// 200 - 300us -> 1个%占位符
 
 #endif

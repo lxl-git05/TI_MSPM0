@@ -14,22 +14,23 @@ int main(void)
         {
             // 单击
             Flash_Mode_Set(Flash_Mode_Fast) ;
-            Serial_printf(&Serial1, "Hello %d\r\n", 666);
-            Serial_printf(&Serial1, "heiha %.2f\r\n", 1.24);
-        }
 
-        // if (Serial_GetNewPackageFlag_HEX(&Serial2))
-        // {
-        //     OLED_ShowNum(0,  0, Serial2.Hex_Data.Serial_New_Package[0], 4, OLED_8X16) ;
-        //     OLED_ShowNum(0, 15, Serial2.Hex_Data.Serial_New_Package[1], 4, OLED_8X16) ;
-        //     OLED_ShowNum(0, 30, Serial2.Hex_Data.Serial_New_Package[2], 4, OLED_8X16) ;
-        // }
+            Serial_printf(&Serial1, "Hello %d%.2f%.2f%d\r\n", 666,5.3,4,5);
+
+            Serial_Printf_Normal(&Serial2 , "haha%.2f\n" , 6.66) ;
+        }
 
         if (Serial_GetNewPackageFlag_ABC(&Serial1))
         {
-            OLED_ShowString(0, 50, Serial1.ABC_Data.Serial_New_Package_ABC, OLED_6X8) ;
+            OLED_ShowString(0, 50, Serial2.ABC_Data.Serial_New_Package_ABC, OLED_6X8) ;
         }
 
+        if (Serial_GetNewPackageFlag_HEX(&Serial2))
+        {
+            OLED_ShowNum(0,  0, Serial2.Hex_Data.Serial_New_Package[0], 4, OLED_8X16) ;
+            OLED_ShowNum(0, 15, Serial2.Hex_Data.Serial_New_Package[1], 4, OLED_8X16) ;
+            OLED_ShowNum(0, 30, Serial2.Hex_Data.Serial_New_Package[2], 4, OLED_8X16) ;
+        }
         
         // OLED测试
         OLED_Update();

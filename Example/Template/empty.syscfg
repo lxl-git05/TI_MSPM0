@@ -20,6 +20,7 @@ const TIMER  = scripting.addModule("/ti/driverlib/TIMER", {}, false);
 const TIMER1 = TIMER.addInstance();
 const UART   = scripting.addModule("/ti/driverlib/UART", {}, false);
 const UART1  = UART.addInstance();
+const UART2  = UART.addInstance();
 
 /**
  * Write custom configuration values to the imported modules.
@@ -77,7 +78,6 @@ TIMER1.peripheral.$assign = "TIMG0";
 
 UART1.$name                                = "UART_0";
 UART1.targetBaudRate                       = 115200;
-UART1.enableFIFO                           = true;
 UART1.rxFifoThreshold                      = "DL_UART_RX_FIFO_LEVEL_ONE_ENTRY";
 UART1.enabledDMARXTriggers                 = "DL_UART_DMA_INTERRUPT_RX";
 UART1.txFifoThreshold                      = "DL_UART_TX_FIFO_LEVEL_ONE_ENTRY";
@@ -96,6 +96,15 @@ UART1.DMA_CHANNEL_TX.srcLength             = "BYTE";
 UART1.DMA_CHANNEL_TX.dstLength             = "BYTE";
 UART1.DMA_CHANNEL_TX.addressMode           = "b2f";
 UART1.DMA_CHANNEL_TX.$name                 = "DMA_UART_0_TX_Channel";
+
+UART2.$name                    = "UART_1";
+UART2.targetBaudRate           = 115200;
+UART2.enabledInterrupts        = ["RX"];
+UART2.peripheral.$assign       = "UART1";
+UART2.peripheral.rxPin.$assign = "PA9";
+UART2.peripheral.txPin.$assign = "PA8";
+UART2.txPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric3";
+UART2.rxPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric4";
 
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future

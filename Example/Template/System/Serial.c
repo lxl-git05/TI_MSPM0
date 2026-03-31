@@ -61,33 +61,44 @@ static void Serial_Initial(Serial_Typedef *pSerial , UART_Regs * const uart_INST
 
 	// =================== pSerial的Ti配置 ===================
 	pSerial->uart_INST = uart_INST ;
-	pSerial->dma = dma ;
-	pSerial->channelNum = channelNum ;
 	pSerial->uart_int_IRQN = uart_int_IRQN ;
 
+	// 可选(可能没有)
+	pSerial->dma = dma ;
+	pSerial->channelNum = channelNum ;
+
 	/* ===== TX初始化 ===== */
-	pSerial->txHead = 0;
-	pSerial->txTail = 0;
-	pSerial->dmaBusy = 0;
-	pSerial->dmaLen = 0;
-	pSerial->tx_dma = tx_dma ;
-	pSerial->tx_channelNum = tx_channelNum ;
-
-    // 配置DMA相关参数:DMA名字,通道(USART_x),DMA模式(RX),DMA触发中断大小(必须>=该size才能触发中断),DMA数据接收区等
-    DL_DMA_setSrcAddr(pSerial->dma, pSerial->channelNum, (uint32_t)(&pSerial->uart_INST->RXDATA));
-    DL_DMA_setDestAddr(pSerial->dma, pSerial->channelNum, (uint32_t) &(pSerial->rx_temp));
-    DL_DMA_setTransferSize(pSerial->dma, pSerial->channelNum, 1);
-    DL_DMA_enableChannel(pSerial->dma, pSerial->channelNum);
-	
-	/* 开启TX DMA完成中断 */
-	DL_UART_enableInterrupt(pSerial->uart_INST, DL_UART_INTERRUPT_DMA_DONE_TX);
-	// 确保DMA打开
-    while (false == DL_DMA_isChannelEnabled(pSerial->dma,  pSerial->channelNum)) 
+	// DMA系列
+	if (pSerial->dma != NULL)
 	{
-        __BKPT(0);
-    }
+		pSerial->txHead = 0;
+		pSerial->txTail = 0;
+		pSerial->dmaBusy = 0;
+		pSerial->dmaLen = 0;
+		pSerial->tx_dma = tx_dma ;
+		pSerial->tx_channelNum = tx_channelNum ;
 
-    // 使能中断,这里比较特殊,不进行一般化处理了,需要自己特别注意!!!
+		// 配置DMA相关参数:DMA名字,通道(USART_x),DMA模式(RX),DMA触发中断大小(必须>=该size才能触发中断),DMA数据接收区等
+		DL_DMA_setSrcAddr(pSerial->dma, pSerial->channelNum, (uint32_t)(&pSerial->uart_INST->RXDATA));
+		DL_DMA_setDestAddr(pSerial->dma, pSerial->channelNum, (uint32_t) &(pSerial->rx_temp));
+		DL_DMA_setTransferSize(pSerial->dma, pSerial->channelNum, 1);
+		DL_DMA_enableChannel(pSerial->dma, pSerial->channelNum);
+		
+		/* 开启TX DMA完成中断 */
+		DL_UART_enableInterrupt(pSerial->uart_INST, DL_UART_INTERRUPT_DMA_DONE_TX);
+		// 确保DMA打开
+		while (false == DL_DMA_isChannelEnabled(pSerial->dma,  pSerial->channelNum)) 
+		{
+			__BKPT(0);
+		}
+	}
+	// 普通中断系列
+	else 
+	{
+		NVIC_ClearPendingIRQ(pSerial->uart_int_IRQN);	// 初始化,防止上来就进入中断
+	}
+
+    // 使能中断
     NVIC_EnableIRQ(pSerial->uart_int_IRQN);
 }
 
@@ -344,7 +355,7 @@ bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , in
 	}
 }
 
-// ========================== Serial_printf部分 ==========================
+// ========================== Serial_printf部分(有DMA的才能使用) ==========================
 
 static void Serial_WriteBuf(Serial_Typedef *pSerial, uint8_t *data, uint16_t len)
 {
@@ -389,6 +400,11 @@ static void Serial_DMA_Kick(Serial_Typedef *pSerial)
 
 void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...)
 {
+	if (pSerial->dma == NULL)
+	{
+		__BKPT(0);
+		return;
+	}
     char tempBuf[128];
 
     va_list args;
@@ -405,6 +421,47 @@ void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...)
     Serial_DMA_Kick(pSerial);
 }
 
+// ========================== 无DMA的TX部分 ==========================
+//串口发送单个字符
+static void uart_send_char( Serial_Typedef *pSerial, char ch)
+{
+    //当串口0忙的时候等待，不忙的时候再发送传进来的字符
+    while( DL_UART_isBusy(pSerial->uart_INST) == true );
+    //发送单个字符
+    DL_UART_Main_transmitData(pSerial->uart_INST, ch);
+}
+//串口发送字符串
+void Serial_send_string(Serial_Typedef *pSerial,char* str)
+{
+    //当前字符串地址不在结尾 并且 字符串首地址不为空
+    while(*str!=0&&str!=0)
+    {
+        //发送字符串首地址中的字符，并且在发送完成之后首地址自增
+        uart_send_char(pSerial ,*str++);
+    }
+}
+
+void Serial_Printf_Normal(Serial_Typedef *pSerial, const char *fmt, ...)
+{
+    char buffer[64];           // 根据需要可改大或改小
+    va_list args;
+
+    // 格式化字符串
+    va_start(args, fmt);
+    int len = vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    if (len <= 0) 
+        return;
+
+    // 防止缓冲区溢出
+    if (len >= (int)sizeof(buffer))
+        len = sizeof(buffer) - 1;
+
+    // 发送字符串
+    Serial_send_string(pSerial, buffer);
+}
+
 // ====================== 代码一般性修改部分 ======================
 
 // 串口初始化:外部调用
@@ -414,7 +471,7 @@ void Serial_Init(void)
 	Serial_Initial(&Serial1 , UART_0_INST , DMA , DMA_UART_0_RX_Channel_CHAN_ID , UART_0_INST_INT_IRQN , DMA ,  DMA_UART_0_TX_Channel_CHAN_ID) ;	// 串口协议初始化
 	#endif
 	#ifdef Serial2_Enable
-	Serial_Initial(&Serial2 , UART_1_INST , DMA , DMA_CH1_CHAN_ID , UART_1_INST_INT_IRQN , DMA , -1) ;	// 串口协议初始化
+	Serial_Initial(&Serial2 , UART_1_INST , NULL , 100 , UART_1_INST_INT_IRQN , NULL , 100) ;	// 串口协议初始化
 	#endif
 	#ifdef Serial3_Enable
 	Serial_Initial(&Serial3 , USART3 , &huart3 ) ;	// 串口协议初始化
@@ -451,7 +508,7 @@ void UART_0_INST_IRQHandler(void)
 
             break;
 
-		/* ===== TX（新增,用于printf）===== */
+		/* ===== TX（用于printf）===== */
         case DL_UART_MAIN_IIDX_DMA_DONE_TX:
 
             Serial1.txTail = (Serial1.txTail + Serial1.dmaLen) % TX_BUF_SIZE;
@@ -476,23 +533,29 @@ void UART_1_INST_IRQHandler(void)
 #ifdef Serial2_Enable
     Serial_RX_FLAG_Typedef Serial2_Rx_State;
 
-    switch (DL_UART_Main_getPendingInterrupt(Serial2.uart_INST)) 
+	switch (DL_UART_Main_getPendingInterrupt(Serial2.uart_INST)) 
     {
-        case DL_UART_MAIN_IIDX_DMA_DONE_RX:
+        // 接收中断
+        case DL_UART_MAIN_IIDX_RX:
+            // 必须存储接收到信息,即使不使用,否则中断FIFO存不下，再也进不去中断了
+            Serial2.rx_temp = DL_UART_Main_receiveData(Serial2.uart_INST);  
 
-            Serial2_Rx_State = Serial_Rx_State_Check(&Serial2);
-
-            if (Serial2_Rx_State == RX_OK_HEX)
-            {
-                Serial_Data_Check_HEX(&Serial2);
-            }
-            else if (Serial2_Rx_State == RX_OK_ABC)
-            {
-                Serial_Data_Check_ABC(&Serial2);
-            }
-
+            // 获得串口数据传输状态(更新)
+			Serial2_Rx_State = Serial_Rx_State_Check(&Serial2);
+			
+			// HEX数据包
+			if (Serial2_Rx_State == RX_OK_HEX)
+			{
+				// 开始处理原始数据包:HEX
+				Serial_Data_Check_HEX(&Serial2) ;
+			}
+			// ABC数据包
+			else if (Serial2_Rx_State == RX_OK_ABC)
+			{
+				// 开始处理原始数据包:ABC
+				Serial_Data_Check_ABC(&Serial2) ;
+			} 
             break;
-
         default:
             break;
     }
