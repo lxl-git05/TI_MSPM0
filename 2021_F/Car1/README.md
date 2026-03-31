@@ -37,7 +37,7 @@
 | PB4    | A_IN_1           | PWM          |
 | PB12   | A_IN_2           | 普通驱动     |
 | PB14   | A_Encoder_1      | 外部中断驱动 |
-| PA7    | A_Encoder_2      | 外部中断驱动 |
+| PB1    | A_Encoder_2      | 外部中断驱动 |
 |        |                  |              |
 | PB5    | B_IN_1           | PWM          |
 | PB13   | B_IN_2           | 普通驱动     |
