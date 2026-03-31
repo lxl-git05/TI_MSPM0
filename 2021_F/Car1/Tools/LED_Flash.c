@@ -135,7 +135,7 @@ Flash_Typedef Flash_0 ;
 
 void Flash_Mode_Init(void)
 {
-	Flash_Init(&Flash_0 , GPIO_LED_LED_PIN_0_PORT , GPIO_LED_LED_PIN_0_PIN , 1 , 0) ;
+	Flash_Init(&Flash_0 , GPIO_LED_PORT , GPIO_LED_LED_PIN_0_PIN , 1 , 0) ;
 }
 
 void Flash_Mode_Tick(void)

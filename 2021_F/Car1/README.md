@@ -1,41 +1,75 @@
-## Example Summary
+[toc]
 
-Empty project using DriverLib.
-This example shows a basic empty project using DriverLib with just main file
-and SysConfig initialization.
+# 1. 引脚配置
 
-## Peripherals & Pin Assignments
+## 1-1 板载引脚
 
-| Peripheral | Pin | Function |
-| --- | --- | --- |
-| SYSCTL |  |  |
-| DEBUGSS | PA20 | Debug Clock |
-| DEBUGSS | PA19 | Debug Data In Out |
+| 引脚号 | 标签号(模糊标签) | 备注    |
+| ------ | ---------------- | ------- |
+| PB22   | LED_PIN_0        | 板载LED |
+| PB21   | KEY_0            | 板载KEY |
 
-## BoosterPacks, Board Resources & Jumper Settings
 
-Visit [LP_MSPM0G3507](https://www.ti.com/tool/LP-MSPM0G3507) for LaunchPad information, including user guide and hardware files.
 
-| Pin | Peripheral | Function | LaunchPad Pin | LaunchPad Settings |
-| --- | --- | --- | --- | --- |
-| PA20 | DEBUGSS | SWCLK | N/A | <ul><li>PA20 is used by SWD during debugging<br><ul><li>`J101 15:16 ON` Connect to XDS-110 SWCLK while debugging<br><li>`J101 15:16 OFF` Disconnect from XDS-110 SWCLK if using pin in application</ul></ul> |
-| PA19 | DEBUGSS | SWDIO | N/A | <ul><li>PA19 is used by SWD during debugging<br><ul><li>`J101 13:14 ON` Connect to XDS-110 SWDIO while debugging<br><li>`J101 13:14 OFF` Disconnect from XDS-110 SWDIO if using pin in application</ul></ul> |
+## 1-2 普通GPIO
 
-### Device Migration Recommendations
-This project was developed for a superset device included in the LP_MSPM0G3507 LaunchPad. Please
-visit the [CCS User's Guide](https://software-dl.ti.com/msp430/esd/MSPM0-SDK/latest/docs/english/tools/ccs_ide_guide/doc_guide/doc_guide-srcs/ccs_ide_guide.html#sysconfig-project-migration)
-for information about migrating to other MSPM0 devices.
+| 引脚号 | 标签号(模糊标签) | 备注                     |
+| ------ | ---------------- | ------------------------ |
+| PA31   | OLED_SCL         | 其实也是IIC,但是是软驱动 |
+| PA28   | OLED_SDA         |                          |
+| ×      | KEY_0            | 在板载引脚部分           |
+| PA15   | KEY_1            |                          |
+| PA17   | KEY_2            |                          |
+|        |                  |                          |
+| PB6    | **LED_R**        | 红灯                     |
+| PB7    | **LED_G**        | 绿灯                     |
+| PB8    | **LED_B**        | 黄灯                     |
+| PB9    | **LED_Time**     | 时间检测GPIO口           |
 
-### Low-Power Recommendations
-TI recommends to terminate unused pins by setting the corresponding functions to
-GPIO and configure the pins to output low or input with internal
-pullup/pulldown resistor.
 
-SysConfig allows developers to easily configure unused pins by selecting **Board**→**Configure Unused Pins**.
 
-For more information about jumper configuration to achieve low-power using the
-MSPM0 LaunchPad, please visit the [LP-MSPM0G3507 User's Guide](https://www.ti.com/lit/slau873).
 
-## Example Usage
 
-Compile, load and run the example.
+## 1-3 电机控制配置
+
+| 引脚号 | 标签号(模糊标签) | 备注         |
+| ------ | ---------------- | ------------ |
+| PB4    | A_IN_1           | PWM          |
+| PB12   | A_IN_2           | 普通驱动     |
+| PB14   | A_Encoder_1      | 外部中断驱动 |
+| PA7    | A_Encoder_2      | 外部中断驱动 |
+|        |                  |              |
+| PB5    | B_IN_1           | PWM          |
+| PB13   | B_IN_2           | 普通驱动     |
+| PB11   | B_Encoder_1      | 外部中断驱动 |
+| PB10   | B_Encoder_2      | 外部中断驱动 |
+
+
+
+## 1-4 UART配置
+
+| 引脚号 | 标签号(模糊标签) | 备注                                  |
+| ------ | ---------------- | ------------------------------------- |
+| PA10   | UART_0_TX        | USB可读写,作为调试端口,**引脚不可变** |
+| PA11   | UART_0_RX        |                                       |
+|        |                  |                                       |
+| PA8    | UART_1_TX        | 与树莓派进行通信                      |
+| PA9    | UART_1_RX        |                                       |
+|        |                  |                                       |
+| PB15   | UART_2_TX        | 使用蓝牙进行双车通信                  |
+| PB16   | UART_2_RX        |                                       |
+
+
+
+## 1-5 IIC配置
+
+| 引脚号 | 标签号(模糊标签) | 备注  |
+| ------ | ---------------- | ----- |
+| PA1    | Y8_SCL           | IIC_0 |
+| PA0    | Y8_SDA           |       |
+|        |                  |       |
+| PB2    | MPU6050_SCL      | IIC_1 |
+| PB3    | MPU6050_SDA      |       |
+
+
+

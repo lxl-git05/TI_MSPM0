@@ -14,27 +14,27 @@ uint8_t Key_Flag[KEY_COUNT];			// 各个按键的标志位
 // 只需要改变Key_GetState的引脚标签即可
 uint8_t Key_GetState(uint8_t n)		// 得到按键状态
 {
-	if (n == KEY_1)
+	if (n == KEY_0)
 	{
-		if (DL_GPIO_readPins(GPIO_KEY_PORT, GPIO_KEY_KEY_1_PIN) == 0)
+		if (DL_GPIO_readPins(GPIO_KEY_KEY_0_PORT, GPIO_KEY_KEY_0_PIN) == 0)
 		{
 			return KEY_PRESSED;
 		}
 	}
-// else if (n == KEY_2)
-// {
-// 	if (DL_GPIO_readPins(KEY2_GPIO_Port, KEY2_Pin) == 0)
-// 	{
-// 		return KEY_PRESSED;
-// 	}
-// }
-//	else if (n == KEY_3)
-//	{
-//		if (DL_GPIO_readPins(KEY3_GPIO_Port, KEY3_Pin) == 0)
-//		{
-//			return KEY_PRESSED;
-//		}
-//	}
+	if (n == KEY_1)
+	{
+		if (DL_GPIO_readPins(GPIO_KEY_KEY_1_PORT, GPIO_KEY_KEY_1_PIN) == 0)
+		{
+			return KEY_PRESSED;
+		}
+	}
+	if (n == KEY_2)
+	{
+		if (DL_GPIO_readPins(GPIO_KEY_KEY_2_PORT, GPIO_KEY_KEY_2_PIN) == 0)
+		{
+			return KEY_PRESSED;
+		}
+	}
 //	else if (n == KEY_4)
 //	{
 //		if (DL_GPIO_readPins(KEY4_GPIO_Port, KEY4_Pin) == 0)

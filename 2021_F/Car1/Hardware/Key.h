@@ -5,10 +5,10 @@
 
 #define KEY_COUNT				4
 
-#define KEY_1					0
-#define KEY_2					1
-#define KEY_3					2
-#define KEY_4					3
+#define KEY_0					0
+#define KEY_1					1
+#define KEY_2					2
+#define KEY_3					3
 
 #define KEY_HOLD				0x01
 #define KEY_DOWN				0x02
