@@ -46,7 +46,8 @@ void Serial_Agreement_ABC_Init(Serial_Agreement_ABC_TypeDef *pSerial_Agreement)
 }
 
 // 串口初始化:深层
-static void Serial_Initial(Serial_Typedef *pSerial , UART_Regs * const uart_INST,  DMA_Regs *dma, uint8_t channelNum, uint8_t uart_int_IRQN)
+static void Serial_Initial(Serial_Typedef *pSerial , UART_Regs * const uart_INST,  DMA_Regs *dma, uint8_t channelNum, uint8_t uart_int_IRQN
+							, DMA_Regs *tx_dma, uint8_t tx_channelNum)
 {
 	// =================== 串口数据(From ST) ===================
 	// 串口的数据链初始化
@@ -64,12 +65,22 @@ static void Serial_Initial(Serial_Typedef *pSerial , UART_Regs * const uart_INST
 	pSerial->channelNum = channelNum ;
 	pSerial->uart_int_IRQN = uart_int_IRQN ;
 
+	/* ===== TX初始化 ===== */
+	pSerial->txHead = 0;
+	pSerial->txTail = 0;
+	pSerial->dmaBusy = 0;
+	pSerial->dmaLen = 0;
+	pSerial->tx_dma = tx_dma ;
+	pSerial->tx_channelNum = tx_channelNum ;
+
     // 配置DMA相关参数:DMA名字,通道(USART_x),DMA模式(RX),DMA触发中断大小(必须>=该size才能触发中断),DMA数据接收区等
     DL_DMA_setSrcAddr(pSerial->dma, pSerial->channelNum, (uint32_t)(&pSerial->uart_INST->RXDATA));
     DL_DMA_setDestAddr(pSerial->dma, pSerial->channelNum, (uint32_t) &(pSerial->rx_temp));
     DL_DMA_setTransferSize(pSerial->dma, pSerial->channelNum, 1);
     DL_DMA_enableChannel(pSerial->dma, pSerial->channelNum);
-
+	
+	/* 开启TX DMA完成中断 */
+	DL_UART_enableInterrupt(pSerial->uart_INST, DL_UART_INTERRUPT_DMA_DONE_TX);
 	// 确保DMA打开
     while (false == DL_DMA_isChannelEnabled(pSerial->dma,  pSerial->channelNum)) 
 	{
@@ -333,16 +344,77 @@ bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , in
 	}
 }
 
+// ========================== Serial_printf部分 ==========================
+
+static void Serial_WriteBuf(Serial_Typedef *pSerial, uint8_t *data, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; i++)
+    {
+        uint16_t next = (pSerial->txHead + 1) % TX_BUF_SIZE;
+
+        if (next == pSerial->txTail)
+            return;  // 满了直接丢
+
+        pSerial->txBuf[pSerial->txHead] = data[i];
+        pSerial->txHead = next;
+    }
+}
+
+static void Serial_DMA_Kick(Serial_Typedef *pSerial)
+{
+    if (pSerial->dmaBusy) return;
+    if (pSerial->txHead == pSerial->txTail) return;
+
+    pSerial->dmaBusy = 1;
+
+    uint16_t len;
+
+    if (pSerial->txHead > pSerial->txTail)
+        len = pSerial->txHead - pSerial->txTail;
+    else
+        len = TX_BUF_SIZE - pSerial->txTail;
+
+    pSerial->dmaLen = len;
+
+    DL_DMA_setSrcAddr(pSerial->tx_dma, pSerial->tx_channelNum,
+                      (uint32_t)&pSerial->txBuf[pSerial->txTail]);
+
+    DL_DMA_setDestAddr(pSerial->tx_dma, pSerial->tx_channelNum,
+                       (uint32_t)&pSerial->uart_INST->TXDATA);
+
+    DL_DMA_setTransferSize(pSerial->tx_dma, pSerial->tx_channelNum, len);
+
+    DL_DMA_enableChannel(pSerial->tx_dma, pSerial->tx_channelNum);
+}
+
+void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...)
+{
+    char tempBuf[128];
+
+    va_list args;
+    va_start(args, fmt);
+    int len = vsnprintf(tempBuf, sizeof(tempBuf), fmt, args);
+    va_end(args);
+
+    if (len <= 0) return;
+
+    if (len > sizeof(tempBuf))
+        len = sizeof(tempBuf);
+
+    Serial_WriteBuf(pSerial, (uint8_t *)tempBuf, len);
+    Serial_DMA_Kick(pSerial);
+}
+
 // ====================== 代码一般性修改部分 ======================
 
 // 串口初始化:外部调用
 void Serial_Init(void)
 {
 	#ifdef Serial1_Enable
-	Serial_Initial(&Serial1 , UART_0_INST , DMA , DMA_CH0_CHAN_ID , UART_0_INST_INT_IRQN) ;	// 串口协议初始化
+	Serial_Initial(&Serial1 , UART_0_INST , DMA , DMA_CH0_CHAN_ID , UART_0_INST_INT_IRQN , DMA ,  DMA_CH2_CHAN_ID) ;	// 串口协议初始化
 	#endif
 	#ifdef Serial2_Enable
-	Serial_Initial(&Serial2 , UART_1_INST , DMA , DMA_CH1_CHAN_ID , UART_1_INST_INT_IRQN) ;	// 串口协议初始化
+	Serial_Initial(&Serial2 , UART_1_INST , DMA , DMA_CH1_CHAN_ID , UART_1_INST_INT_IRQN , DMA , 0) ;	// 串口协议初始化
 	#endif
 	#ifdef Serial3_Enable
 	Serial_Initial(&Serial3 , USART3 , &huart3 ) ;	// 串口协议初始化
@@ -378,6 +450,20 @@ void UART_0_INST_IRQHandler(void)
 			} 
 
             break;
+
+		/* ===== TX（新增,用于printf）===== */
+        case DL_UART_MAIN_IIDX_DMA_DONE_TX:
+
+            Serial1.txTail = (Serial1.txTail + Serial1.dmaLen) % TX_BUF_SIZE;
+            Serial1.dmaBusy = 0;
+
+            if (Serial1.txHead != Serial1.txTail)
+            {
+                Serial_DMA_Kick(&Serial1);
+            }
+
+            break;
+
         default:
             break;
     }

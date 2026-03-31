@@ -14,14 +14,16 @@ int main(void)
         {
             // 单击
             Flash_Mode_Set(Flash_Mode_Fast) ;
+            Serial_printf(&Serial1, "Hello %d\r\n", 666);
+            Serial_printf(&Serial1, "heiha %.2f\r\n", 1.24);
         }
 
-        if (Serial_GetNewPackageFlag_HEX(&Serial2))
-        {
-            OLED_ShowNum(0,  0, Serial2.Hex_Data.Serial_New_Package[0], 4, OLED_8X16) ;
-            OLED_ShowNum(0, 15, Serial2.Hex_Data.Serial_New_Package[1], 4, OLED_8X16) ;
-            OLED_ShowNum(0, 30, Serial2.Hex_Data.Serial_New_Package[2], 4, OLED_8X16) ;
-        }
+        // if (Serial_GetNewPackageFlag_HEX(&Serial2))
+        // {
+        //     OLED_ShowNum(0,  0, Serial2.Hex_Data.Serial_New_Package[0], 4, OLED_8X16) ;
+        //     OLED_ShowNum(0, 15, Serial2.Hex_Data.Serial_New_Package[1], 4, OLED_8X16) ;
+        //     OLED_ShowNum(0, 30, Serial2.Hex_Data.Serial_New_Package[2], 4, OLED_8X16) ;
+        // }
 
         if (Serial_GetNewPackageFlag_ABC(&Serial1))
         {

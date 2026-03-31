@@ -2,13 +2,16 @@
 #define __SERIAL_H
 
 #include "ti_msp_dl_config.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 
 // =============== define声明 ===============
 
 // #define Serial_Debug							// Debug模式
 
 #define Serial1_Enable							// USART1串口DMA模式开启
-#define Serial2_Enable							// USART2串口DMA模式开启
+// #define Serial2_Enable							// USART2串口DMA模式开启
 //#define Serial3_Enable						// USART3串口DMA模式开启
 
 #define RX_Serial_LEN 40				// DMA接收数组长度,一次接受的数据不能大于这个长度
@@ -71,6 +74,7 @@ typedef struct
 	int error_Serial	;								  				 // 错误查询参数
 }Serial_ABC_Data_Typedef;
 
+#define TX_BUF_SIZE 512
 // 串口数据处理定义
 typedef struct
 {
@@ -79,6 +83,15 @@ typedef struct
     DMA_Regs *dma;								// 配置的DMA通道,如DMA
     uint8_t channelNum ;						// DMA通道数,如DMA_CH0_CHAN_ID
 	uint8_t uart_int_IRQN ;						// IRQN序列,初始化用得上,如UART_0_INST_INT_IRQN
+
+	// Ti进行TX需要增加的参数
+	uint8_t txBuf[TX_BUF_SIZE];
+	uint16_t txHead;
+	uint16_t txTail;
+	uint8_t dmaBusy;
+	uint16_t dmaLen;
+	DMA_Regs *tx_dma;       					// 可能和 dma 一样，也可能不同
+	uint8_t tx_channelNum;   					// TX DMA 通道
 
 	uint8_t rx_temp;							// DMA传输给temp暂存,并且很快将被保存在rxBuf中
 	uint8_t rxCnt;								// Cnt记录DMA传输了多少位数据
@@ -128,8 +141,7 @@ bool Serial_SetFloatData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , 
 // 文本:2. 封装一个函数,实现简易整数变量调试
 bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , int *Data) ;
 
-// // 打印数据,记得加减乘除都要在后方进行而不是""里面进行
-// void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...) ;
-
+// 打印数据,记得加减乘除都要在后方进行而不是""里面进行
+void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...);
 
 #endif
