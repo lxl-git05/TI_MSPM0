@@ -1,8 +1,6 @@
 #include "ti_msp_dl_config.h"
 #include "AllHeader.h"
 
-#include "Encoder.h"
-
 int count ;
 int speed ;
 int k = 0 ;
@@ -22,9 +20,21 @@ int main(void)
             Flash_Mode_Set(Flash_Mode_Fast) ;
         }
         speed = Encoder_Get_CNT(&count) ;
+        // OLED检查
         OLED_ShowNum(0,  0, k++, 3, OLED_8X16);
+        // 编码器检查
         OLED_ShowSignedNum(0, 20, speed, 3, OLED_8X16);
-        // OLED测试
+        // Y8检查
+        Y8_LineSensor_Update() ;
+        OLED_ShowNum( 0, 40, Y8_Line_Array[1] , 1, OLED_8X16) ;
+        OLED_ShowNum(10, 40, Y8_Line_Array[2] , 1, OLED_8X16) ;
+        OLED_ShowNum(20, 40, Y8_Line_Array[3] , 1, OLED_8X16) ;
+        OLED_ShowNum(30, 40, Y8_Line_Array[4] , 1, OLED_8X16) ;
+        OLED_ShowNum(40, 40, Y8_Line_Array[5] , 1, OLED_8X16) ;
+        OLED_ShowNum(50, 40, Y8_Line_Array[6] , 1, OLED_8X16) ;
+        OLED_ShowNum(60, 40, Y8_Line_Array[7] , 1, OLED_8X16) ;
+        OLED_ShowNum(70, 40, Y8_Line_Array[8] , 1, OLED_8X16) ;
+        // OLED更新
         OLED_Update();
     }
 }

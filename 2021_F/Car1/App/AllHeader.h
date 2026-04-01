@@ -7,10 +7,12 @@
 #include "Tim.h"
 #include "PWM.h"
 #include "Serial.h"
+#include "Encoder.h"
 
 // Hardware层
 #include "Key.h"
 #include "OLED.h"
+#include "Y8_Track.h"
 
 // tools层
 #include "LED_Flash.h"
