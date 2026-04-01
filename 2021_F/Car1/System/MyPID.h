@@ -16,8 +16,8 @@ typedef struct PID
 	float SumError;		// 累次积分值
 	
 	// 新增变量
-	float realPoint_Now 	 ;	// 当前真实值
-	float realPoint_Bef 	 ;	// 上次真实值
+	float realPoint_Now;	// 当前真实值
+	float realPoint_Bef;	// 上次真实值
 	
 	float pout ;	// 比例系数输出值
 	float iout ;	// 积分系数输出值
@@ -29,7 +29,7 @@ typedef struct PID
 	float deadspace;					// 输入死区,暂时不使用
 	float d_style;						// 微分先行系数,默认为0,也就是不微分先行,Init不进行配置,想用自己配
 	float d_filter;						// 不完全微分(去除杂波滤波系数),默认为0,也就是不进行滤波,Init不进行配置,想用自己配
-	void (*PID_Func)(void); 	// 针对性PID特殊处理
+	void (*PID_Func)(void); 			// 针对性PID特殊处理
 	
 	float setPoint ;					// 即output,输出值
 	

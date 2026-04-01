@@ -7,4 +7,7 @@
 void Timer_0_Init(void);
 void Timer_0_Callback(void) ;   // 1ms调用一次
 
+void Timer_1_Init(void);
+void Timer_1_Callback(void) ;   // 20ms调用一次
+
 #endif

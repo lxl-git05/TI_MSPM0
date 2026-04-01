@@ -29,6 +29,8 @@ void Encoder_Counter_Tick(GPIO_Regs* Encoder_GPIO_Port , uint32_t Encoder_Pin_1 
     }
 }
 
+
+
 // ==================== 获取计数值并清零 ====================
 int32_t Encoder_Get_CNT(int32_t* gEncoderCount)
 {
