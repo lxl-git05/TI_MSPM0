@@ -45,7 +45,37 @@ void Motor_A_Init(void)
 	// Motor_A.PID_s.deadspace = 3.0f ;	// 输出死区
 }
 
-// 设置PWM,幕后执行的速度逻辑(setPoint)
+// ===================== 功能代码 =====================
+
+// 1. 计算真实速度: 更新Motor的真实速度,得到的值直接写入Motor
+void Motor_Speed_Update(Motor_Typedef *Motor)
+{
+	// 得到总脉冲数
+	int Motor_CNT = Encoder_Get_CNT(&Motor->EncoderCount) * Motor->Encoder_Dir;
+	
+	// 转速n = 总脉冲数/2倍频/单圈脉冲数(13)/减速比(28)/采样时间 , Encoder_PID_Gap_Time暂时为20ms
+	// Motor->Motor_RealSpeed = (float)Motor_CNT / 2 / 13 / 28 / Encoder_Gap_Time * 1000 ; ,直接算出来:4*13*28/1000=1.456
+	// 特别关注倍频参数! 2 or 4
+    Motor->PID_s.realPoint_Now = (float)Motor_CNT * 60 * 1000 / (2.0f * Motor->PPR * Motor->ReductionRatio) / Encoder_PID_Gap_Time  ;
+}
+
+// 1. 计算真实速度: 编码器速度更新
+void GROUP1_IRQHandler(void)
+{
+    // === 必须先判断是不是 GPIOB 的中断 ===
+    switch (DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1))
+    {
+        case GPIO_MULTIPLE_GPIOB_INT_IIDX:
+            Encoder_Counter_Tick(Motor_A.Encoder_GPIO_Port,Motor_A.Encoder_Pin_1,Motor_A.Encoder_Pin_2,&Motor_A.EncoderCount);
+            break;
+
+        // 如果以后还有其他 GPIOB 的中断，可以继续加 case
+        default:
+            break;
+    }
+}
+
+// 4. 输出setpoint: 设置PWM,幕后执行的速度逻辑(setPoint)
 void Motor_SetPWM(Motor_Typedef *Motor , int PWM)
 {
 	// 限制最值
@@ -70,22 +100,13 @@ void Motor_SetPWM(Motor_Typedef *Motor , int PWM)
 	}
 }
 
-int Motor_CNT = 0;
-
-// 更新Motor的真实速度,得到的值直接写入Motor
-void Motor_Speed_Update(Motor_Typedef *Motor)
-{
-	// 得到总脉冲数
-	Motor_CNT = Encoder_Get_CNT(&Motor->EncoderCount) * Motor->Encoder_Dir;
-	
-	// 转速n = 总脉冲数/2倍频/单圈脉冲数(13)/减速比(28)/采样时间 , Encoder_PID_Gap_Time暂时为20ms
-	// Motor->Motor_RealSpeed = (float)Motor_CNT / 2 / 13 / 28 / Encoder_Gap_Time * 1000 ; ,直接算出来:4*13*28/1000=1.456
-	Motor->PID_s.realPoint_Now = (float)Motor_CNT * 60 * 1000 / (2.0f * Motor->PPR * Motor->ReductionRatio) / Encoder_PID_Gap_Time  ;
-
-    // Motor->PID_s.realPoint_Now = Motor_CNT ;
-}
-
-// Motor速度更新(20ms一次)
+/*
+核心逻辑:Motor速度更新(放在20ms定时器)
+    1. 计算真实速度
+    2. 状态机控制模式
+    3. PID计算setpoint
+    4. 输出setpoint(定时器需要最后声明,否则PWM还没初始化就调用PWM会出现bug)
+*/
 void Motor_Update_Tick(Motor_Typedef *Motor)
 {
     // 1. 计算真实速度（编码器）
@@ -96,7 +117,7 @@ void Motor_Update_Tick(Motor_Typedef *Motor)
     {
         case MOTOR_STOP:
             Motor->PID_s.goalPoint = 0;
-            return;
+            break;
 
         case MOTOR_RUN:
             break;
@@ -113,37 +134,4 @@ void Motor_Update_Tick(Motor_Typedef *Motor)
 
     // 4. 输出PWM
     Motor_SetPWM(Motor, Motor->PID_s.setPoint);
-}
-
-
-void Motor_SetSpeed(Motor_Typedef *Motor, float speed)
-{
-    Motor->PID_s.goalPoint = speed;
-    Motor->State = MOTOR_RUN;
-}
-
-void Motor_Stop(Motor_Typedef *Motor)
-{
-    Motor->State = MOTOR_STOP;
-}
-
-void Motor_Brake(Motor_Typedef *Motor)
-{
-    Motor->State = MOTOR_BRAKE;
-}
-
-// 编码器速度更新
-void GROUP1_IRQHandler(void)
-{
-    // === 必须先判断是不是 GPIOB 的中断 ===
-    switch (DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1))
-    {
-        case GPIO_MULTIPLE_GPIOB_INT_IIDX:
-            Encoder_Counter_Tick(Motor_A.Encoder_GPIO_Port,Motor_A.Encoder_Pin_1,Motor_A.Encoder_Pin_2,&Motor_A.EncoderCount);
-            break;
-
-        // 如果以后还有其他 GPIOB 的中断，可以继续加 case
-        default:
-            break;
-    }
 }

@@ -59,13 +59,15 @@ void Motor_A_Init(void);
 // 20ms更新一次
 void Motor_Update_Tick(Motor_Typedef *Motor) ;
 
-// 外部调用:设置速度
-void Motor_SetSpeed(Motor_Typedef *Motor, float speed) ;
+// 放在Con_Motor
 
-// 外部调用:停车
-void Motor_Stop(Motor_Typedef *Motor) ;
+// // 外部调用:设置速度
+// void Motor_SetSpeed(Motor_Typedef *Motor, float speed) ;
 
-// 外部调用:刹车
-void Motor_Brake(Motor_Typedef *Motor) ;
+// // 外部调用:停车
+// void Motor_Stop(Motor_Typedef *Motor) ;
+
+// // 外部调用:刹车
+// void Motor_Brake(Motor_Typedef *Motor) ;
 
 #endif

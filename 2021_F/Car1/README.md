@@ -6,8 +6,8 @@
 
 | 引脚号 | 标签号(模糊标签) | 备注    |
 | ------ | ---------------- | ------- |
-| PB22   | LED_PIN_0        | 板载LED |
-| PB21   | KEY_0            | 板载KEY |
+| PB   22   | LED_PIN_0        | 板载LED |
+| PB   21   | KEY_0            | 板载KEY |
 
 
 
@@ -21,10 +21,10 @@
 | PA15   | KEY_1            |                          |
 | PA17   | KEY_2            |                          |
 |        |                  |                          |
-| PB6    | **LED_R**        | 红灯                     |
-| PB7    | **LED_G**        | 绿灯                     |
-| PB8    | **LED_B**        | 黄灯                     |
-| PB9    | **LED_Time**     | 时间检测GPIO口           |
+| PB   6    | **LED_R**        | 红灯                     |
+| PB   7    | **LED_G**        | 绿灯                     |
+| PB   8    | **LED_B**        | 黄灯                     |
+| ==PB   9== | **LED_Time**     | 时间检测GPIO口           |
 
 
 
@@ -34,15 +34,15 @@
 
 | 引脚号 | 标签号(模糊标签) | 备注         |
 | ------ | ---------------- | ------------ |
-| PB4    | A_IN_1           | PWM          |
-| PB12   | A_IN_2           | 普通驱动     |
-| PB14   | A_Encoder_1      | 外部中断驱动 |
-| PB1    | A_Encoder_2      | 外部中断驱动 |
+| PB   4    | A_IN_1           | PWM          |
+| PB   12   | A_IN_2           | 普通驱动     |
+| PB   14   | A_Encoder_1      | 外部中断驱动 |
+| PB   1    | A_Encoder_2      | 外部中断驱动 |
 |        |                  |              |
-| PB5    | B_IN_1           | PWM          |
-| PB13   | B_IN_2           | 普通驱动     |
-| PB11   | B_Encoder_1      | 外部中断驱动 |
-| PB10   | B_Encoder_2      | 外部中断驱动 |
+| PB   5    | B_IN_1           | PWM          |
+| PB   13   | B_IN_2           | 普通驱动     |
+| PB   11   | B_Encoder_1      | 外部中断驱动 |
+| PB   10   | B_Encoder_2      | 外部中断驱动 |
 
 
 
@@ -56,8 +56,8 @@
 | PA8    | UART_1_TX        | 与树莓派进行通信                      |
 | PA9    | UART_1_RX        |                                       |
 |        |                  |                                       |
-| PB15   | UART_2_TX        | 使用蓝牙进行双车通信                  |
-| PB16   | UART_2_RX        |                                       |
+| PB   15   | UART_2_TX        | 使用蓝牙进行双车通信                  |
+| PB   16   | UART_2_RX        |                                       |
 
 
 
@@ -68,8 +68,8 @@
 | PA1    | Y8_SCL           | IIC_0 |
 | PA0    | Y8_SDA           |       |
 |        |                  |       |
-| PB2    | MPU6050_SCL      | IIC_1 |
-| PB3    | MPU6050_SDA      |       |
+| PB   2    | MPU6050_SCL      | IIC_1 |
+| PB   3    | MPU6050_SDA      |       |
 
 
 
