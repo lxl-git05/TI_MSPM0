@@ -40,8 +40,8 @@ typedef struct
 	// 电机参数
 	float PPR;                          // 编码器线数
 	float ReductionRatio;               // 减速比
-	int8_t DIR;                         // 正方向
-	int8_t Encoder_Dir ;				// 编码器修正方向
+	int8_t Goal_Speed_Dir;              // goalSpeed修正方向,因为A4950有In1和In2,所以两个正反接会有不同的结果,所以相同的goal会有正反不同的PWM方向,所以需要修正
+	int8_t Encoder_Dir ;				// Encoder修正方向,也就是如果正转轮子发现是负的就将该参数调为负值即可
 	
     // PID参数:含有GoalSpeed,RealSpeed,SetSpeed!
 	Pid_Typedef PID_s ;					// PID参数
@@ -52,12 +52,14 @@ typedef struct
 }Motor_Typedef ;
 
 extern Motor_Typedef Motor_A ;
+extern Motor_Typedef Motor_B ;
 
 // MotorA初始化
 void Motor_A_Init(void);
+void Motor_B_Init(void);
 
 // 20ms更新一次
-void Motor_Update_Tick(Motor_Typedef *Motor) ;
+void Motorx_Update_Tick(Motor_Typedef *Motor) ;
 
 void Motor_SetPWM(Motor_Typedef *Motor , int PWM) ;
 

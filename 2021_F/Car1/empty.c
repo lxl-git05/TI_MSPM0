@@ -3,6 +3,8 @@
 #include "Motor.h"
 #include "Con_Motor.h"
 
+// #define Motor_A_Check
+
 int count ;
 int speed ;
 int k = 0 ;
@@ -16,7 +18,7 @@ int main(void)
     SYSCFG_DL_init();
     Initial_All() ;    
     
-    Motor_Init() ;  // 电机初始化,当前只有A
+    Motor_Init() ;  // 电机初始化
     
     // 定时器初始化(放在最后面)
     Timer_0_Init() ;
@@ -30,6 +32,8 @@ int main(void)
             Flash_Mode_Set(Flash_Mode_Fast) ;
             Serial_printf(&Serial1, "hello%d\n",666) ;
         }
+
+#ifdef Motor_A_Check
         // OLED检查
         OLED_ShowSignedNum(0,  0, Motor_A.PID_s.realPoint_Now, 3, OLED_8X16);
         // Serial参数更改
@@ -46,7 +50,23 @@ int main(void)
         // OLED展示
         OLED_Printf(0, 20, OLED_6X8, "%.2f,%.2f,%.2f" , Motor_A.PID_s.Kp , Motor_A.PID_s.Ki , Motor_A.PID_s.Kd) ;
         
-        // OLED_Printf(0, 40, OLED_6X8, "%d,%d,%d" , Motor_A.PID_s.goalPoint , Motor_A.PID_s.realPoint_Now , Motor_A.PID_s.setPoint) ;
+#else
+        // OLED检查
+        OLED_ShowSignedNum(0,  0, Motor_B.PID_s.realPoint_Now, 3, OLED_8X16);
+        // Serial参数更改
+        if (Serial_GetNewPackageFlag_ABC(&Serial1))
+        {
+            // 得到数据
+            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &Motor_B.PID_s.Kp) ;
+            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &Motor_B.PID_s.Ki) ;
+            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &Motor_B.PID_s.Kd) ;
+            Serial_SetFloatData(&Serial1, "goalPoint_B", "goalPoint_B=%f", &Motor_B.PID_s.goalPoint) ;
+        
+            Motor_SetSpeed(&Motor_B, Motor_B.PID_s.goalPoint) ;
+        }
+        // OLED展示
+        OLED_Printf(0, 20, OLED_6X8, "%.2f,%.2f,%.2f" , Motor_B.PID_s.Kp , Motor_B.PID_s.Ki , Motor_B.PID_s.Kd) ;
+#endif
 
         // OLED更新
         OLED_Update();
@@ -74,6 +94,10 @@ void Timer_0_Callback(void)
 // 20ms定时器
 void Timer_1_Callback(void)
 {
-    Motor_Update_Tick(&Motor_A) ;
+    Motor_Update_Tick() ;   // AB电机状态更新
+#ifdef Motor_A_Check
     Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",Motor_A.PID_s.goalPoint ,Motor_A.PID_s.realPoint_Now ,Motor_A.PID_s.setPoint );
+#else
+    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",Motor_B.PID_s.goalPoint ,Motor_B.PID_s.realPoint_Now ,Motor_B.PID_s.setPoint );
+#endif
 }

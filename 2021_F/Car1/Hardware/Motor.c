@@ -2,6 +2,7 @@
 #include "PWM.h"
 
 Motor_Typedef Motor_A ;
+Motor_Typedef Motor_B ;
 
 // ===================== 设定Motor_A相关参数 =====================
 void Motor_A_Init(void)
@@ -28,14 +29,14 @@ void Motor_A_Init(void)
 	Motor_A.PPR = 13.0f ;
 	Motor_A.ReductionRatio = 28.0f ;
 	
-	Motor_A.DIR = DIR_N ;	 // 方向判断
-	Motor_A.Encoder_Dir = 1; // 编码器正方向
+	Motor_A.Goal_Speed_Dir = DIR_P ;	// goal修正方向  ,这里正常不变
+	Motor_A.Encoder_Dir = 1;            // 编码器修正方向,这里正常不变
 	
     // PID参数
     PID_Init(&Motor_A.PID_s , 8.0f , 0.80f , 0.0f , 1000 , -1000 , 1000) ;
 
     // 状态参数
-    Motor_A.State = MOTOR_STOP;
+    Motor_A.State = MOTOR_RUN;
 
     // ============ 函数初始化 ============
     // Encoder初始化
@@ -45,13 +46,53 @@ void Motor_A_Init(void)
 	// Motor_A.PID_s.deadspace = 3.0f ;	// 输出死区
 }
 
+// ===================== 设定Motor_B相关参数 =====================
+void Motor_B_Init(void)
+{
+    // ============ 参数配置 ============
+    // Encoder参数
+	Motor_B.Encoder_IRQN = GPIO_MULTIPLE_GPIOB_INT_IRQN ;
+    Motor_B.Encoder_GPIO_Port = GPIO_ENCODER_B_PORT ;
+    Motor_B.Encoder_Pin_1 = GPIO_ENCODER_B_B_Encoder_1_PIN ;
+    Motor_B.Encoder_Pin_2 = GPIO_ENCODER_B_B_Encoder_2_PIN ;
+    Motor_B.EncoderCount = 0 ;
+
+	// PWM参数
+	Motor_B.PWM_INST   	  = PWM_MOTOR_PWM_INST ;		
+	Motor_B.PWM_Channel_1 = GPIO_PWM_MOTOR_PWM_C1_IDX  ;    // 默认是0对应A的PWM,1对应B的
+	
+	
+	Motor_B.IN2_Port = GPIO_MOTOR_IN2_PORT	;
+	Motor_B.IN2_Pin	 = GPIO_MOTOR_IN2_BIN2_PIN ;
+	
+    // 电机参数
+	Motor_B.PPR = 13.0f ;
+	Motor_B.ReductionRatio = 28.0f ;
+	
+	Motor_B.Goal_Speed_Dir = DIR_N ;	 // goal修正方向  ,这里为负
+	Motor_B.Encoder_Dir = 1;            // 编码器修正方向,这里为负
+	
+    // PID参数
+    PID_Init(&Motor_B.PID_s , 8.0f , 0.80f , 0.0f , 1000 , -1000 , 1000) ;
+
+    // 状态参数
+    Motor_B.State = MOTOR_RUN;
+
+    // ============ 函数初始化 ============
+    // Encoder初始化
+	Encoder_Init(Motor_B.Encoder_IRQN) ;
+
+	// 额外功能
+	// Motor_B.PID_s.deadspace = 3.0f ;	// 输出死区
+}
+
 // ===================== 功能代码 =====================
 
 // 1. 计算真实速度: 更新Motor的真实速度,得到的值直接写入Motor
 void Motor_Speed_Update(Motor_Typedef *Motor)
 {
 	// 得到总脉冲数
-	int Motor_CNT = Encoder_Get_CNT(&Motor->EncoderCount) * Motor->Encoder_Dir;
+	int Motor_CNT = Encoder_Get_CNT(&Motor->EncoderCount) * Motor->Encoder_Dir; // 修正方向所在
 	
 	// 转速n = 总脉冲数/2倍频/单圈脉冲数(13)/减速比(28)/采样时间 , Encoder_PID_Gap_Time暂时为20ms
 	// Motor->Motor_RealSpeed = (float)Motor_CNT / 2 / 13 / 28 / Encoder_Gap_Time * 1000 ; ,直接算出来:4*13*28/1000=1.456
@@ -67,6 +108,7 @@ void GROUP1_IRQHandler(void)
     {
         case GPIO_MULTIPLE_GPIOB_INT_IIDX:
             Encoder_Counter_Tick(Motor_A.Encoder_GPIO_Port,Motor_A.Encoder_Pin_1,Motor_A.Encoder_Pin_2,&Motor_A.EncoderCount);
+            Encoder_Counter_Tick(Motor_B.Encoder_GPIO_Port,Motor_B.Encoder_Pin_1,Motor_B.Encoder_Pin_2,&Motor_B.EncoderCount);
             break;
 
         // 如果以后还有其他 GPIOB 的中断，可以继续加 case
@@ -107,7 +149,7 @@ void Motor_SetPWM(Motor_Typedef *Motor , int PWM)
     3. PID计算setpoint
     4. 输出setpoint(定时器需要最后声明,否则PWM还没初始化就调用PWM会出现bug)
 */
-void Motor_Update_Tick(Motor_Typedef *Motor)
+void Motorx_Update_Tick(Motor_Typedef *Motor)
 {
     // 1. 计算真实速度（编码器）
     Motor_Speed_Update(Motor) ;

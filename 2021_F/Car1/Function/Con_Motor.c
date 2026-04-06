@@ -4,15 +4,23 @@
 void Motor_Init(void)
 {
     Motor_A_Init() ;
-    Motor_SetSpeed(&Motor_A, 0) ;
+    Motor_SetSpeed(&Motor_A, 0) ;   // 使能运动
 
-    // Motor_A_Init() ;
-    // Motor_SetSpeed(&Motor_A, 0) ;
+    Motor_B_Init() ;
+    Motor_SetSpeed(&Motor_B, 0) ;
+}
+
+// 20ms更新
+void Motor_Update_Tick(void)
+{
+    Motorx_Update_Tick(&Motor_A) ;
+    Motorx_Update_Tick(&Motor_B) ;
 }
 
 // 设置电机速度
 void Motor_SetSpeed(Motor_Typedef *Motor, float speed)
 {
+    speed = speed * Motor->Goal_Speed_Dir;
     if (speed >= Motor_MAX_Speed)
     {
         speed = Motor_MAX_Speed ;
@@ -21,7 +29,7 @@ void Motor_SetSpeed(Motor_Typedef *Motor, float speed)
     {
         speed = -Motor_MAX_Speed ;
     }
-    Motor->PID_s.goalPoint = speed;
+    Motor->PID_s.goalPoint = speed ;
     Motor->State = MOTOR_RUN;
 }
 

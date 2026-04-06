@@ -7,6 +7,9 @@
 // 初始化
 void Motor_Init(void) ;
 
+// 20ms更新
+void Motor_Update_Tick(void) ;
+
 // 设置电机速度
 void Motor_SetSpeed(Motor_Typedef *Motor, float speed);
 
