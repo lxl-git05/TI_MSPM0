@@ -7,6 +7,7 @@ int main(void)
 {
     SYSCFG_DL_init();
     Initial_All() ;    
+    Timer_Init() ;
     
     while (1) 
     {
