@@ -32,7 +32,7 @@ void Motor_A_Init(void)
 	Motor_A.Encoder_Dir = 1; // 编码器正方向
 	
     // PID参数
-    PID_Init(&Motor_A.PID_s , 0.0f , 0.00f , 0.0f , 1000 , -1000 , 1000) ;
+    PID_Init(&Motor_A.PID_s , 8.0f , 0.80f , 0.0f , 1000 , -1000 , 1000) ;
 
     // 状态参数
     Motor_A.State = MOTOR_STOP;
@@ -79,24 +79,24 @@ void GROUP1_IRQHandler(void)
 void Motor_SetPWM(Motor_Typedef *Motor , int PWM)
 {
 	// 限制最值
-	if (PWM >= Motor_MAX_Speed)
+	if (PWM >= Motor_MAX_PWM)
 	{
-		PWM = Motor_MAX_Speed ;
+		PWM = Motor_MAX_PWM ;
 	}
-	else if (PWM <= -Motor_MAX_Speed)
+	else if (PWM <= -Motor_MAX_PWM)
 	{
-		PWM = -Motor_MAX_Speed ;
+		PWM = -Motor_MAX_PWM ;
 	}
 	// 判断方向,设置速度
 	if (PWM >= 0)
 	{
-        DL_GPIO_setPins(Motor->IN2_Port, Motor->IN2_Pin);    // 低电平
+        DL_GPIO_clearPins(Motor->IN2_Port, Motor->IN2_Pin);    // 低电平
         PWM_SetCompare(Motor->PWM_INST , Motor->PWM_Channel_1 , PWM ) ; // 变大	 ,差值变大
 	}
 	else
 	{
-        DL_GPIO_clearPins(Motor->IN2_Port, Motor->IN2_Pin);   // 高电平
-        PWM_SetCompare(Motor->PWM_INST , Motor->PWM_Channel_1 , Motor_MAX_PWM + PWM ) ; // 变大	 ,差值变大
+        DL_GPIO_setPins(Motor->IN2_Port, Motor->IN2_Pin);   // 高电平
+        PWM_SetCompare(Motor->PWM_INST , Motor->PWM_Channel_1 , Motor_MAX_PWM + PWM ) ; // 变小	 ,差值变大
 	}
 }
 

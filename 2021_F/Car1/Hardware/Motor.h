@@ -5,8 +5,8 @@
 #include "Encoder.h"
 #include "MyPID.h"
 
-#define Motor_MAX_Speed 370	// 最大转速(goal的最大值)
-#define Motor_MAX_PWM   1000
+#define Motor_MAX_Speed 320	// goal:最大转速(goal的最大值)
+#define Motor_MAX_PWM   1000    // PWM:最大值
 #define Encoder_PID_Gap_Time 20 // ms
 
 // 电机正方向
@@ -59,15 +59,6 @@ void Motor_A_Init(void);
 // 20ms更新一次
 void Motor_Update_Tick(Motor_Typedef *Motor) ;
 
-// 放在Con_Motor
-
-// // 外部调用:设置速度
-// void Motor_SetSpeed(Motor_Typedef *Motor, float speed) ;
-
-// // 外部调用:停车
-// void Motor_Stop(Motor_Typedef *Motor) ;
-
-// // 外部调用:刹车
-// void Motor_Brake(Motor_Typedef *Motor) ;
+void Motor_SetPWM(Motor_Typedef *Motor , int PWM) ;
 
 #endif
