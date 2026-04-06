@@ -1,28 +1,12 @@
 #include "ti_msp_dl_config.h"
 #include "AllHeader.h"
-#include "Motor.h"
-#include "Con_Motor.h"
 
 // #define Motor_A_Check
-
-int count ;
-int speed ;
-int k = 0 ;
-int m = 0 ;
-int add = 10 ;
-
-float Kp = 0.0f;
 
 int main(void)
 {
     SYSCFG_DL_init();
     Initial_All() ;    
-    
-    Motor_Init() ;  // 电机初始化
-    
-    // 定时器初始化(放在最后面)
-    Timer_0_Init() ;
-    Timer_1_Init() ;
     
     while (1) 
     {
@@ -30,7 +14,6 @@ int main(void)
         {
             // 单击
             Flash_Mode_Set(Flash_Mode_Fast) ;
-            Serial_printf(&Serial1, "hello%d\n",666) ;
         }
 
 #ifdef Motor_A_Check

@@ -10,4 +10,14 @@ void Initial_All(void)
 
     // tools
     Flash_Mode_Init() ;
+
+    // function
+    Motor_Init() ;
+}
+
+void Timer_Init(void)
+{
+    // 定时器初始化(放在最后面)
+    Timer_0_Init() ;
+    Timer_1_Init() ;
 }
