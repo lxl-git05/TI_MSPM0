@@ -4,18 +4,12 @@
 #include "ti_msp_dl_config.h"
 
 // System层
-#include "Tim.h"
-#include "PWM.h"
 #include "Serial.h"
-#include "Encoder.h"
 
 // Hardware层
 #include "Key.h"
 #include "OLED.h"
 #include "Y8_Track.h"
-#include "Motor.h"
-#include "MPU6050_base.h"
-#include "MPU6050_Angle.h"
 
 // tools层
 #include "LED_Flash.h"
@@ -26,6 +20,7 @@
 
 // function层
 #include "Con_Motor.h"
+#include "MPU6050_Angle.h"
 
 // Mode层
 #include "Mode_G.h"

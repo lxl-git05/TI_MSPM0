@@ -1,7 +1,7 @@
 #include "Mode_G.h"
 #include "AllHeader.h"
 
-Mode_Typedef curr_mode = Mode_Null ;    // 当前模式
+Mode_Typedef curr_mode = Mode_Null  ;    // 当前模式
 Mode_Typedef next_mode = Mode_Null ;    // 下一个模式
 
 // ========================== 系统setup loop ==========================
@@ -55,11 +55,10 @@ void Timer_1_Callback(void)
 
     // MPU6050更新参数
     MPU6050_Angle_Update_Tick() ;   // 耗时1.45ms
-    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",MPU_Real.pitch , MPU_Real.roll , MPU_Real.yaw );
-
 
     // 模式选择
-    if (curr_mode == Mode_PID) { Mode_1_Tick() ;} // 打印A的PID参数
+    if (curr_mode == Mode_PID)   { Mode_1_Tick() ;} // 打印A的PID参数
+    if (curr_mode == Mode_Angle) { Mode_2_Tick() ;} // 陀螺仪控制角度
 }
 
 
