@@ -5,6 +5,7 @@
 
 // System层
 #include "Serial.h"
+#include "Tim.h"
 
 // Hardware层
 #include "Key.h"

@@ -2,12 +2,13 @@
 #include "AllHeader.h"
 
 Pid_Typedef PID_Angle ; 
+#define Angle_MAX_Speed 20  // 小车转向环最大偏移速度
 
 void Mode_2_Setup(void)
 {
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "=====Mode_Angle=====") ;
-    PID_Init(&PID_Angle, 0.66f, 0.0f, 0.0f, 20, -20, 1000) ;
+    PID_Init(&PID_Angle, 0.66f, 0.0f, 0.0f, Angle_MAX_Speed, -Angle_MAX_Speed, 1000) ;
     PID_Angle.goalPoint = 0 ;
 }
 
@@ -28,13 +29,11 @@ void Mode_2_Tick(void)
     // 将tick写在MPU更新之后即可
     PID_Angle.realPoint_Now = MPU_Real.yaw ;
 
-    // 2. 状态机控制,略
-
     // 3. PID计算
     PID_Update(&PID_Angle, PID_Angle.realPoint_Now ) ;
 
     // 4. 输出小车转速, 差速
-    Motor_SetSpeed(&Motor_A, - PID_Angle.setPoint) ;
+    Motor_SetSpeed(&Motor_A, - PID_Angle.setPoint) ;    // A B 差速不要搞岔
     Motor_SetSpeed(&Motor_B,   PID_Angle.setPoint) ;
 
     // 5. 展示效果

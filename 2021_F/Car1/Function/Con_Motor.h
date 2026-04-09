@@ -1,8 +1,8 @@
 #ifndef __CON_MOTOR_H
 #define __CON_MOTOR_H
 
-#include "Motor.h"
 #include "ti_msp_dl_config.h"
+#include "Motor.h"
 
 // 初始化
 void Motor_Init(void) ;

@@ -52,7 +52,7 @@ void Y8_LineSensor_Update(void)
 	// 转化数据
 	for (int i = 1; i < 9; i++)
 	{
-		Y8_Line_Array[i] = 1 - ( (Y8_Line_Value >> (8 - i)) & 0x01 );   // 从高位到低位依次提取
+		Y8_Line_Array[i] = ( (Y8_Line_Value >> (8 - i)) & 0x01 );   // 从高位到低位依次提取,没读取到就是0,读取到就是1
 	}
 	Y8_Update_Flag = true ;	// 寻迹更新
 }
