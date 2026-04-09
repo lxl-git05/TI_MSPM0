@@ -7,6 +7,7 @@ void Initial_All(void)
 
     // hardware
     OLED_Init() ;
+    MPU6050_Init() ;
 
     // tools
     Flash_Mode_Init() ;

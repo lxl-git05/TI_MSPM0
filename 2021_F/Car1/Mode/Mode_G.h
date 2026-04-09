@@ -5,8 +5,8 @@ typedef enum
 {
     Mode_Null = 0U ,
     // 加模式在下面加即可
-    Mode_PID_A ,    // 调试电机A的PID
-    Mode_PID_B ,    // 调试电机B的PID
+    Mode_PID ,      // 调试电机的PID
+    Mode_2 ,        // 模式2
     Mode_3 ,
 
     Mode_End ,      // 注册模式不能在这个下面!!!
