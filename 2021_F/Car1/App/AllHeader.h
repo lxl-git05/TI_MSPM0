@@ -15,6 +15,7 @@
 #include "Y8_Track.h"
 #include "Motor.h"
 #include "MPU6050_base.h"
+#include "MPU6050_Angle.h"
 
 // tools层
 #include "LED_Flash.h"
