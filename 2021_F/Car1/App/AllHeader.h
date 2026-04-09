@@ -25,6 +25,12 @@
 // function层
 #include "Con_Motor.h"
 
+// Mode层
+#include "Mode_G.h"
+#include "Mode_1.h"
+#include "Mode_2.h"
+#include "Mode_3.h"
+
 // ================== 初始化函数 ==================
 void Initial_All(void) ;
 

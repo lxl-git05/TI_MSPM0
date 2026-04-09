@@ -1,87 +1,51 @@
 #include "ti_msp_dl_config.h"
 #include "AllHeader.h"
 
-// #define Motor_A_Check
+/*
+    模式配置:
+        增加模式: 先去Mode_Typedef加一个枚举模式, 然后建立一个新库,然后在下面加case即可
+        初始模式:直接去next_mode定义处修改mode的初始值即可,程序运行后会自动跳到该模式
+*/
 
 int main(void)
 {
     SYSCFG_DL_init();
-    Initial_All() ;    
-    Timer_Init() ;
-    
+    Mode_G_Setup() ;    // 全局初始化
+
     while (1) 
     {
-        if (Key_Check(KEY_0, KEY_SINGLE))
-        {
-            // 单击
-            Flash_Mode_Set(Flash_Mode_Fast) ;
-        }
+        Mode_G_Loop() ; 
 
-#ifdef Motor_A_Check
-        // OLED检查
-        OLED_ShowSignedNum(0,  0, Motor_A.PID_s.realPoint_Now, 3, OLED_8X16);
-        // Serial参数更改
-        if (Serial_GetNewPackageFlag_ABC(&Serial1))
+        if (curr_mode == next_mode)
         {
-            // 得到数据
-            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &Motor_A.PID_s.Kp) ;
-            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &Motor_A.PID_s.Ki) ;
-            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &Motor_A.PID_s.Kd) ;
-            Serial_SetFloatData(&Serial1, "goalPoint_A", "goalPoint_A=%f", &Motor_A.PID_s.goalPoint) ;
-        
-            Motor_SetSpeed(&Motor_A, Motor_A.PID_s.goalPoint) ;
+            switch (curr_mode) 
+            {
+                case Mode_Null : break; // 啥也不干,也就是只有Global模式在干活
+                case 1 : Mode_1_Loop() ; break;
+                case 2 : Mode_2_Loop() ; break;
+                case 3 : Mode_3_Loop() ; break;
+                case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
+            }
         }
-        // OLED展示
-        OLED_Printf(0, 20, OLED_6X8, "%.2f,%.2f,%.2f" , Motor_A.PID_s.Kp , Motor_A.PID_s.Ki , Motor_A.PID_s.Kd) ;
-        
-#else
-        // OLED检查
-        OLED_ShowSignedNum(0,  0, Motor_B.PID_s.realPoint_Now, 3, OLED_8X16);
-        // Serial参数更改
-        if (Serial_GetNewPackageFlag_ABC(&Serial1))
+        else // 模式交接,仅在模式转换才触发一次 
         {
-            // 得到数据
-            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &Motor_B.PID_s.Kp) ;
-            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &Motor_B.PID_s.Ki) ;
-            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &Motor_B.PID_s.Kd) ;
-            Serial_SetFloatData(&Serial1, "goalPoint_B", "goalPoint_B=%f", &Motor_B.PID_s.goalPoint) ;
-        
-            Motor_SetSpeed(&Motor_B, Motor_B.PID_s.goalPoint) ;
+            switch (curr_mode) 
+            {
+                case Mode_Null : break;
+                case 1 : Mode_1_Exit() ; break;
+                case 2 : Mode_2_Exit() ; break;
+                case 3 : Mode_3_Exit() ; break;
+                case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
+            }
+            switch (next_mode) 
+            {
+                case Mode_Null : break;
+                case 1 : Mode_1_Setup() ; break;
+                case 2 : Mode_2_Setup() ; break;
+                case 3 : Mode_3_Setup() ; break;
+                case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
+            }
         }
-        // OLED展示
-        OLED_Printf(0, 20, OLED_6X8, "%.2f,%.2f,%.2f" , Motor_B.PID_s.Kp , Motor_B.PID_s.Ki , Motor_B.PID_s.Kd) ;
-#endif
-
-        // OLED更新
-        OLED_Update();
+        curr_mode = next_mode ; // 状态更新
     }
-}
-
-// 1ms定时器
-void Timer_0_Callback(void)
-{
-    // 功能1:LED闪烁
-    static int cnt = 0 ;
-    cnt ++ ;
-    if (cnt >= 1000 -1)
-    {
-        cnt = 0 ;
-    }
-
-    // 功能2:按键
-    Key_Tick() ;
-
-    // 功能3:LED闪烁监控
-    Flash_Mode_Tick() ;
-}
-
-// 20ms定时器
-void Timer_1_Callback(void)
-{
-    Motor_Update_Tick() ;   // AB电机状态更新
-#ifdef Motor_A_Check
-    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",Motor_A.PID_s.goalPoint ,Motor_A.PID_s.realPoint_Now ,Motor_A.PID_s.setPoint );
-#else
-    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",Motor_B.PID_s.goalPoint ,Motor_B.PID_s.realPoint_Now ,Motor_B.PID_s.setPoint );
-#endif
 }
