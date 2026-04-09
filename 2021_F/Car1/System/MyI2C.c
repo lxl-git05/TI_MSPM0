@@ -30,15 +30,12 @@ void MyI2C_W_SCL(uint8_t Bitvalue)
 
 void MyI2C_W_SDA(uint8_t Bitvalue)
 {
-	GPIO_Write(GPIO_I2C_0_SCL_PORT, GPIO_I2C_0_SCL_PIN, Bitvalue);
-	Delay_us_diy_MPU(10);
+    GPIO_Write(GPIO_I2C_0_SDA_PORT, GPIO_I2C_0_SDA_PIN, Bitvalue);
 }
 
 uint8_t MyI2C_R_SDA(void)
 {
-	uint8_t Bitvalue = DL_GPIO_readPins(GPIO_I2C_0_SCL_PORT , GPIO_I2C_0_SCL_PIN);
-	Delay_us_diy_MPU(10);
-	return Bitvalue;
+    return DL_GPIO_readPins(GPIO_I2C_0_SDA_PORT , GPIO_I2C_0_SDA_PIN);
 }
 
 void MyI2C_Start(void)
@@ -124,46 +121,46 @@ uint8_t MyI2C_ReceiveAck(void)
 
 // ================ 硬件IIC封装 ================
 
-void IIC_WriteBytes(uint8_t devAddr , uint8_t* data , uint32_t len)
+void IIC_WriteBytes(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len)
 {
     uint32_t index = 0 ;
     // 等待总线空闲
-    while (!(DL_I2C_getControllerStatus(I2C_0_INST) &DL_I2C_CONTROLLER_STATUS_IDLE)) ;
+    while (!(DL_I2C_getControllerStatus(i2c_inst) &DL_I2C_CONTROLLER_STATUS_IDLE)) ;
     
     // 启动接收传输,准备读取len字节
-    DL_I2C_startControllerTransfer(I2C_0_INST, devAddr, DL_I2C_CONTROLLER_DIRECTION_TX, len) ;
+    DL_I2C_startControllerTransfer(i2c_inst, devAddr, DL_I2C_CONTROLLER_DIRECTION_TX, len) ;
 
     // 不断读取FIFO中的数据
     while (index < len) 
     {
-        if (!DL_I2C_isControllerTXFIFOFull(I2C_0_INST))
+        if (!DL_I2C_isControllerTXFIFOFull(i2c_inst))
         {
-            DL_I2C_transmitControllerData(I2C_0_INST, data[index++]);
+            DL_I2C_transmitControllerData(i2c_inst, data[index++]);
         }
     }
 
     // 等待完成
-    while (DL_I2C_getControllerStatus(I2C_0_INST) & DL_I2C_CONTROLLER_STATUS_BUSY);
+    while (DL_I2C_getControllerStatus(i2c_inst) & DL_I2C_CONTROLLER_STATUS_BUSY);
 }
 
-void IIC_ReadBytes(uint8_t devAddr , uint8_t* data , uint32_t len)
+void IIC_ReadBytes(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len)
 {
     uint32_t index = 0 ;
     // 等待总线空闲
-    while (!(DL_I2C_getControllerStatus(I2C_0_INST) &DL_I2C_CONTROLLER_STATUS_IDLE)) ;
+    while (!(DL_I2C_getControllerStatus(i2c_inst) &DL_I2C_CONTROLLER_STATUS_IDLE)) ;
     
     // 启动接收传输,准备读取len字节
-    DL_I2C_startControllerTransfer(I2C_0_INST, devAddr, DL_I2C_CONTROLLER_DIRECTION_RX, len) ;
+    DL_I2C_startControllerTransfer(i2c_inst, devAddr, DL_I2C_CONTROLLER_DIRECTION_RX, len) ;
 
     // 不断读取FIFO中的数据
     while (index < len) 
     {
-        if (!DL_I2C_isControllerRXFIFOEmpty(I2C_0_INST))
+        if (!DL_I2C_isControllerRXFIFOEmpty(i2c_inst))
         {
-            data[index++] = DL_I2C_receiveControllerData(I2C_0_INST) ;
+            data[index++] = DL_I2C_receiveControllerData(i2c_inst) ;
         }
     }
 
     // 等待完成
-    while (DL_I2C_getControllerStatus(I2C_0_INST) & DL_I2C_CONTROLLER_STATUS_BUSY);
+    while (DL_I2C_getControllerStatus(i2c_inst) & DL_I2C_CONTROLLER_STATUS_BUSY);
 }

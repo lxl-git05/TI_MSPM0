@@ -10,7 +10,7 @@ uint8_t MyI2C_ReceiveByte(void);
 void MyI2C_SendAck(uint8_t Ackbit);
 uint8_t MyI2C_ReceiveAck(void);
 
-void IIC_WriteBytes(uint8_t devAddr , uint8_t* data , uint32_t len);
-void IIC_ReadBytes(uint8_t devAddr , uint8_t* data , uint32_t len);
+void IIC_WriteBytes(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len);
+void IIC_ReadBytes(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len);
 
 #endif 

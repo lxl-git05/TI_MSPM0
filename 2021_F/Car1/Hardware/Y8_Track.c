@@ -45,8 +45,8 @@ void Y8_LineSensor_Update(void)
 	#else
     uint8_t data;
     uint8_t devAddr = LINE_I2C_ADDR >> 1;
-    IIC_WriteBytes(devAddr, &reg, 1);
-    IIC_ReadBytes(devAddr, &data, 1);
+    IIC_WriteBytes(I2C_0_INST , devAddr, &reg, 1);
+    IIC_ReadBytes(I2C_0_INST ,  devAddr, &data, 1);
     Y8_Line_Value = data;
     #endif
 	// 转化数据

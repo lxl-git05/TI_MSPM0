@@ -11,6 +11,7 @@ void Mode_G_Setup(void)
 {
     // 全局初始化
     Initial_All() ;
+    MPU6050_Init() ;
     // 定时器必须最后初始化!!!
     Timer_Init() ;  
 }
@@ -28,6 +29,9 @@ void Mode_G_Loop(void)
     {   
         Mode_To_Next() ;
     }
+
+    MPU6050_Update_Data() ;
+
     // OLED更新
     if (curr_mode == Mode_Null) { OLED_Printf(0, 0, OLED_6X8, "=====Mode_Null=====") ; }
     OLED_Update();
@@ -48,7 +52,12 @@ void Timer_0_Callback(void)
 // 20ms定时器
 void Timer_1_Callback(void)
 {
+    // 全局
     Motor_Update_Tick() ;   // AB电机状态更新
+
+    // MPU6050更新参数
+
+    // 模式
     if (curr_mode == Mode_PID_A) { Mode_1_Tick() ;} // 打印A的PID参数
     if (curr_mode == Mode_PID_B) { Mode_2_Tick() ;}
 }

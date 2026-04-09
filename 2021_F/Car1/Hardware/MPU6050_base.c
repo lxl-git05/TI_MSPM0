@@ -1,9 +1,15 @@
 #include "MPU6050_base.h"
+#include "MyI2C.h"
+
+#define MPU_I2C_Bus (I2C_1_INST)
+#define MPU6050_ADDRESS 0xD0	// 这是含读写位和移位的地址写法(8位), (0xDx = 0x68 << 1) | x
+
+MPU6050_Raw_Data  	MPU_Raw_Data ;	// 最初的角度
 
 // 宏定义MPU6050的寄存器信息,使得更好理解
 // 寄存器地址宏定义
 #define	MPU6050_SMPLRT_DIV		0x19
-#define	MPU6050_CONFIG				0x1A
+#define	MPU6050_CONFIG			0x1A
 #define	MPU6050_GYRO_CONFIG		0x1B
 #define	MPU6050_ACCEL_CONFIG	0x1C
 
@@ -24,7 +30,7 @@
 
 #define	MPU6050_PWR_MGMT_1		0x6B
 #define	MPU6050_PWR_MGMT_2		0x6C
-#define	MPU6050_WHO_AM_I			0x75
+#define	MPU6050_WHO_AM_I		0x75
 
 // 加速度计量程对应寄存器值
 #define ACCEL_2G        0x00    // ±2g
@@ -64,18 +70,29 @@
     #define GYRO_SENSITIVITY    16.4f
 #endif
 
+// 写数据
+void MPU6050_WriteReg(uint8_t RegAddress , uint8_t Data)
+{
+	// STM32写法
+	// HAL_I2C_Mem_Write(hi2c_MPU6050, MPU6050_ADDRESS, RegAddress, I2C_MEMADD_SIZE_8BIT, &Data, 1, 10000);
 
-#define MPU6050_ADDRESS 0xD0	// 这是含读写位和移位的地址写法, (0xDx = 0x68 << 1) | x 
+    uint8_t buf[2];
 
-//#define MPU6050_IS_Soft_Drive	// 软件模拟IIC,如果注释掉就是硬件IIC
+    buf[0] = RegAddress; // 先发寄存器地址
+    buf[1] = Data;       // 再发数据
 
-#ifndef MPU6050_IS_Soft_Drive
-extern I2C_HandleTypeDef hi2c2; // HAL库硬件IIC确定IIC的总线(I2C1)
-static I2C_HandleTypeDef* hi2c_MPU6050 = &hi2c2;
-#endif
+    IIC_WriteBytes(MPU_I2C_Bus, MPU6050_ADDRESS >> 1, buf, 2);
+}
 
-// 参数
-MPU6050_Raw_Data  	MPU_Raw_Data ;	// 最初的角度
+// 读数据
+void MPU6050_ReadRegs(uint8_t RegAddress, uint8_t *buf, uint8_t len)
+{
+    // 写寄存器地址
+    IIC_WriteBytes(MPU_I2C_Bus, MPU6050_ADDRESS >> 1, &RegAddress, 1);
+
+    // 读取数据
+    IIC_ReadBytes(MPU_I2C_Bus, MPU6050_ADDRESS >> 1, buf, len);
+}
 
 // 初始化MPU6050相关配置
 void MPU6050_Init(void)
@@ -90,117 +107,17 @@ void MPU6050_Init(void)
 	MPU6050_WriteReg(MPU6050_ACCEL_CONFIG, ACCEL_RANGE);	// 加速度计配置寄存器
 }
 
-// 写入数据
-void MPU6050_WriteReg(uint8_t RegAddress , uint8_t Data)
-{
-	// 软件I2C
-	#ifdef MPU6050_IS_Soft_Drive
-	// 开始信号
-	MyI2C_Start() ;	
-	// 第1个字节(从机地址)
-	MyI2C_SendByte(MPU6050_ADDRESS) ;	// 定位从机地址
-	MyI2C_ReceiveAck() ;	// 得到应答位,后续可以处理,这里没用
-	
-	// 第2个字节(从机寄存器地址)
-	MyI2C_SendByte(RegAddress) ;			// 定位从机寄存器地址
-	MyI2C_ReceiveAck() ;	// 得到应答位
-	
-	// 第3个字节(写入的数据),可for_loop从数组中写入多个字节
-	MyI2C_SendByte(Data) ;			// 写入的数据
-	MyI2C_ReceiveAck() ;	// 得到应答位
-	// 停止信号
-	MyI2C_Stop() ;
-	#else
-	// HAL库硬件IIC
-	//或者直接指定地址写：
-	HAL_I2C_Mem_Write(hi2c_MPU6050, MPU6050_ADDRESS, RegAddress, I2C_MEMADD_SIZE_8BIT, &Data, 1, 10000);
-	#endif
-}
-
-// 读取数据
-uint8_t MPU6050_ReadReg(uint8_t RegAddress)
-{
-	// 读取的数据
-	uint8_t Data ;
-	
-//	IIC软件
-	#ifdef MPU6050_IS_Soft_Drive
-	// 开始信号
-	MyI2C_Start() ;	
-	// 第1个字节(从机地址)
-	MyI2C_SendByte(MPU6050_ADDRESS) ;	// 定位从机地址为写
-	MyI2C_ReceiveAck() ;	// 得到应答位,后续可以处理,这里没用
-	// 第2个字节(从机寄存器地址)
-	MyI2C_SendByte(RegAddress) ;			// 定位从机寄存器地址
-	MyI2C_ReceiveAck() ;	// 得到应答位
-	
-	// 重新开始信号(Sr)
-	MyI2C_Start() ;	
-	// 再次第1个字节(从机地址)
-	MyI2C_SendByte(MPU6050_ADDRESS | 0x01) ;	// 定位从机地址为读
-	MyI2C_ReceiveAck() ;	// 得到应答位,后续可以处理,这里没用
-	
-	// 接收1个字节,可for_loop接收多个字节存在数组里面
-	Data = MyI2C_ReceiveByte() ;
-	MyI2C_SendAck(1) ; 		// 发送应答为:无应答,使得从机交出SDA控制权
-	// 停止信号
-	MyI2C_Stop() ;	
-	// HAL库硬件IIC
-	#else
-	HAL_I2C_Mem_Read(hi2c_MPU6050, MPU6050_ADDRESS, RegAddress, I2C_MEMADD_SIZE_8BIT, &Data, 1, 10000);
-	#endif
-	// 返回数据
-	return Data ;
-}
-
 // 原始数据更新
 void MPU6050_Update_Data(void)
 {
 	// 数据接收区,连续读取
 	uint8_t buf[14];
-	// 软件连续读取
-	#ifdef MPU6050_IS_Soft_Drive
-	MyI2C_Start();
-	MyI2C_SendByte(MPU6050_ADDRESS);
-	MyI2C_ReceiveAck();
 
-	MyI2C_SendByte(MPU6050_ACCEL_XOUT_H);
-	MyI2C_ReceiveAck();
+	// STM32写法
+	// HAL_I2C_Mem_Read(hi2c_MPU6050,MPU6050_ADDRESS,MPU6050_ACCEL_XOUT_H,I2C_MEMADD_SIZE_8BIT,buf,14,1000) ; 
 
-	MyI2C_Start();
-	MyI2C_SendByte(MPU6050_ADDRESS | 0x01);
-	MyI2C_ReceiveAck();
-	// 读取
-	for(uint8_t i = 0; i < 14; i++)
-	{
-			buf[i] = MyI2C_ReceiveByte();
-
-			if(i == 13)
-					MyI2C_SendAck(1);   // NACK
-			else
-					MyI2C_SendAck(0);   // ACK
-	}
-	// 停止
-	MyI2C_Stop();
-	#else
-	// 硬件IIC可能读取失败,此时需要进行重启,而软件IIC问题就没有那么大,这里的修复逻辑有大量的delay,*待处理*
-	uint8_t retry = 5 ;
-	while(retry--) 
-	{
-		if (HAL_I2C_Mem_Read(hi2c_MPU6050,MPU6050_ADDRESS,MPU6050_ACCEL_XOUT_H,I2C_MEMADD_SIZE_8BIT,buf,14,1000) == HAL_OK)
-		{
-			retry = 0 ;
-		}
-		else	// 一般就是错误了
-		{
-			LED_Flash_Mode_Set_Mode(LED_Flash_Fast) ;
-			Timer_Counter_Begin() ;
-			MPU6050_I2C_Recover();
-			Timer_Counter_End() ;
-		}
-		// 修不成就寄了,待处理
-	}
-	#endif
+	// Ti写法
+	MPU6050_ReadRegs(MPU6050_ACCEL_XOUT_H, buf, 14);
 	
 	// 数据处理
 	// 得到加速度
