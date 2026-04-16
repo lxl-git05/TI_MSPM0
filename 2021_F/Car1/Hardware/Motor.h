@@ -28,7 +28,8 @@ typedef struct
     GPIO_Regs* Encoder_GPIO_Port;   // 编码器Port
     uint32_t Encoder_Pin_1 ;        // 编码器Pin1(双边沿)
     uint32_t Encoder_Pin_2 ;        // 编码器pin2(普通引脚)
-    int32_t  EncoderCount ;         // 编码器计数
+    int32_t  EncoderCount ;         // 编码器计数,get后清零
+    float    Distance ;             // 小车运行累积距离(单位:m)
 
     // PWM参数
 	GPTIMER_Regs *PWM_INST ;            // Pin1->INST

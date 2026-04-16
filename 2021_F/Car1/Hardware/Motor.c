@@ -87,6 +87,7 @@ void Motor_B_Init(void)
 }
 
 // ===================== 功能代码 =====================
+#define wheel_C ( 2 * 3.1415926 * 6.64 ) / 100 
 
 // 1. 计算真实速度: 更新Motor的真实速度,得到的值直接写入Motor
 void Motor_Speed_Update(Motor_Typedef *Motor)
@@ -94,6 +95,9 @@ void Motor_Speed_Update(Motor_Typedef *Motor)
 	// 得到总脉冲数
 	int Motor_CNT = Encoder_Get_CNT(&Motor->EncoderCount) * Motor->Encoder_Dir; // 修正方向所在
 	
+    // 得到行进路程
+    Motor->Distance += (float)Motor_CNT / (2.0f * Motor->PPR * Motor->ReductionRatio) * wheel_C ;    // 圈数 * 周长 = 路程
+
 	// 转速n = 总脉冲数/2倍频/单圈脉冲数(13)/减速比(28)/采样时间 , Encoder_PID_Gap_Time暂时为20ms
 	// Motor->Motor_RealSpeed = (float)Motor_CNT / 2 / 13 / 28 / Encoder_Gap_Time * 1000 ; ,直接算出来:4*13*28/1000=1.456
 	// 特别关注倍频参数! 2 or 4

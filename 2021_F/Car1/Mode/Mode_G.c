@@ -2,7 +2,7 @@
 #include "AllHeader.h"
 
 Mode_Typedef curr_mode = Mode_Null  ;     // 当前模式
-Mode_Typedef next_mode = Mode_Null ;     // 下一个模式
+Mode_Typedef next_mode = Mode_Null ;      // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -29,10 +29,15 @@ void Mode_G_Loop(void)
         Mode_To_Next() ;
     }
     // OLED更新
+    OLED_Clear() ;
     if (curr_mode == Mode_Null) { OLED_Printf(0, 0, OLED_6X8, "=====Mode_Null=====") ; }
-    
     OLED_Update();
-    
+    // 
+    if (Serial_GetNewPackageFlag_HEX(&Serial2))
+    {
+        // Serial2.Hex_Data.Serial_New_Package[0]// 长度 ;
+        // Serial2.Hex_Data.Serial_New_Package[1]// 值 ;
+    }
 }
 
 // ========================== 系统定时器配置 ==========================
@@ -59,6 +64,9 @@ void Timer_1_Callback(void)
     // 模式选择
     if (curr_mode == Mode_PID)   { Mode_1_Tick() ;} // 打印AB的PID参数
     if (curr_mode == Mode_Angle) { Mode_2_Tick() ;} // 陀螺仪控制角度
+
+    // // 打印小车行进长度
+    // Serial_printf(&Serial1, "%.2f,%.2f\n",Motor_A.Distance ,-Motor_B.Distance);
 }
 
 
