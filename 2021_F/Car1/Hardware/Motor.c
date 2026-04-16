@@ -19,8 +19,8 @@ void Motor_A_Init(void)
 	Motor_A.PWM_INST   	  = PWM_MOTOR_PWM_INST ;		
 	Motor_A.PWM_Channel_1 = GPIO_PWM_MOTOR_PWM_C0_IDX  ;    // 默认是0对应A的PWM,1对应B的
 	
-	// Motor_A.IN1_Port = Motor_A_IN1_GPIO_Por;
-	// Motor_A.IN1_Pin	 = Motor_A_IN1_Pin ;
+	Motor_A.IN1_Port = GPIO_PWM_MOTOR_PWM_C0_PORT;
+	Motor_A.IN1_Pin	 = GPIO_PWM_MOTOR_PWM_C0_PIN ;
 	
 	Motor_A.IN2_Port = GPIO_MOTOR_IN2_PORT	;
 	Motor_A.IN2_Pin	 = GPIO_MOTOR_IN2_AIN2_PIN ;
@@ -61,6 +61,8 @@ void Motor_B_Init(void)
 	Motor_B.PWM_INST   	  = PWM_MOTOR_PWM_INST ;		
 	Motor_B.PWM_Channel_1 = GPIO_PWM_MOTOR_PWM_C1_IDX  ;    // 默认是0对应A的PWM,1对应B的
 	
+    Motor_B.IN1_Port = GPIO_PWM_MOTOR_PWM_C1_PORT;
+	Motor_B.IN1_Pin	 = GPIO_PWM_MOTOR_PWM_C1_PIN ;
 	
 	Motor_B.IN2_Port = GPIO_MOTOR_IN2_PORT	;
 	Motor_B.IN2_Pin	 = GPIO_MOTOR_IN2_BIN2_PIN ;
@@ -87,7 +89,7 @@ void Motor_B_Init(void)
 }
 
 // ===================== 功能代码 =====================
-#define wheel_C ( 2 * 3.1415926 * 6.64 ) / 100 
+#define wheel_C (3.1415926 * 6.64 / 100 )  // 轮子的周长, π * d (米)
 
 // 1. 计算真实速度: 更新Motor的真实速度,得到的值直接写入Motor
 void Motor_Speed_Update(Motor_Typedef *Motor)
@@ -161,16 +163,14 @@ void Motorx_Update_Tick(Motor_Typedef *Motor)
     // 2. 状态机控制
     switch (Motor->State)
     {
-        case MOTOR_STOP:
+        case MOTOR_STOP:    // 停车
             Motor->PID_s.goalPoint = 0;
             break;
 
-        case MOTOR_RUN:
+        case MOTOR_RUN:     // 行进
             break;
 
-        case MOTOR_BRAKE:
-            Motor->PID_s.goalPoint = 0;
-            Motor->PID_s.setPoint = 0;
+        case MOTOR_BRAKE:   // 刹车
             Motor_SetPWM(Motor, 0);
             return;
     }

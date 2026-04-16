@@ -35,6 +35,9 @@ typedef struct
 	GPTIMER_Regs *PWM_INST ;            // Pin1->INST
     DL_TIMER_CC_INDEX PWM_Channel_1 ;   // Pin1->PWM引脚
 	
+    GPIO_Regs *IN1_Port ; 				// Pin1->电机IN1引脚类型,PWM引脚
+	uint32_t IN1_Pin  ;					// Pin1->电机IN1引脚号
+
 	GPIO_Regs *IN2_Port ; 				// Pin2->电机IN2引脚类型,普通引脚
 	uint32_t IN2_Pin  ;					// Pin2->电机IN2引脚号
 

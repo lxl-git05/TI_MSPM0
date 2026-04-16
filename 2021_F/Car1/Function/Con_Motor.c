@@ -48,6 +48,10 @@ void Motor_Stop(Motor_Typedef *Motor)
 // 电机急刹
 void Motor_Brake(Motor_Typedef *Motor)
 {
+    Motor->PID_s.goalPoint = 0;
+    Motor->PID_s.setPoint = 0;
+    Motor_SetPWM(Motor, 0);
+    
     Motor->State = MOTOR_BRAKE;
 }
 
