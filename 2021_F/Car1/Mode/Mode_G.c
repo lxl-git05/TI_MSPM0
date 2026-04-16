@@ -1,7 +1,7 @@
 #include "Mode_G.h"
 #include "AllHeader.h"
 
-Mode_Typedef curr_mode = Mode_Null  ;    // 当前模式
+Mode_Typedef curr_mode = Mode_Null  ;     // 当前模式
 Mode_Typedef next_mode = Mode_Null ;     // 下一个模式
 
 // ========================== 系统setup loop ==========================
@@ -12,7 +12,7 @@ void Mode_G_Setup(void)
     // 全局初始化
     Initial_All() ;
     // 定时器必须最后初始化!!!
-    Timer_Init() ;  
+    Timer_Init() ;
 }
 
 // 循环loop
@@ -30,7 +30,9 @@ void Mode_G_Loop(void)
     }
     // OLED更新
     if (curr_mode == Mode_Null) { OLED_Printf(0, 0, OLED_6X8, "=====Mode_Null=====") ; }
+    
     OLED_Update();
+    
 }
 
 // ========================== 系统定时器配置 ==========================

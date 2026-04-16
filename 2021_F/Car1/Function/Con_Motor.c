@@ -17,7 +17,7 @@ void Motor_Update_Tick(void)
     Motorx_Update_Tick(&Motor_B) ;
 }
 
-// 设置电机速度
+// 设置电机goal速度
 void Motor_SetSpeed(Motor_Typedef *Motor, float speed)
 {
     speed = speed * Motor->Goal_Speed_Dir;
@@ -31,6 +31,12 @@ void Motor_SetSpeed(Motor_Typedef *Motor, float speed)
     }
     Motor->PID_s.goalPoint = speed ;
     Motor->State = MOTOR_RUN;
+}
+
+// 得到电机goal速度
+int Motor_Get_GoalSpeed(Motor_Typedef *Motor)
+{
+    return Motor->PID_s.goalPoint ;
 }
 
 // 电机停止

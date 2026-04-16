@@ -6,7 +6,7 @@
 
 // ************外部变量声明************
 extern uint8_t Y8_Line_Array[9] ;				// 8路传感器数据包
-extern bool Y8_Update_Flag ;						// 8路传感器更新标志位
+extern bool Y8_Update_Flag ;				    // 8路传感器更新标志位
 
 // ************函数声明************
 

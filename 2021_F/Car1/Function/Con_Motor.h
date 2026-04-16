@@ -19,4 +19,7 @@ void Motor_Stop(Motor_Typedef *Motor);
 // 电机急刹
 void Motor_Brake(Motor_Typedef *Motor);
 
+// 得到电机目标速度
+int Motor_Get_GoalSpeed(Motor_Typedef *Motor) ;
+
 #endif

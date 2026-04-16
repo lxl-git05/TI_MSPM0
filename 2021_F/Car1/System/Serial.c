@@ -532,7 +532,6 @@ void UART_1_INST_IRQHandler(void)
 {
 #ifdef Serial2_Enable
     Serial_RX_FLAG_Typedef Serial2_Rx_State;
-
 	switch (DL_UART_Main_getPendingInterrupt(Serial2.uart_INST)) 
     {
         // 接收中断
@@ -558,6 +557,7 @@ void UART_1_INST_IRQHandler(void)
             break;
         default:
             break;
+
     }
 #endif
 }
