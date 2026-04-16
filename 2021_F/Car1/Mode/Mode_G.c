@@ -2,7 +2,9 @@
 #include "AllHeader.h"
 
 Mode_Typedef curr_mode = Mode_Null  ;     // 当前模式
-Mode_Typedef next_mode = Mode_Track ;      // 下一个模式
+Mode_Typedef next_mode = Mode_Null ;      // 下一个模式
+
+float goalSpeed_All ;
 
 // ========================== 系统setup loop ==========================
 
@@ -11,6 +13,7 @@ void Mode_G_Setup(void)
 {
     // 全局初始化
     Initial_All() ;
+    Oran_Init();
     // 定时器必须最后初始化!!!
     Timer_Init() ;
 }
@@ -28,12 +31,23 @@ void Mode_G_Loop(void)
     {   
         Mode_To_Next() ;
     }
+    if (Key_Check(KEY_2, KEY_SINGLE)    )
+    {
+        goalSpeed_All = 60 ;
+    }
     // OLED更新
     OLED_Clear() ;
     if (curr_mode == Mode_Null) { OLED_Printf(0, 0, OLED_6X8, "=====Mode_Null=====") ; }
     OLED_Printf(0, 20, OLED_6X8, "%d" , Serial2.Hex_Data.Serial_New_Package[1]) ;
     OLED_Printf(0, 40, OLED_6X8, "%.2f,%.2f" , Motor_A.Distance , -Motor_B.Distance) ;
-    
+
+    if (Serial_GetNewPackageFlag_ABC(&Serial1))
+    {
+        Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Track.Kp) ;
+        Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Track.Ki) ;
+        Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Track.Kd) ;
+        Serial_SetFloatData(&Serial1, "goalPoint_A", "goalPoint_A=%f", &goalSpeed_All) ;
+    }
 }
 
 // ========================== 系统定时器配置 ==========================
@@ -46,6 +60,8 @@ void Timer_0_Callback(void)
 
     // 功能2:LED闪烁监控
     Flash_Mode_Tick() ;
+
+    
 }
 
 // 20ms定时器
@@ -61,6 +77,8 @@ void Timer_1_Callback(void)
     // 模式选择
     if (curr_mode == Mode_PID)   { Mode_1_Tick() ;} // 打印AB的PID参数
     if (curr_mode == Mode_Angle) { Mode_2_Tick() ;} // 陀螺仪控制角度
+    
+    Oran_Track_Tick() ;
 }
 
 
