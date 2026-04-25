@@ -8,6 +8,7 @@
 
 extern int Track_GoalSpeed ;
 extern Pid_Typedef PID_Track ;
+extern int Road_y  ;
 
 // 初始化
 void Oran_Init(void) ;
@@ -17,5 +18,11 @@ void Oran_Data_Update(void) ;
 
 // 寻迹PID代码 20ms
 void Oran_Track_Tick(void) ;
+
+// 使能寻迹
+void Oran_Go(void) ;
+
+// 寻迹停止
+void Oran_Stop(void) ;
 
 #endif

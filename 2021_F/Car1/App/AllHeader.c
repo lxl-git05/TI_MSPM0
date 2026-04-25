@@ -14,6 +14,7 @@ void Initial_All(void)
 
     // function
     Motor_Init() ;
+    Con_MPU_Init() ;
 }
 
 void Timer_Init(void)

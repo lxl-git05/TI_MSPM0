@@ -22,6 +22,7 @@
 
 // function层
 #include "Con_Motor.h"
+#include "Con_MPU.h"
 #include "MPU6050_Angle.h"
 
 // Mode层

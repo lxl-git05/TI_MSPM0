@@ -2,6 +2,9 @@
 #define __MODE_2_H
 
 #include "ti_msp_dl_config.h"
+#include "MyPID.h"
+
+extern Pid_Typedef PID_Angle ; 
 
 void Mode_2_Setup(void);
 

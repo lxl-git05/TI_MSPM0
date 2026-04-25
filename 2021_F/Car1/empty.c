@@ -15,10 +15,11 @@ int main(void)
     while (1) 
     {
         Mode_G_Loop() ; 
+        OLED_Update() ;
 
         if (curr_mode == next_mode)
         {
-            switch (curr_mode) 
+            switch (curr_mode)
             {
                 case Mode_Null : break; // 啥也不干,也就是只有Global模式在干活
                 case 1 : Mode_1_Loop() ; break;

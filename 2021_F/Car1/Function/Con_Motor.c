@@ -4,9 +4,9 @@
 void Motor_Init(void)
 {
     Motor_A_Init() ;
-    Motor_SetSpeed(&Motor_A, 0) ;   // 使能运动
-
     Motor_B_Init() ;
+    
+    Motor_SetSpeed(&Motor_A, 0) ;   // 使能运动
     Motor_SetSpeed(&Motor_B, 0) ;
 }
 
