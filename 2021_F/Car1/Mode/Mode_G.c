@@ -6,6 +6,8 @@ Mode_Typedef next_mode = Mode_Null  ;      // 下一个模式
 
 bool Car_Enable  = false ;
 bool Car_is_Load = false ;  // 小车装药状态
+int load_cnt = 0 ;
+int Car_Status_Load[10] = {0};   // 记录小车状态
 
 // ========================== 系统setup loop ==========================
 
@@ -49,7 +51,9 @@ void Mode_G_Loop(void)
     // OLED更新
     if (curr_mode == Mode_Null) { OLED_Printf(0, 0, OLED_6X8, "=====Mode_Null=====") ; }
     OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
-    OLED_Printf(0, 40, OLED_6X8, "roa=%d  ", Road_y) ;
+    OLED_Printf(0, 30, OLED_6X8, "roa=%d  ", Road_y) ;
+    OLED_Printf(0, 40, OLED_6X8, "%d%d%d%d", Car_Status_Load[0],Car_Status_Load[1],Car_Status_Load[2],Car_Status_Load[3]) ;
+    OLED_Printf(0, 50, OLED_6X8, "%d%d%d%d", Car_Status_Load[4],Car_Status_Load[5],Car_Status_Load[6],Car_Status_Load[7]) ;
 }
 
 // ========================== 系统定时器配置 ==========================
@@ -67,6 +71,10 @@ void Timer_0_Callback(void)
 void Timer_1_Callback(void)
 {
     // 电机控制台
+    if (curr_Status != next_Status)
+    {
+        Car_Status_Load[++load_cnt] = next_Status ; // 0号就是Stop,不用记录
+    }
     Car_Control_Change() ;
     Car_Control() ;
     // 全局
