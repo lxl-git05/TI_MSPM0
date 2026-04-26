@@ -6,9 +6,14 @@
 #include "Timer_Counter.h"
 #include "ti_msp_dl_config.h"
 
-extern int Track_GoalSpeed ;
 extern Pid_Typedef PID_Track ;
-extern int Road_y  ;
+
+extern bool isRoad_T ;  // 判断是否到达T字路口
+extern int line_x ;     // 2.
+extern int Road_y ;     // 4.
+extern int Oran_Num[4]; // 5.6.7.8. 
+extern int Target_Num;  // 目标数字
+extern int Over_y ;     // 10.
 
 // 初始化
 void Oran_Init(void) ;
@@ -18,6 +23,9 @@ void Oran_Data_Update(void) ;
 
 // 寻迹PID代码 20ms
 void Oran_Track_Tick(void) ;
+
+// 得到目标数字
+void Oran_Get_Target(void) ;
 
 // 使能寻迹
 void Oran_Go(void) ;

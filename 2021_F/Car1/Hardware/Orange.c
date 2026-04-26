@@ -3,15 +3,27 @@
 Pid_Typedef PID_Track ; // 寻迹PID
 
 #define Track_Speed 120 // 寻迹的基础速度
-int goalSpeed_All = 0 ; // 寻迹的真实速度
+int goalSpeed_All = Track_Speed ; // 寻迹的真实速度
 
 // 串口通信传输消息
-// 1.Pos偏转  2. Line_x  3. Road_x  4. Road_y
-// 5.6.7.8 : 数字,从左到右
+/*
+    1. Pos偏转(+180)
+    2. Line_x (+1000)
+    3. Road_x (绝对值)
+    4. Road_y (绝对值,240->0)
+    5.6.7.8 数字,从左到右 (初始为0)
+    9. Over_x (绝对值)
+   10. Over_y (绝对值)
+*/
+
+bool isRoad_T = false;  // 判断是否到达T字路口
+int Pos_last;           // 1.1
+int Pos_curr;           // 1.2
 int line_x ;            // 2.
 int Road_y = 0 ;        // 4.
 int Oran_Num[4] = {0} ; // 5.6.7.8. 
 int Target_Num = 0 ;    // 目标数字
+int Over_y ;            // 10.
 
 void Oran_Init(void)
 {
@@ -19,17 +31,36 @@ void Oran_Init(void)
     Serial2.Hex_Data.Serial_New_Package[2] = 1000 ; // 初始化没寻到线就是0(1000-1000)
 }
 
+void Oran_Get_Target(void)
+{
+    if (Serial_GetNewPackageFlag_HEX(&Serial2))
+    {
+        if (Oran_Num[0] != 0)
+        {
+            Target_Num = Oran_Num[0] ;
+        }
+    }
+}
+
 void Oran_Data_Update(void)
 {
     if (Serial_GetNewPackageFlag_HEX(&Serial2))
     {
-        line_x = Serial2.Hex_Data.Serial_New_Package[2] - 1000 ;    // 2: x_line 
-        Road_y = Serial2.Hex_Data.Serial_New_Package[4] ;           // 4: Road_y
+        Pos_last = Pos_curr ;
+        Pos_curr    = Serial2.Hex_Data.Serial_New_Package[1] - 180  ;    // 1. 偏转
+        
+        line_x      = Serial2.Hex_Data.Serial_New_Package[2] - 1000 ;    // 2: x_line 
+        Road_y      = Serial2.Hex_Data.Serial_New_Package[4] ;           // 4: Road_y
 
-        Oran_Num[0] = Serial2.Hex_Data.Serial_New_Package[5] ;      // 5.6.7.8: 发送过来的数字
-        Oran_Num[1] = Serial2.Hex_Data.Serial_New_Package[6] ; 
-        Oran_Num[2] = Serial2.Hex_Data.Serial_New_Package[7] ; 
-        Oran_Num[3] = Serial2.Hex_Data.Serial_New_Package[8] ; 
+        Oran_Num[0] = Serial2.Hex_Data.Serial_New_Package[5] - 100;      // 5.6.7.8: 发送过来的数字
+        Oran_Num[1] = Serial2.Hex_Data.Serial_New_Package[6] - 100;
+        Oran_Num[2] = Serial2.Hex_Data.Serial_New_Package[7] - 100;
+        Oran_Num[3] = Serial2.Hex_Data.Serial_New_Package[8] - 100;
+
+        Over_y      = Serial2.Hex_Data.Serial_New_Package[10];          // 10. 终点的y值
+
+        // 判断丁字路口
+        if (Pos_curr - Pos_last > 75) {isRoad_T = true ;}
     }
 }
 

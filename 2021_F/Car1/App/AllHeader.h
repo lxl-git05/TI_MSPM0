@@ -19,6 +19,7 @@
 
 // app层
 #include "Menu_Key.h"
+#include "Control.h"
 
 // function层
 #include "Con_Motor.h"

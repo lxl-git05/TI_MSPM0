@@ -1,19 +1,11 @@
 #include "Mode_G.h"
 #include "AllHeader.h"
 
-Mode_Typedef curr_mode = Mode_Null  ;     // 当前模式
+Mode_Typedef curr_mode = Mode_Null  ;      // 当前模式
 Mode_Typedef next_mode = Mode_Null  ;      // 下一个模式
 
-float stop_y = 230;
-
-typedef enum
-{
-    Car_Forward ,
-    Car_Turn ,
-}Car_Status_Typedef ;
-
-Car_Status_Typedef curr_Status = Car_Forward;
-Car_Status_Typedef next_Status = Car_Forward;
+bool Car_Enable  = false ;
+bool Car_is_Load = false ;  // 小车装药状态
 
 // ========================== 系统setup loop ==========================
 
@@ -42,7 +34,17 @@ void Mode_G_Loop(void)
     }
     if (Key_Check(KEY_1, KEY_SINGLE))
     {
-        Oran_Go();
+        Target_Num = (Target_Num == 0 ? 1 : Target_Num) ;    // 模拟目标数字
+        Car_is_Load = true; // 模拟装载成功
+    }
+    if (Car_Enable == false)
+    {
+        Oran_Get_Target() ; // 得到目标数字
+        if (Car_is_Load == true && Target_Num != 0)
+        {
+            Car_Enable = true ;
+            next_Status = Car_Forward ; // 开始行进
+        }
     }
     // OLED更新
     if (curr_mode == Mode_Null) { OLED_Printf(0, 0, OLED_6X8, "=====Mode_Null=====") ; }
@@ -57,76 +59,23 @@ void Timer_0_Callback(void)
 {
     // 功能1:按键
     Key_Tick() ;
-
     // 功能2:LED闪烁监控
     Flash_Mode_Tick() ;
-}
-
-// 小车控制台
-void Car_Control(void)
-{
-    if (curr_Status == next_Status)
-    {
-        if (curr_Status == Car_Forward)
-        {
-            Oran_Track_Tick() ;
-            // 寻迹切换到转向
-            if (Road_y > 230)   // 检测到路口
-            {
-                next_Status = Car_Turn ;
-            }
-        }
-        else if (curr_Status == Car_Turn)
-        {
-            Con_MPU_Motor_Tick() ;
-            // 转向切换到寻迹
-            if (Con_MPU_Get_Yaw() > 90)
-            {
-                next_Status = Car_Forward ;
-            }
-        }
-    }
-    // 这里一定要用if,因为条件改变是在==的条件下完成的,否则下一刻curr会与next相等,导致永远到不了!=
-    if (curr_Status != next_Status)
-    {
-        if (next_Status == Car_Turn)
-        {
-            Con_MPU_Yaw_Reset() ;   // 先将当前角度置零
-            Con_MPU_Tar_Yaw(100) ;  // 目标为向左旋转100度
-        }
-    }
-
-    curr_Status = next_Status ;
 }
 
 // 20ms定时器
 void Timer_1_Callback(void)
 {
-    // 全局
-    Motor_Update_Tick() ;   // AB电机状态更新
-
+    // 电机控制台
+    Car_Control_Change() ;
     Car_Control() ;
-
+    // 全局
+    Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数
-    MPU6050_Angle_Update_Tick() ;   // 耗时1.45ms
-
+    MPU6050_Angle_Update_Tick() ;                   // 耗时1.45ms
     // 模式选择
-    if (curr_mode == Mode_PID)   { Mode_1_Tick() ;} // 打印AB的PID参数
-    if (curr_mode == Mode_Angle) { Mode_2_Tick() ;} // 陀螺仪控制角度
-    if (curr_mode == Mode_Track) { Mode_3_Tick() ;} // 小车自行计算路程寻迹
-    
+    if (curr_mode == Mode_PID)  { Mode_1_Tick() ;}  // 打印AB的PID参数
 }
-
-
-
-
-
-
-
-
-
-
-
 
 // ========================== 系统状态配置 ==========================
 
