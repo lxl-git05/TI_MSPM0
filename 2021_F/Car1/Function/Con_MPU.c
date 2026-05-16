@@ -24,7 +24,7 @@ void Con_MPU_Motor_Tick(void)
     Motor_SetSpeed(&Motor_B,   PID_Angle.setPoint) ;
 
     // 5. 展示效果
-    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",PID_Angle.goalPoint ,PID_Angle.realPoint_Now ,PID_Angle.setPoint );
+    // Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",PID_Angle.goalPoint ,PID_Angle.realPoint_Now ,PID_Angle.setPoint );
 }
 
 // 重置MPU的yaw

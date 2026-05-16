@@ -12,7 +12,7 @@ int main(void)
     SYSCFG_DL_init();
     Mode_G_Setup() ;    // 全局初始化
 
-    while (1) 
+    while (1)
     {
         Mode_G_Loop() ; 
         OLED_Update() ;
