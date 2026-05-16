@@ -11,6 +11,7 @@
 #include "Key.h"
 #include "OLED.h"
 #include "Orange.h"
+#include "BLE.h"
 
 // tools层
 #include "LED_Flash.h"
