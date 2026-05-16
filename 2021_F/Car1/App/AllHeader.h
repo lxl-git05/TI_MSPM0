@@ -33,6 +33,11 @@
 #include "Mode_2.h"
 #include "Mode_3.h"
 
+// Mode_Con层,比赛专用
+#include "Mode_Con_1.h"
+#include "Mode_Con_2.h"
+#include "Mode_Con_3.h"
+
 // ================== 初始化函数 ==================
 void Initial_All(void) ;
 
