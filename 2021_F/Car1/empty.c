@@ -25,6 +25,9 @@ int main(void)
                 case 1 : Mode_1_Loop() ; break;
                 case 2 : Mode_2_Loop() ; break;
                 case 3 : Mode_3_Loop() ; break;
+                // 比赛代码
+                case 4 : Mode_Con_1_Loop() ; break;
+                case 5 : Mode_Con_2_Loop() ; break;
                 case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
             }
         }
@@ -36,6 +39,9 @@ int main(void)
                 case 1 : Mode_1_Exit() ; break;
                 case 2 : Mode_2_Exit() ; break;
                 case 3 : Mode_3_Exit() ; break;
+                // 比赛代码
+                case 4 : Mode_Con_1_Exit() ; break;
+                case 5 : Mode_Con_2_Exit() ; break;
                 case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
             }
             switch (next_mode) 
@@ -44,6 +50,9 @@ int main(void)
                 case 1 : Mode_1_Setup() ; break;
                 case 2 : Mode_2_Setup() ; break;
                 case 3 : Mode_3_Setup() ; break;
+                // 比赛代码
+                case 4 : Mode_Con_1_Setup() ; break;
+                case 5 : Mode_Con_2_Setup() ; break;
                 case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
             }
         }

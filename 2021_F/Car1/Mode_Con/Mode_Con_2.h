@@ -13,6 +13,9 @@ void Mode_Con_2_Exit(void) ;
 
 void Mode_Con_2_Tick(void) ;
 
+// 小车状态转换台
+void Car_Control_Change_1(void) ;
+
 #endif
 
 

@@ -14,11 +14,13 @@ int goalSpeed_All = Track_Speed ; // 寻迹的真实速度
     5.6.7.8 数字,从左到右 (初始为0)
     9. Over_x (绝对值)
    10. Over_y (绝对值)
+   11. isRoad_T (1 or 0)
 */
 
-int Road2[2] = {0,0} ;
-int Road3[4] = {0,0,0,0} ;
-
+int Road2[2] = {0,0} ;          // 中端数字(2个)
+int Road3[4] = {0,0,0,0} ;      // 远端数字(4个)
+int Road4_L[2] = {0,0} ;        // 远端左边(2个)
+int Road4_R[2] = {0,0} ;        // 远端右边(2个)
 
 int Pos_last;           // 1.1
 int Pos_curr;           // 1.2
@@ -27,7 +29,7 @@ int Road_y = 0 ;        // 4.
 int Oran_Num[4] = {0} ; // 5.6.7.8. 
 int Target_Num = 0 ;    // 目标数字
 int Over_y ;            // 10.
-bool isRoad_T = false;  // 判断是否到达T字路口
+bool isRoad_T = false;  // 11. 判断是否到达T字路口
 
 void Oran_Init(void)
 {

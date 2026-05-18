@@ -6,6 +6,7 @@
 // System层
 #include "Serial.h"
 #include "Tim.h"
+#include "StatusStack.h"
 
 // Hardware层
 #include "Key.h"
