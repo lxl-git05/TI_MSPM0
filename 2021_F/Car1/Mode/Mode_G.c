@@ -23,15 +23,15 @@ void Mode_G_Setup(void)
 // 循环loop
 void Mode_G_Loop(void)
 {
-    // 药物检测
-    if (isLoad())
-    {
-        RGB_Set(0,1,0) ;
-    }
-    else 
-    {
-        RGB_Set(1,0,0) ;
-    }
+    // 药物检测亮灯,暂时删除
+    // if (isLoad())
+    // {
+    //     RGB_Set(0,1,0) ;
+    // }
+    // else 
+    // {
+    //     RGB_Set(1,0,0) ;
+    // }
     // 检测程序是否可行
     if (Key_Check(KEY_0, KEY_SINGLE))// 单击
     {

@@ -86,15 +86,15 @@ void Mode_Con_1_Tick(void)
 
 
 // 控制台记录状态逻辑
-void Car_Status_Store(void)
-{
-    // 这是额外的过程-记录状态
-    if (isBack == false) { Car_Status_Load[++load_cnt] = next_Status ; }    // 记录送药过程的状态,0号就是Stop
-    Serial_printf(&Serial1 , "%d,next:%s\n",print_cnt ++ ,Str[next_Status]) ;
+// void Car_Status_Store(void)
+// {
+//     // 这是额外的过程-记录状态
+//     if (isBack == false) { Car_Status_Load[++load_cnt] = next_Status ; }    // 记录送药过程的状态,0号就是Stop
+//     Serial_printf(&Serial1 , "%d,next:%s\n",print_cnt ++ ,Str[next_Status]) ;
 
-    // 状态入栈
-    StatusStack_Push(&stack , next_Status) ;
-}
+//     // 状态入栈
+//     StatusStack_Push(&stack , next_Status) ;
+// }
 
 // 回城状态翻转逻辑
 Car_Status_Typedef Car_Status_Fan(Car_Status_Typedef Before)

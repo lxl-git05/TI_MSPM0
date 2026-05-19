@@ -24,7 +24,7 @@ void Car_Control(void)
     }
     if (curr_Status != next_Status) // 这里一定要用if,因为条件改变是在==的条件下完成的,否则下一刻curr会与next相等,导致永远到不了!=     
     {
-        Car_Status_Store() ;
+        // Car_Status_Store() ;
         switch (next_Status) // setup
         {
             case Car_Forward  : break;

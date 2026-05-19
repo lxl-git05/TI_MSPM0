@@ -10,6 +10,7 @@ bool Car_Start = false ;
 bool Car_Back_Enable = false ;
 // 小车运动状态记录(栈)
 StatusStack_Typedef stack_car ;
+const char *car_str[] =  {"Stop" , "Forward" , "Turn_L" , "Turn_R" , "Car_Turn_F" , "Car_Turn_H" } ;
 // 小车装载检测
 bool isCarLoad = false ;
 
@@ -22,15 +23,18 @@ extern int Road4_R[2] ;
 // 回城状态翻转逻辑
 Car_Status_Typedef Car_Status_Fan_1(Car_Status_Typedef Before)
 {
+    Car_Status_Typedef Car_Next_Status ;
     switch (Before) 
     {
-        case Car_Stop    : return Car_Turn_H ;
-        case Car_Forward : return Car_Forward ;
-        case Car_Turn_L  : return Car_Turn_R ;
-        case Car_Turn_R  : return Car_Turn_L ;
-        case Car_Turn_F  : return Car_Turn_F ;
-        default: return 6;
+        case Car_Stop    : Car_Next_Status = Car_Turn_H ; break; 
+        case Car_Forward : Car_Next_Status = Car_Forward ; break; 
+        case Car_Turn_L  : Car_Next_Status = Car_Turn_R ; break; 
+        case Car_Turn_R  : Car_Next_Status = Car_Turn_L ; break; 
+        case Car_Turn_F  : Car_Next_Status = Car_Turn_F ; break; 
+        default: Car_Next_Status = Car_Stop ; Serial_printf(&Serial1, "UnKnown Status\n"); break;    // 其他状态就判定为停止
     }
+    Serial_printf(&Serial1, "Back: %s\n" , car_str[Car_Next_Status]) ;
+    return Car_Next_Status;
 }
 
 // 小车状态转换和记录
@@ -44,7 +48,7 @@ void Car_Status_Change(Car_Status_Typedef next , bool Store_Enable)
     // 打印当前输入的栈
     Car_Status_Typedef temp ;
     StatusStack_Peek(&stack_car , &temp) ;
-    Serial_printf(&Serial1, "stack_cnt = %d , stack_status = %d\n" , StatusStack_Size(&stack_car) - 1, temp) ;
+    Serial_printf(&Serial1, "stack_cnt = %d , stack_status = %s\n" , StatusStack_Size(&stack_car) - 1, car_str[temp]) ;
 }
 
 void Mode_Con_2_Setup(void)
@@ -76,6 +80,7 @@ void Mode_Con_2_Loop(void)
         Oran_Get_Target() ; // 得到目标数字
         if (isCarLoad == true && Target_Num != 0)
         {
+            Serial_printf(&Serial1, "Target : %d\n\n",Target_Num) ;
             Car_Start = true ;
             Car_Status_Change(Car_Forward , !Car_Back_Enable) ;
         }
@@ -92,9 +97,10 @@ void Mode_Con_2_Loop(void)
         }
     }
     // OLED打印栈元素
+    OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "=====Mode_Con_2=====") ;
     OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
-    OLED_Printf(0, 30, OLED_6X8, "roa=%d,tar=%d", Road_y,Target_Num) ;
+    OLED_Printf(0, 30, OLED_6X8, "roa=%d,tar=%d,size:%d", Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
 }
 
 void Mode_Con_2_Exit(void)
@@ -112,18 +118,18 @@ Track_Status_Typedef Car_Inter_Check(void)
 {
     if (Road_y > Track_Inter_Th)
     {
-        return Track_Inter ;
         Serial_printf(&Serial1 ,"Inter\n");     // 检测到路口 
+        return Track_Inter ;
     }
     else if (isRoad_T == true)
     {
-        return Track_T_Inter;
         Serial_printf(&Serial1 ,"T_Inter\n");   // 检测到丁字路口
+        return Track_T_Inter;
     }
     else if (Over_y > Track_Over_Th)
     {
-        return Track_Over ;
         Serial_printf(&Serial1 ,"Over\n");      // 到达终点
+        return Track_Over ;
     }
     else 
     {
@@ -190,6 +196,7 @@ void Car_Control_Change_1(void)
                 {
                     Car_Status_Change(Car_Stop , !Car_Back_Enable);
                     // 打印栈元素
+                    
                 }
                 Track_Status = Track_Null ;
                 break;
@@ -231,7 +238,7 @@ void Car_Control_Change_1(void)
                 // 下一状态配置
                 if (Track_Status == Track_Inter)
                 {
-                    Serial_printf(&Serial1 ,"Inter\n"); 
+                    // Serial_printf(&Serial1 ,"Back: Inter\n"); 
                     Car_Status_Typedef  Track_Pop ;
                     StatusStack_Pop(&stack_car, &Track_Pop) ; 
                     next_Status = Car_Status_Fan_1(Track_Pop) ;
@@ -239,7 +246,7 @@ void Car_Control_Change_1(void)
                 // T字路口
                 else if (Track_Status == Track_T_Inter)
                 {
-                    Serial_printf(&Serial1 ,"T_Inter\n"); 
+                    // Serial_printf(&Serial1 ,"Back: T_Inter\n"); 
                     Car_Status_Typedef  Track_Pop ;
                     StatusStack_Pop(&stack_car, &Track_Pop) ; 
                     next_Status = Car_Status_Fan_1(Track_Pop) ;
@@ -247,6 +254,7 @@ void Car_Control_Change_1(void)
                 else if (Track_Status == Track_Over )
                 {
                     next_Status = Car_Stop ;    // 直接停车
+                    // Serial_printf(&Serial1 ,"Back: Over\n"); 
                 }
                 break;
             }
