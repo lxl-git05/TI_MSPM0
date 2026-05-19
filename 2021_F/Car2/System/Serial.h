@@ -12,7 +12,7 @@
 
 #define Serial1_Enable							// USART1串口DMA模式开启
 #define Serial2_Enable							// USART2串口DMA模式开启
-//#define Serial3_Enable						// USART3串口DMA模式开启
+#define Serial3_Enable						// USART3串口DMA模式开启
 
 #define RX_Serial_LEN 40				// DMA接收数组长度,一次接受的数据不能大于这个长度
 #define Serial_Wait_Tail_MAX 40			// DMA等待帧尾判断溢出阈值

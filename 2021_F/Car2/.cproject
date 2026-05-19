@@ -40,12 +40,13 @@
                                     <listOptionValue value="${PROJECT_ROOT}/${ConfigName}"/>
                                     <listOptionValue value="${COM_TI_MSPM0_SDK_INSTALL_DIR}/source/third_party/CMSIS/Core/Include"/>
                                     <listOptionValue value="${COM_TI_MSPM0_SDK_INSTALL_DIR}/source"/>
-                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car2/Tools"/>
-                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car2/System"/>
-                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car2/Mode"/>
-                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car2/Hardware"/>
-                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car2/Function"/>
-                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car2/App"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car1/Tools"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car1/System"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car1/Hardware"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car1/Function"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car1/App"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car1/Mode"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/2021_F/Car1/Mode_Con"/>
                                 </option>
                                 <option id="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.DEFINE.1117539790" superClass="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.DEFINE" valueType="definedSymbols">
                                     <listOptionValue value="${COM_TI_MSPM0_SDK_SYMBOLS}"/>

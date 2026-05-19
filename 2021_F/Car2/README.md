@@ -25,6 +25,7 @@
 | PB   7    | **LED_G**        | 绿灯                     |
 | PB   8    | **LED_B**        | 黄灯                     |
 | ==PB   9== | **LED_Time**     | 时间检测GPIO口           |
+| PA 13 | TCRT | 红外检测-新增 |
 
 
 

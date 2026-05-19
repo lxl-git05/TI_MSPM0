@@ -1,16 +1,10 @@
 #include "Mode_G.h"
 #include "AllHeader.h"
 
-Mode_Typedef curr_mode = Mode_Null  ;      // 当前模式
-Mode_Typedef next_mode = Mode_Null  ;      // 下一个模式
+// #define MPU6050_Check 
 
-bool Car_Enable  = false ;
-bool Car_is_Load = false ;  // 小车装药状态
-extern int next_cnt ;
-extern int load_cnt ;
-extern int Car_Status_Load[10] ;
-extern int Car_Back_Status_Load[20] ;
-extern bool isBack ;
+Mode_Typedef curr_mode = Mode_Null  ;       // 当前模式
+Mode_Typedef next_mode = Mode_Con_2  ;       // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -22,6 +16,8 @@ void Mode_G_Setup(void)
     Oran_Init();
     // 定时器必须最后初始化!!!
     Timer_Init() ;
+    // 小车控制系统初始化
+    Car_Init() ;
     // 日志打印
     Serial_printf(&Serial1, "\n\n\n================= Begin==================\n");
 }
@@ -29,50 +25,32 @@ void Mode_G_Setup(void)
 // 循环loop
 void Mode_G_Loop(void)
 {
+    // 药物检测亮灯,暂时删除
+    // if (isLoad())
+    // {
+    //     RGB_Set(0,1,0) ;
+    // }
+    // else 
+    // {
+    //     RGB_Set(1,0,0) ;
+    // }
     // 检测程序是否可行
     if (Key_Check(KEY_0, KEY_SINGLE))// 单击
     {
         Flash_Mode_Set(Flash_Mode_Fast) ;  
+        #ifdef MPU6050_Check
+            MPU6050_Data_Error_Check(1000) ;
+        #endif
     }
     // 进入下一个模式
     if (Key_Check(KEY_0, KEY_DOUBLE))// 双击
     {
         Mode_To_Next() ;
     }
-    if (Key_Check(KEY_1, KEY_DOUBLE))
-    {
-        Target_Num += 1 ;
-    }
-    if (Key_Check(KEY_1, KEY_SINGLE))
-    {
-        Target_Num = (Target_Num == 0 ? 1 : Target_Num) ;    // 模拟目标数字
-        Car_is_Load = true; // 模拟装载成功
-    }
-    if (Key_Check(KEY_1, KEY_LONG))
-    {
-        isBack = true ;
-        next_Status = Car_Back_Status_Load[next_cnt++] ;
-    }
-    if (Car_Enable == false)
-    {
-        Oran_Get_Target() ; // 得到目标数字
-        if (Car_is_Load == true && Target_Num != 0)
-        {
-            Car_Enable = true ;
-            next_Status = Car_Forward ; // 开始行进
-        }
-    }
-    // OLED更新
     if (curr_mode == Mode_Null) { OLED_Printf(0, 0, OLED_6X8, "=====Mode_Null=====") ; }
-    OLED_Clear() ;
-    OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
-    OLED_Printf(0, 30, OLED_6X8, "roa=%d,tar=%d,cnt=%d,n%d", Road_y,Target_Num,load_cnt,next_cnt) ;
+    // =========================== 测试代码 ===========================
     
-    OLED_Printf(0, 40, OLED_6X8, "%d%d%d%d%d%d%d%d", Car_Status_Load[0],Car_Status_Load[1],Car_Status_Load[2],Car_Status_Load[3], Car_Status_Load[4],
-    Car_Status_Load[5],Car_Status_Load[6],Car_Status_Load[7]) ;
     
-    OLED_Printf(0, 50, OLED_6X8, "%d%d%d%d%d%d%d%d", Car_Back_Status_Load[0],Car_Back_Status_Load[1],Car_Back_Status_Load[2],Car_Back_Status_Load[3],
-    Car_Back_Status_Load[4],Car_Back_Status_Load[5],Car_Back_Status_Load[6],Car_Back_Status_Load[7]) ;
 }
 
 // ========================== 系统定时器配置 ==========================
@@ -89,14 +67,25 @@ void Timer_0_Callback(void)
 // 20ms定时器
 void Timer_1_Callback(void)
 {
-    // 电机控制台
+    // 通信数据更新
     Oran_Data_Update();
-    Car_Control_Change() ;
+    // 电机运动转换状态
+    if (curr_mode == Mode_Con_1)
+    {
+        Car_Control_Change() ;
+    }
+    if (curr_mode == Mode_Con_2)
+    {
+        Car_Control_Change_1() ;
+    }
+    // 小车运动控制台
     Car_Control() ;
     // 全局
     Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数
-    MPU6050_Angle_Update_Tick() ;                   // 耗时1.45ms
+    #ifndef MPU6050_Check 
+        MPU6050_Angle_Update_Tick() ;   // 耗时1.45ms
+    #endif                  
     // 模式选择
     if (curr_mode == Mode_PID)  { Mode_1_Tick() ;}  // 打印AB的PID参数
 }

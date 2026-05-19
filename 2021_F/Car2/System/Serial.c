@@ -474,7 +474,7 @@ void Serial_Init(void)
 	Serial_Initial(&Serial2 , UART_1_INST , NULL , 100 , UART_1_INST_INT_IRQN , NULL , 100) ;	// 串口协议初始化
 	#endif
 	#ifdef Serial3_Enable
-	Serial_Initial(&Serial3 , USART3 , &huart3 ) ;	// 串口协议初始化
+	Serial_Initial(&Serial3 , UART_2_INST , NULL , 100 , UART_2_INST_INT_IRQN , NULL , 100) ;	// 串口协议初始化
 	#endif
 }
 
@@ -557,7 +557,39 @@ void UART_1_INST_IRQHandler(void)
             break;
         default:
             break;
+    }
+#endif
+}
 
+void UART_2_INST_IRQHandler(void)
+{
+#ifdef Serial3_Enable
+    Serial_RX_FLAG_Typedef Serial3_Rx_State;
+	switch (DL_UART_Main_getPendingInterrupt(Serial3.uart_INST)) 
+    {
+        // 接收中断
+        case DL_UART_MAIN_IIDX_RX:
+            // 必须存储接收到信息,即使不使用,否则中断FIFO存不下，再也进不去中断了
+            Serial3.rx_temp = DL_UART_Main_receiveData(Serial3.uart_INST);  
+
+            // 获得串口数据传输状态(更新)
+			Serial3_Rx_State = Serial_Rx_State_Check(&Serial3);
+			
+			// HEX数据包
+			if (Serial3_Rx_State == RX_OK_HEX)
+			{
+				// 开始处理原始数据包:HEX
+				Serial_Data_Check_HEX(&Serial3) ;
+			}
+			// ABC数据包
+			else if (Serial3_Rx_State == RX_OK_ABC)
+			{
+				// 开始处理原始数据包:ABC
+				Serial_Data_Check_ABC(&Serial3) ;
+			} 
+            break;
+        default:
+            break;
     }
 #endif
 }

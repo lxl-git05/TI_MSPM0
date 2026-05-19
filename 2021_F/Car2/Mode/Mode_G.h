@@ -8,6 +8,9 @@ typedef enum
     Mode_PID ,      // 模式1:调试电机的PID
     Mode_Angle ,    // 模式2:角度环控制小车
     Mode_Track ,    // 模式3:寻迹环控制小车
+    // 小车比赛正式代码
+    Mode_Con_1 ,    // 基础3问
+    Mode_Con_2 ,    // 基础栈式写法
 
     Mode_End ,      // 注册模式不能在这个下面!!!
 }Mode_Typedef;
