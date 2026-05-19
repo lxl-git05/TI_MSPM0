@@ -16,6 +16,8 @@ void Mode_G_Setup(void)
     Oran_Init();
     // 定时器必须最后初始化!!!
     Timer_Init() ;
+    // 小车控制系统初始化
+    Car_Init() ;
     // 日志打印
     Serial_printf(&Serial1, "\n\n\n================= Begin==================\n");
 }

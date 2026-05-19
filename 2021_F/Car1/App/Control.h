@@ -1,7 +1,7 @@
 #ifndef __CONTROL_H
 #define __CONTROL_H
 
-#include "AllHeader.h"
+#include "Control.h"
 
 // 5种状态: 停车 寻迹直行 路口直行 左转 右转 掉头
 typedef enum

@@ -1,4 +1,7 @@
-#include "AllHeader.h"
+#include "Control.h"
+#include "Orange.h"
+#include "MPU6050_Angle.h"
+
 // 5种状态: 停车 寻迹直行 路口直行 左转 右转 掉头
 Car_Status_Typedef curr_Status = Car_Stop;
 Car_Status_Typedef next_Status = Car_Stop;

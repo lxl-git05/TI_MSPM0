@@ -29,6 +29,7 @@
 #include "Con_Motor.h"
 #include "Con_MPU.h"
 #include "MPU6050_Angle.h"
+#include "Con_Car.h"
 
 // Mode层
 #include "Mode_G.h"

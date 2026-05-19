@@ -2,6 +2,8 @@
 #define __STATUS_STACK_H
 
 #include "Control.h"
+#include "StatusStack.h"
+#include "stdbool.h"
 
 #define STATUS_STACK_SIZE 50
 
