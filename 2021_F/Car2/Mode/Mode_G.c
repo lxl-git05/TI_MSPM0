@@ -32,6 +32,7 @@ void Mode_G_Loop(void)
         #ifdef MPU6050_Check
             MPU6050_Data_Error_Check(1000) ;
         #endif
+        Serial_Printf_Normal(&Serial3, "@Hello\n$#") ;
     }
     // 进入下一个模式
     if (Key_Check(KEY_0, KEY_DOUBLE))// 双击
