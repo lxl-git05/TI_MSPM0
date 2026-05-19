@@ -50,6 +50,6 @@ void Mode_1_Tick(void)
 #ifdef  Motoe_A_PID_Check
     Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",Motor_A.PID_s.goalPoint ,Motor_A.PID_s.realPoint_Now ,Motor_A.PID_s.setPoint );
 #else 
-    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",Motor_B.PID_s.goalPoint ,-Motor_B.PID_s.realPoint_Now ,-Motor_B.PID_s.setPoint );
+    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",Motor_B.PID_s.goalPoint ,Motor_B.PID_s.realPoint_Now ,-Motor_B.PID_s.setPoint );
 #endif
 }
