@@ -355,6 +355,28 @@ bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , in
 	}
 }
 
+// *文本:3. 封装一个函数,实现简易字符串指令检测*
+bool Serial_CheckCmd( Serial_Typedef *pSerial , char *cmd )
+{
+    // cmd为需要检测的指令
+    // 例如:
+    // VOFA发送: @LED_ON$#
+    // 判断:
+    // if( Serial_CheckCmd(&Serial1 , "LED_ON") )
+    // {
+    //     LED_On();
+    // }
+
+    if ( strstr(pSerial->ABC_Data.Serial_New_Package_ABC , cmd) != NULL )
+    {
+        return true ;
+    }
+    else
+    {
+        return false ;
+    }
+}
+
 // ========================== Serial_printf部分(有DMA的才能使用) ==========================
 
 static void Serial_WriteBuf(Serial_Typedef *pSerial, uint8_t *data, uint16_t len)

@@ -26,7 +26,7 @@ void Car_Init(void)
     // 小车状态初始化
     StatusStack_Init(&stack_car) ;
     // 小车初始状态记录
-    Car_Status_Change(curr_Status , !Car_Back_Enable) ; // 只有前进的时候才进行记录
+    Car_Status_Change(curr_Status , 1) ; // 只有前进的时候才进行记录,初始化默认是停止状态
 }
 
 // =================== 回城
@@ -86,4 +86,10 @@ Track_Status_Typedef Car_Inter_Check(void)
     }
 }
 
-// =================== 
+// =================== 自动执行下一状态
+void Car_To_Next_Status_From_Stack(void)
+{
+    Car_Status_Typedef  Track_Pop ;
+    StatusStack_Pop(&stack_car, &Track_Pop) ; 
+    next_Status = Car_Status_Fan_1(Track_Pop) ;
+}

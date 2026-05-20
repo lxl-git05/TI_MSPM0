@@ -11,6 +11,7 @@ typedef enum
     // 小车比赛正式代码
     Mode_Con_1 ,    // 基础3问
     Mode_Con_2 ,    // 基础栈式写法
+    Mode_Con_3 ,    // 提高题
 
     Mode_End ,      // 注册模式不能在这个下面!!!
 }Mode_Typedef;

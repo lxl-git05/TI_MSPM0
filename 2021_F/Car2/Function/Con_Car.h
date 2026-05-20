@@ -16,4 +16,7 @@ void Car_Status_Change(Car_Status_Typedef next , bool Store_Enable) ;
 // 判断路口的类型
 Track_Status_Typedef Car_Inter_Check(void) ;
 
+// 自动执行下一状态
+void Car_To_Next_Status_From_Stack(void) ;
+
 #endif

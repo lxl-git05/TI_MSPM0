@@ -86,4 +86,10 @@ Track_Status_Typedef Car_Inter_Check(void)
     }
 }
 
-// =================== 
+// =================== 自动执行下一状态
+void Car_To_Next_Status_From_Stack(void)
+{
+    Car_Status_Typedef  Track_Pop ;
+    StatusStack_Pop(&stack_car, &Track_Pop) ; 
+    next_Status = Car_Status_Fan_1(Track_Pop) ;
+}

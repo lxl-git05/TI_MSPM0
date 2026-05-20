@@ -28,6 +28,7 @@ int main(void)
                 // 比赛代码
                 case 4 : Mode_Con_1_Loop() ; break;
                 case 5 : Mode_Con_2_Loop() ; break;
+                case 6 : Mode_Con_3_Loop() ; break;
                 case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
             }
         }
@@ -42,6 +43,7 @@ int main(void)
                 // 比赛代码
                 case 4 : Mode_Con_1_Exit() ; break;
                 case 5 : Mode_Con_2_Exit() ; break;
+                case 6 : Mode_Con_3_Exit() ; break;
                 case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
             }
             switch (next_mode) 
@@ -53,6 +55,7 @@ int main(void)
                 // 比赛代码
                 case 4 : Mode_Con_1_Setup() ; break;
                 case 5 : Mode_Con_2_Setup() ; break;
+                case 6 : Mode_Con_3_Setup() ; break;
                 case Mode_End  : break; // 到头了,不要到这里来,写case是因为不然报出警告
             }
         }

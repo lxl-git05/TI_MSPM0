@@ -25,15 +25,6 @@ void Mode_G_Setup(void)
 // 循环loop
 void Mode_G_Loop(void)
 {
-    // 药物检测亮灯,暂时删除
-    // if (isLoad())
-    // {
-    //     RGB_Set(0,1,0) ;
-    // }
-    // else 
-    // {
-    //     RGB_Set(1,0,0) ;
-    // }
     // 检测程序是否可行
     if (Key_Check(KEY_0, KEY_SINGLE))// 单击
     {
@@ -70,13 +61,13 @@ void Timer_1_Callback(void)
     // 通信数据更新
     Oran_Data_Update();
     // 电机运动转换状态
-    if (curr_mode == Mode_Con_1)
-    {
-        Car_Control_Change() ;
-    }
     if (curr_mode == Mode_Con_2)
     {
         Car_Control_Change_1() ;
+    }
+    else if (curr_mode == Mode_Con_3)
+    {
+        Car_Control_Change_TiGao_1() ;
     }
     // 小车运动控制台
     Car_Control() ;

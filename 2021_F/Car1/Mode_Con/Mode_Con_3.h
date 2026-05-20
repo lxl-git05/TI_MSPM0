@@ -13,6 +13,9 @@ void Mode_Con_3_Exit(void) ;
 
 void Mode_Con_3_Tick(void) ;
 
+// 状态转换台
+void Car_Control_Change_TiGao_1(void) ;
+
 #endif
 
 
