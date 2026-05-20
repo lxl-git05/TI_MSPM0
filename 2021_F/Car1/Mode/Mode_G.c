@@ -69,6 +69,10 @@ void Timer_1_Callback(void)
     {
         Car_Control_Change_TiGao_1() ;
     }
+    else if (curr_mode == Mode_Con_1)
+    {
+        Car_Control_Change_TiGao_2() ;
+    }
     // 小车运动控制台
     Car_Control() ;
     // 全局

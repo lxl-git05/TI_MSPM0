@@ -1,7 +1,7 @@
 #include "AllHeader.h"
 #include "Con_Car.h"
 
-// 提高题部分-Car2
+// 提高题部分1-Car2
 
 // 外部参数
 extern int Road2[2] ;
@@ -17,7 +17,7 @@ extern StatusStack_Typedef stack_car ;
 void Mode_Con_3_Setup(void)
 {
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====Mode_Con_3=====") ;
+    OLED_Printf(0, 0, OLED_6X8, "=====TiGao 1=====") ;
 }
 
 void Mode_Con_3_Loop(void)

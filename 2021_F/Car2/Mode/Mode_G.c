@@ -62,18 +62,21 @@ void Timer_1_Callback(void)
     // 通信数据更新
     Oran_Data_Update();
     // 电机运动转换状态
-    if (curr_mode == Mode_Con_1)
+    if (curr_mode == Mode_Con_3)    // 提高1
     {
-        Car_Control_Change() ;
-        // 小车运动控制台
-        Car_Control() ;
+        Car_Control_Change_TiGao_1() ;
     }
-    if (curr_mode == Mode_Con_2)
+    else if (curr_mode == Mode_Con_1)    // 提高2
+    {
+        Car_Control_Change_TiGao_2() ;
+    }
+    else if (curr_mode == Mode_Con_2)    // 基础
     {
         Car_Control_Change_1() ;
-        // 小车运动控制台
-        Car_Control() ;
     }
+    
+    // 小车运动控制台
+    Car_Control() ;
     // 全局
     Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数
