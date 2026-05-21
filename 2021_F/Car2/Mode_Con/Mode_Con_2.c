@@ -15,7 +15,7 @@ void Mode_Con_2_Setup(void)
 {
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "=====[Car2]Mode_JiChu=====") ;
-    Serial_printf(&Serial1, "=====[Car2]Mode_JiChu=====\n") ;
+    Serial_printf(&Serial1, "================Begin: TiGao 1================\n") ;
 }
 
 void Mode_Con_2_Loop(void)

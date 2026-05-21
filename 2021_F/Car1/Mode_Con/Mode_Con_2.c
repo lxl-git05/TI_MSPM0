@@ -13,6 +13,8 @@ extern bool Car_Start ;
 extern bool Car_Back_Enable ;
 extern StatusStack_Typedef stack_car ;
 
+bool HandMode = false ; // 手动模拟启动信号: 一旦开启,那么只能手动进行
+
 void Mode_Con_2_Setup(void)
 {
     OLED_Clear() ;
@@ -23,16 +25,15 @@ void Mode_Con_2_Setup(void)
 void Mode_Con_2_Loop(void)
 {
     // 指示灯
-    if (isLoad() == true)
+    if (isLoad() == true && HandMode == false)
     {
-        RGB_Set(1, 0, 0);
         isCarLoad = true ;
     }
-    else
+    else if (isLoad() == false && HandMode == false)
     {
-        RGB_Set(0, 1, 0) ;
         isCarLoad = false ;
     }
+    RGB_Set(isCarLoad, !isCarLoad, 0) ; // 小车Load后为R,Load前为G
     // 模拟目标数字
     if (Key_Check(KEY_1, KEY_SINGLE))
     {
@@ -42,6 +43,7 @@ void Mode_Con_2_Loop(void)
     {
         Target_Num = (Target_Num == 0 ? 5 : Target_Num) ;    // 模拟目标数字
         isCarLoad = true ;
+        HandMode = true ;
     }
     // 起跑判断
     if (Car_Start == false)
