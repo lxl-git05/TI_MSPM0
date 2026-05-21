@@ -3,7 +3,7 @@
 
 // #define MPU6050_Check 
 
-Mode_Typedef curr_mode = Mode_Null  ;        // 当前模式
+Mode_Typedef curr_mode = Mode_Null  ;       // 当前模式
 Mode_Typedef next_mode = Mode_Con_2  ;       // 下一个模式
 
 // ========================== 系统setup loop ==========================
@@ -32,7 +32,6 @@ void Mode_G_Loop(void)
         #ifdef MPU6050_Check
             MPU6050_Data_Error_Check(1000) ;
         #endif
-        Serial_Printf_Normal(&Serial3, "@Hello\n$#") ;
     }
     // 进入下一个模式
     if (Key_Check(KEY_0, KEY_DOUBLE))// 双击
@@ -62,21 +61,29 @@ void Timer_1_Callback(void)
     // 通信数据更新
     Oran_Data_Update();
     // 电机运动转换状态
-    if (curr_mode == Mode_Con_3)    // 提高1
-    {
-        Car_Control_Change_TiGao_1() ;
-    }
-    else if (curr_mode == Mode_Con_1)    // 提高2
-    {
-        Car_Control_Change_TiGao_2() ;
-    }
-    else if (curr_mode == Mode_Con_2)    // 基础
+    if (curr_mode == Mode_Con_2)
     {
         Car_Control_Change_1() ;
+        // 小车运动控制台
+        Car_Control() ;
+    }
+    else if (curr_mode == Mode_Con_3)
+    {
+        Car_Control_Change_TiGao_1() ;
+        // 小车运动控制台
+        Car_Control() ;
+    }
+    else if (curr_mode == Mode_Con_1)
+    {
+        Car_Control_Change_TiGao_2() ;
+        // 小车运动控制台
+        Car_Control() ;
+    }
+    else if (curr_mode == Mode_Angle) 
+    {
+        Oran_Track_Tick() ;
     }
     
-    // 小车运动控制台
-    Car_Control() ;
     // 全局
     Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数
@@ -85,6 +92,10 @@ void Timer_1_Callback(void)
     #endif                  
     // 模式选择
     if (curr_mode == Mode_PID)  { Mode_1_Tick() ;}  // 打印AB的PID参数
+    if (curr_mode == Mode_Angle)
+    {
+        OLED_Printf(0, 10, OLED_6X8,"r=%.2f,s=%.2f",PID_Track.realPoint_Now ,PID_Track.setPoint);
+    }
 }
 
 // ========================== 系统状态配置 ==========================

@@ -1,8 +1,11 @@
 #include "BLE.h"
 
-// 三号串口实现信息发送
-void Serial_Test(void)
-{
-    Serial_Printf_Normal(&Serial3, "@Hello\n$#") ;
-}
+// 3号串口实现信息发送
+// 主要是小车1发送指令,小车2执行即可
+/* 指令集:
+    1. @Car1_Target=%d$#    // 小车1的目标数字
+    2. @Car2_Enable_Back$#  // 允许小车2去到病房
+*/
+
+
 

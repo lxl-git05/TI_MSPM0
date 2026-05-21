@@ -18,8 +18,8 @@ bool HandMode = false ; // 手动模拟启动信号: 一旦开启,那么只能�
 void Mode_Con_2_Setup(void)
 {
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_JuChu=====") ;
-    Serial_printf(&Serial1, "=====[Car1]Mode_JuChu=====\n") ;
+    OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_JiChu=====") ;
+    Serial_printf(&Serial1, "=====[Car1]Mode_JiChu=====\n") ;
 }
 
 void Mode_Con_2_Loop(void)
@@ -69,7 +69,7 @@ void Mode_Con_2_Loop(void)
     }
     // OLED打印栈元素
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_JuChu=====") ;
+    OLED_Printf(0, 0, OLED_6X8, "[Car1]Mode_JiChu") ;
     OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
     OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,size:%d",Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
     OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
@@ -184,7 +184,6 @@ void Car_Control_Change_1(void)
                 // 下一状态配置
                 if (Track_Status == Track_Inter)
                 {
-                    // Serial_printf(&Serial1 ,"Back: Inter\n"); 
                     Car_Status_Typedef  Track_Pop ;
                     StatusStack_Pop(&stack_car, &Track_Pop) ; 
                     next_Status = Car_Status_Fan_1(Track_Pop) ;
@@ -192,7 +191,6 @@ void Car_Control_Change_1(void)
                 // T字路口
                 else if (Track_Status == Track_T_Inter)
                 {
-                    // Serial_printf(&Serial1 ,"Back: T_Inter\n"); 
                     Car_Status_Typedef  Track_Pop ;
                     StatusStack_Pop(&stack_car, &Track_Pop) ; 
                     next_Status = Car_Status_Fan_1(Track_Pop) ;
@@ -200,7 +198,6 @@ void Car_Control_Change_1(void)
                 else if (Track_Status == Track_Over )
                 {
                     next_Status = Car_Stop ;    // 直接停车
-                    // Serial_printf(&Serial1 ,"Back: Over\n"); 
                 }
                 break;
             }

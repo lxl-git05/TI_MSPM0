@@ -1,8 +1,8 @@
 #include "Con_Car.h"
 
 // 阈值
-#define Track_Inter_Th (230)
-#define Track_Over_Th  (180)
+#define Track_Inter_Th (225)
+#define Track_Over_Th  (100)
 
 // 小车开始运动判断
 bool Car_Start = false ;
@@ -26,7 +26,7 @@ void Car_Init(void)
     // 小车状态初始化
     StatusStack_Init(&stack_car) ;
     // 小车初始状态记录
-    Car_Status_Change(curr_Status , !Car_Back_Enable) ; // 只有前进的时候才进行记录
+    Car_Status_Change(curr_Status , 1) ; // 只有前进的时候才进行记录,初始化默认是停止状态
 }
 
 // =================== 回城
@@ -58,7 +58,7 @@ void Car_Status_Change(Car_Status_Typedef next , bool Store_Enable)
     // 打印当前输入的栈
     Car_Status_Typedef temp ;
     StatusStack_Peek(&stack_car , &temp) ;
-    Serial_printf(&Serial1, "stack_cnt = %d , stack_status = %s\n" , StatusStack_Size(&stack_car) - 1, car_str[temp]) ;
+    Serial_printf(&Serial1, "stack_cnt = %d , stack_status = %s\n" , StatusStack_Size(&stack_car), car_str[temp]) ;
 }
 
 // =================== 路口

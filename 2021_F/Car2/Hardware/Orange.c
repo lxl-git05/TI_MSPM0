@@ -2,7 +2,7 @@
 
 Pid_Typedef PID_Track ; // 寻迹PID
 
-#define Track_Speed 120 // 寻迹的基础速度
+#define Track_Speed 60 // 寻迹的基础速度
 int goalSpeed_All = Track_Speed ; // 寻迹的真实速度
 
 // 寻迹状态机
@@ -59,6 +59,8 @@ int Oran_Num[4] = {0} ; // 5.6.7.8.
 int Target_Num = 0 ;    // 目标数字
 int Over_y ;            // 10.
 bool isRoad_T = false;  // 11. 判断是否到达T字路口
+
+bool Angle_Track_Check = true ;
 
 // 寻路判定
 bool Is_Road2(void)
@@ -142,6 +144,16 @@ void Road_Get(void)
         // 等待识别左右双数字
         // ============================
         case ROAD_GET_3:
+            // Road4重新更新
+            if(Is_Road4())
+            {
+                Road3[0] = Oran_Num[0];
+                Road3[1] = Oran_Num[1];
+                Road3[2] = Oran_Num[2];
+                Road3[3] = Oran_Num[3];
+
+                Serial_printf( &Serial1, "Road3 again = [%d %d %d %d]\n", Road3[0], Road3[1], Road3[2], Road3[3] );
+            }
 
             if(Is_Road2())
             {
@@ -237,9 +249,19 @@ void Oran_Track_Tick(void)
     // 2. PID计算
     PID_Update(&PID_Track, PID_Track.realPoint_Now) ;
 
-    // 3. 输出速度(基础速度+偏置速度)
-    Motor_SetSpeed(&Motor_A, goalSpeed_All - PID_Track.setPoint) ;
-    Motor_SetSpeed(&Motor_B, goalSpeed_All + PID_Track.setPoint) ;
+    // 3.1 加1步校准
+    if ((PID_Track.realPoint_Now > 20 || PID_Track.realPoint_Now < -20) && Angle_Track_Check == true)
+    {
+        Motor_SetSpeed(&Motor_A,  - PID_Track.setPoint) ;
+        Motor_SetSpeed(&Motor_B,  + PID_Track.setPoint) ;
+    }
+    // 3.2 正常跑
+    else 
+    {
+        Motor_SetSpeed(&Motor_A, goalSpeed_All - PID_Track.setPoint) ;
+        Motor_SetSpeed(&Motor_B, goalSpeed_All + PID_Track.setPoint) ;
+        Angle_Track_Check = false ;
+    }
 
     // 4. 展示效果
     // Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%d\n",PID_Track.goalPoint ,PID_Track.realPoint_Now ,PID_Track.setPoint,Road_y);
