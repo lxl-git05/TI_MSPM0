@@ -60,6 +60,8 @@ int Target_Num = 0 ;    // 目标数字
 int Over_y ;            // 10.
 bool isRoad_T = false;  // 11. 判断是否到达T字路口
 
+bool Angle_Track_Check = true ;
+
 // 寻路判定
 bool Is_Road2(void)
 {
@@ -247,9 +249,19 @@ void Oran_Track_Tick(void)
     // 2. PID计算
     PID_Update(&PID_Track, PID_Track.realPoint_Now) ;
 
-    // 3. 输出速度(基础速度+偏置速度)
-    Motor_SetSpeed(&Motor_A, goalSpeed_All - PID_Track.setPoint) ;
-    Motor_SetSpeed(&Motor_B, goalSpeed_All + PID_Track.setPoint) ;
+    // 3.1 加1步校准
+    if ((PID_Track.realPoint_Now > 20 || PID_Track.realPoint_Now < -20) && Angle_Track_Check == true)
+    {
+        Motor_SetSpeed(&Motor_A,  - PID_Track.setPoint) ;
+        Motor_SetSpeed(&Motor_B,  + PID_Track.setPoint) ;
+    }
+    // 3.2 正常跑
+    else 
+    {
+        Motor_SetSpeed(&Motor_A, goalSpeed_All - PID_Track.setPoint) ;
+        Motor_SetSpeed(&Motor_B, goalSpeed_All + PID_Track.setPoint) ;
+        Angle_Track_Check = false ;
+    }
 
     // 4. 展示效果
     // Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%d\n",PID_Track.goalPoint ,PID_Track.realPoint_Now ,PID_Track.setPoint,Road_y);

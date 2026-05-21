@@ -2,7 +2,7 @@
 
 // 阈值
 #define Track_Inter_Th (225)
-#define Track_Over_Th  (190)
+#define Track_Over_Th  (100)
 
 // 小车开始运动判断
 bool Car_Start = false ;

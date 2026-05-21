@@ -15,6 +15,8 @@ extern int Oran_Num[4]; // 5.6.7.8.
 extern int Target_Num;  // 目标数字
 extern int Over_y ;     // 10.
 
+extern bool Angle_Track_Check ;
+
 // 初始化
 void Oran_Init(void) ;
 
