@@ -217,7 +217,7 @@ void Oran_Data_Update(void)
     if (Serial_GetNewPackageFlag_HEX(&Serial2))
     {
         line_x      = Serial2.Hex_Data.Serial_New_Package[2] - 1000 ;    // 2: x_line 
-        Road_y      = Serial2.Hex_Data.Serial_New_Package[4] ;           // 4: Road_y
+        Road_y      = Serial2.Hex_Data.Serial_New_Package[4] > 250 ? 0 : Serial2.Hex_Data.Serial_New_Package[4];           // 4: Road_y
 
         Oran_Num[0] = Serial2.Hex_Data.Serial_New_Package[5];            // 5.6.7.8: 发送过来的数字
         Oran_Num[1] = Serial2.Hex_Data.Serial_New_Package[6];
@@ -226,7 +226,7 @@ void Oran_Data_Update(void)
 
         Road_Get() ;
 
-        Over_y      = Serial2.Hex_Data.Serial_New_Package[10];           // 10. 终点的y值
+        Over_y      = Serial2.Hex_Data.Serial_New_Package[10] > 250 ? 0 : Serial2.Hex_Data.Serial_New_Package[10];           // 10. 终点的y值
 
         isRoad_T = Serial2.Hex_Data.Serial_New_Package[11];
 

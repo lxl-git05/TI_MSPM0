@@ -21,7 +21,6 @@ void Mode_Con_1_Setup(void)
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "[Car1]Mode_TiGao_2") ;
     Serial_printf(&Serial1, "[Car1]Mode_TiGao_2\n") ;
-    Target_Num = 5 ;
 }
 
 void Mode_Con_1_Loop(void)
@@ -33,7 +32,7 @@ void Mode_Con_1_Loop(void)
     // 模拟数字识别
     if (Key_Check(KEY_1, KEY_DOUBLE))
     {
-        Target_Num = Target_Num + 1 == 9 ? 5 : Target_Num + 1 ;
+        Target_Num = (Target_Num + 1 == 9 || Target_Num + 1 == 1) ? 5 : Target_Num + 1 ;
     }
 
     // 起跑判断
@@ -45,8 +44,6 @@ void Mode_Con_1_Loop(void)
             Car_Start = true ;
             Serial_printf(&Serial1, "Target : %d\n\n",Target_Num) ;
             Car_Status_Change(Car_Forward , 1) ;    // 记录小车运动轨迹
-            // 新增:蓝牙: 发送小车1的目标数字
-            Serial_Printf_Normal(&Serial3, "@Car1_Target=%d$#" , Target_Num) ;
         }
     }
     // 回城判断:小车已经运行了为前提
@@ -129,6 +126,8 @@ void Car_Control_Change_TiGao_2(void)
                 {
                     Car_Status_Change(Car_Stop , !Car_Back_Enable);
                     // 完成出发路径                    
+                    // 发送自身数字,提醒小车2出发
+                    Serial_Printf_Normal(&Serial3, "@Car1_Target=%d$#" , Target_Num) ;
                 }
                 Track_Status = Track_Null ;
                 break;
