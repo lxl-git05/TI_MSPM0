@@ -142,6 +142,16 @@ void Road_Get(void)
         // 等待识别左右双数字
         // ============================
         case ROAD_GET_3:
+            // Road4重新更新
+            if(Is_Road4())
+            {
+                Road3[0] = Oran_Num[0];
+                Road3[1] = Oran_Num[1];
+                Road3[2] = Oran_Num[2];
+                Road3[3] = Oran_Num[3];
+
+                Serial_printf( &Serial1, "Road3 again = [%d %d %d %d]\n", Road3[0], Road3[1], Road3[2], Road3[3] );
+            }
 
             if(Is_Road2())
             {

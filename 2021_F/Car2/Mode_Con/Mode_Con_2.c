@@ -14,7 +14,8 @@ extern StatusStack_Typedef stack_car ;
 void Mode_Con_2_Setup(void)
 {
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====JiChu=====") ;
+    OLED_Printf(0, 0, OLED_6X8, "=====[Car2]Mode_JiChu=====") ;
+    Serial_printf(&Serial1, "=====[Car2]Mode_JiChu=====\n") ;
 }
 
 void Mode_Con_2_Loop(void)

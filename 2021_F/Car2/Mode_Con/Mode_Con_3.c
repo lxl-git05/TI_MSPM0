@@ -17,8 +17,8 @@ extern StatusStack_Typedef stack_car ;
 void Mode_Con_3_Setup(void)
 {
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====TiGao 1=====") ;
-    Serial_printf(&Serial1, "================Begin: TiGao 1================\n") ;
+    OLED_Printf(0, 0, OLED_6X8, "=====[Car2]Mode_TiGao_1=====") ;
+    Serial_printf(&Serial1, "=====[Car2]Mode_TiGao_1=====\n") ;
 }
 
 void Mode_Con_3_Loop(void)

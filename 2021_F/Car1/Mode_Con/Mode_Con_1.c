@@ -1,7 +1,7 @@
 #include "AllHeader.h"
 #include "Control.h"
 
-// 提高题部分2-Car1
+// 提高题部分2-Car1-测试
 
 // 外部参数
 extern int Road2[2] ;
@@ -19,7 +19,8 @@ bool Car1_Back_Enable_Tigao2 = false ;
 void Mode_Con_1_Setup(void)
 {
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====Mode_Con_1=====") ;
+    OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_TiGao_2=====") ;
+    Serial_printf(&Serial1, "=====[Car1]Mode_TiGao_2=====\n") ;
 }
 
 void Mode_Con_1_Loop(void)

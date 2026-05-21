@@ -1,5 +1,7 @@
 #include "AllHeader.h"
 
+// 基础部分123-Car1-完成
+
 // 外部参数
 extern int Road2[2] ;
 extern int Road3[4] ;
@@ -14,11 +16,23 @@ extern StatusStack_Typedef stack_car ;
 void Mode_Con_2_Setup(void)
 {
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====Mode_Con_2=====") ;
+    OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_JuChu=====") ;
+    Serial_printf(&Serial1, "=====[Car1]Mode_JuChu=====\n") ;
 }
 
 void Mode_Con_2_Loop(void)
 {
+    // 指示灯
+    if (isLoad() == true)
+    {
+        RGB_Set(1, 0, 0);
+        isCarLoad = true ;
+    }
+    else
+    {
+        RGB_Set(0, 1, 0) ;
+        isCarLoad = false ;
+    }
     // 模拟目标数字
     if (Key_Check(KEY_1, KEY_SINGLE))
     {
@@ -41,7 +55,7 @@ void Mode_Con_2_Loop(void)
         }
     }
     // 回城判断
-    if (Key_Check(KEY_1, KEY_LONG))
+    if (Key_Check(KEY_1, KEY_LONG) || (isCarLoad == false && Car_Start == true && Car_Back_Enable == false))
     {
         Car_Back_Enable = true ;
         
@@ -53,9 +67,11 @@ void Mode_Con_2_Loop(void)
     }
     // OLED打印栈元素
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====Mode_Con_2=====") ;
+    OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_JuChu=====") ;
     OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
-    OLED_Printf(0, 30, OLED_6X8, "tar=%d,size:%d",Target_Num,StatusStack_Size(&stack_car)) ;
+    OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,size:%d",Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
+    OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
+    OLED_Printf(0, 50, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
     // PID
     if (Serial_GetNewPackageFlag_ABC(&Serial1))
     {

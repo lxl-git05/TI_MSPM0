@@ -1,7 +1,7 @@
 #include "AllHeader.h"
 #include "Con_Car.h"
 
-// 提高题部分1-Car1
+// 提高题部分1-Car1-完成
 
 // 外部参数
 extern int Road2[2] ;
@@ -19,7 +19,8 @@ bool Car1_Back_Enable_Tigao1 = false ;
 void Mode_Con_3_Setup(void)
 {
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====Mode_Con_3=====") ;
+    OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_TiGao_1=====") ;
+    Serial_printf(&Serial1, "=====[Car1]Mode_TiGao_1=====\n") ;
 }
 
 void Mode_Con_3_Loop(void)
@@ -50,7 +51,7 @@ void Mode_Con_3_Loop(void)
     // 回城判断:小车已经运行了为前提
     if (Car_Start == true && Car1_Back_Enable_Tigao1 == false)
     {
-        if (isCarLoad == false)
+        if (isCarLoad == false || Key_Check(KEY_1, KEY_SINGLE))
         {
             Car_Back_Enable = true ;    // 回城
             Car1_Back_Enable_Tigao1 = true ;    // 只允许执行一次回城确认
