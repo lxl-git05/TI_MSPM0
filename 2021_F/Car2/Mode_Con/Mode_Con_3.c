@@ -18,13 +18,20 @@ void Mode_Con_3_Setup(void)
 {
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "=====TiGao 1=====") ;
+    Serial_printf(&Serial1, "================Begin: TiGao 1================\n") ;
 }
 
 void Mode_Con_3_Loop(void)
 {
     // 小车装填与否判断
-    if (isLoad() == true) { isCarLoad = true ; }
-    else {isCarLoad = false ;}
+    if (isLoad() == true) { isCarLoad = true ; RGB_Set(0,1,0) ;}
+    else {isCarLoad = false ; RGB_Set(1,0,0) ; }
+
+    // 模拟
+    if (Key_Check(KEY_1, KEY_DOUBLE))
+    {
+        Target_Num = Target_Num == 4 ? 3 : 4 ;  // 3和4之间选择
+    }
 
     // 起跑判断
     if (Car_Start == false)
@@ -39,8 +46,10 @@ void Mode_Con_3_Loop(void)
     }
     // 回城判断
     // 1. 模拟回城 2. 正式版:蓝牙控制回城
-    if ( Key_Check(KEY_1, KEY_SINGLE) || ( Serial_GetNewPackageFlag_ABC(&Serial3) && Serial_CheckCmd(&Serial3,"Car2_Enable_Back")) )
+    if ( (Key_Check(KEY_1, KEY_SINGLE) || ( Serial_GetNewPackageFlag_ABC(&Serial3) && Serial_CheckCmd(&Serial3,"Car2_Enable_Back"))) && Car_Start )
     {
+        // 小车开始回城
+        Car_Back_Enable = true ;
         // 小车状态激活        
         Car_Status_Typedef temp;
         if (StatusStack_Pop(&stack_car, &temp))
@@ -48,6 +57,9 @@ void Mode_Con_3_Loop(void)
             next_Status = Car_Status_Fan_1(temp);
         }
     }
+    // OLED
+    OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
+    OLED_Printf(0, 30, OLED_6X8, "roa=%d,tar=%d,size:%d", Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
 }
 
 // 状态转换台
@@ -77,6 +89,7 @@ void Car_Control_Change_TiGao_1(void)
                     // 停止
                     Car_Status_Change(Car_Stop , 1);
                 }
+                break;
             }
             case Car_Turn_F : 
             {
@@ -138,6 +151,23 @@ void Car_Control_Change_TiGao_1(void)
             }
             case Car_Stop:
             {
+                break;
+            }
+            case Car_Turn_L:
+            {
+                if (Con_MPU_Get_Yaw() > 90) 
+                {
+                    Car_Status_Change(Car_Forward , 0);
+                }
+                break;
+            }
+            
+            case Car_Turn_R:
+            {
+                if (Con_MPU_Get_Yaw() < -90) 
+                {
+                    Car_Status_Change(Car_Forward , 0);
+                }
                 break;
             }
             default:

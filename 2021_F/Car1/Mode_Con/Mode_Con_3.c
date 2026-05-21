@@ -25,9 +25,15 @@ void Mode_Con_3_Setup(void)
 void Mode_Con_3_Loop(void)
 {
     // 小车装填与否判断
-    if (isLoad() == true) { isCarLoad = true ; }
-    else {isCarLoad = false ;}
+    if (isLoad() == true) { isCarLoad = true ; RGB_Set(0,1,0) ;}
+    else {isCarLoad = false ; RGB_Set(1,0,0) ; }
 
+    // 模拟
+    if (Key_Check(KEY_1, KEY_DOUBLE))
+    {
+        Target_Num = Target_Num == 4 ? 3 : 4 ;  // 3和4之间选择
+    }
+    
     // 起跑判断
     if (Car_Start == false)
     {
