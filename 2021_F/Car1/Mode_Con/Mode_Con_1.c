@@ -1,7 +1,7 @@
 #include "AllHeader.h"
 #include "Control.h"
 
-// 提高题部分2-Car1-测试
+// 提高题2-Car1-测试
 
 // 外部参数
 extern int Road2[2] ;
@@ -19,15 +19,22 @@ bool Car1_Back_Enable_Tigao2 = false ;
 void Mode_Con_1_Setup(void)
 {
     OLED_Clear() ;
-    OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_TiGao_2=====") ;
-    Serial_printf(&Serial1, "=====[Car1]Mode_TiGao_2=====\n") ;
+    OLED_Printf(0, 0, OLED_6X8, "[Car1]Mode_TiGao_2") ;
+    Serial_printf(&Serial1, "[Car1]Mode_TiGao_2\n") ;
+    Target_Num = 5 ;
 }
 
 void Mode_Con_1_Loop(void)
 {
     // 小车装填与否判断
-    if (isLoad() == true) { isCarLoad = true ; }
-    else {isCarLoad = false ;}
+    if (isLoad() == true) { isCarLoad = true ; RGB_Set(0,1,0) ;}
+    else {isCarLoad = false ; RGB_Set(1,0,0) ; }
+
+    // 模拟数字识别
+    if (Key_Check(KEY_1, KEY_DOUBLE))
+    {
+        Target_Num = Target_Num + 1 == 9 ? 5 : Target_Num + 1 ;
+    }
 
     // 起跑判断
     if (Car_Start == false)
@@ -45,7 +52,7 @@ void Mode_Con_1_Loop(void)
     // 回城判断:小车已经运行了为前提
     if (Car_Start == true && Car1_Back_Enable_Tigao2 == false)
     {
-        if (isCarLoad == false)
+        if (isCarLoad == false || Key_Check(KEY_1, KEY_SINGLE))
         {
             Car_Back_Enable = true ;    // 回城
             Car1_Back_Enable_Tigao2 = true ;    // 只允许执行一次回城确认
@@ -58,6 +65,13 @@ void Mode_Con_1_Loop(void)
             }
         }
     }
+    // OLED
+    OLED_Clear() ;
+    OLED_Printf(0, 0, OLED_6X8, "[Car1]Mode_TiGao_2") ;
+    OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
+    OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,size:%d",Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
+    OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
+    OLED_Printf(0, 50, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
 }
 
 // 小车状态转换台-提高2

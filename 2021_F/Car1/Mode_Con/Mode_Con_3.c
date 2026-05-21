@@ -29,7 +29,7 @@ void Mode_Con_3_Loop(void)
     if (isLoad() == true) { isCarLoad = true ; RGB_Set(0,1,0) ;}
     else {isCarLoad = false ; RGB_Set(1,0,0) ; }
 
-    // 模拟
+    // 模拟数字识别
     if (Key_Check(KEY_1, KEY_DOUBLE))
     {
         Target_Num = Target_Num == 4 ? 3 : 4 ;  // 3和4之间选择
