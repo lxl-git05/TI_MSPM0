@@ -171,18 +171,18 @@ void Car_Control_Change_TiGao_2(void)
                 if (Track_Status == Track_Inter)
                 {
                    Car_To_Next_Status_From_Stack() ;
+                   // 第2个十字路口通知小车2回程(回程的T字在视觉方面识别为十字)
+                   static int Inter_cnt = 0 ;
+                   Inter_cnt ++ ;
+                   if (T_cnt >= 2)
+                   {
+                        Serial_Printf_Normal(&Serial3, "@Car2_Enable_Back$#") ; // 蓝牙: 允许小车2启动
+                   }
                 }
                 // T字路口
                 else if (Track_Status == Track_T_Inter)
                 {
                    Car_To_Next_Status_From_Stack() ;
-                   // 第2个T字路口通知小车2回程
-                   static int T_cnt = 0 ;
-                   T_cnt ++ ;
-                   if (T_cnt >= 2)
-                   {
-                        Serial_Printf_Normal(&Serial3, "@Car2_Enable_Back$#") ; // 蓝牙: 允许小车2启动
-                   }
                 }
                 else if (Track_Status == Track_Over )
                 {
