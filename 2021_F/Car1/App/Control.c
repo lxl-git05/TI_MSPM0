@@ -1,6 +1,7 @@
 #include "Control.h"
 #include "Orange.h"
 #include "MPU6050_Angle.h"
+#include "MyPID.h"
 
 // 5种状态: 停车 寻迹直行 路口直行 左转 右转 掉头
 Car_Status_Typedef curr_Status = Car_Stop;
@@ -27,14 +28,13 @@ void Car_Control(void)
     }
     if (curr_Status != next_Status) // 这里一定要用if,因为条件改变是在==的条件下完成的,否则下一刻curr会与next相等,导致永远到不了!=     
     {
-        // Car_Status_Store() ;
         switch (next_Status) // setup
         {
-            case Car_Forward  : break;
-            case Car_Turn_L   : Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw( 100) ; break;  // 左转
-            case Car_Turn_R   : Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(-100) ; break;  // 右转
-            case Car_Turn_F   : break; // 路口直行
-            case Car_Turn_H   : Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw( 200) ; break;  // 180度旋转
+            case Car_Forward  : PID_Param_Reset(&PID_Track) ; break;
+            case Car_Turn_L   : PID_Param_Reset(&PID_Angle) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw( 100) ; break;  // 左转
+            case Car_Turn_R   : PID_Param_Reset(&PID_Angle) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(-100) ; break;  // 右转
+            case Car_Turn_F   : PID_Param_Reset(&PID_Track) ; break; // 路口直行
+            case Car_Turn_H   : PID_Param_Reset(&Motor_A.PID_s) ; PID_Param_Reset(&Motor_B.PID_s) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw( 200) ; break;  // 180度旋转
             case Car_Stop     : Motor_SetSpeed(&Motor_A , 0) ;Motor_SetSpeed(&Motor_B , 0) ; break; // 停车
         }
     }

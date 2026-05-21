@@ -4,12 +4,12 @@
 #include "MPU6050_base.h"
 
 // 预先给定的MPU6050零漂值
-#define MPU6050_AX_Offset	0.00319470209f
-#define MPU6050_AY_Offset	0.0141645512f
-#define MPU6050_AZ_Offset	0.1284374f
-#define MPU6050_GX_Offset 	-9.22001266f
-#define MPU6050_GY_Offset 	0.312282354f
-#define MPU6050_GZ_Offset 	-1.40995896f
+#define MPU6050_AX_Offset	0.0359617919f
+#define MPU6050_AY_Offset	0.0149310306f
+#define MPU6050_AZ_Offset	0.118646145f
+#define MPU6050_GX_Offset 	-9.31312943f
+#define MPU6050_GY_Offset 	0.308235139f
+#define MPU6050_GZ_Offset 	-1.41599667f
 
 // 零漂自校准
 #define STILL_ACCEL_THRES_BASE_SQ   (0.05f * 0.05f)   // 基础阈值 0.05g

@@ -26,7 +26,7 @@ void Mode_Con_2_Loop(void)
     }
     if (Key_Check(KEY_1, KEY_DOUBLE))
     {
-        Target_Num = (Target_Num == 0 ? 1 : Target_Num) ;    // 模拟目标数字
+        Target_Num = (Target_Num == 0 ? 5 : Target_Num) ;    // 模拟目标数字
         isCarLoad = true ;
     }
     // 起跑判断
@@ -55,7 +55,15 @@ void Mode_Con_2_Loop(void)
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "=====Mode_Con_2=====") ;
     OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
-    OLED_Printf(0, 30, OLED_6X8, "roa=%d,tar=%d,size:%d", Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
+    OLED_Printf(0, 30, OLED_6X8, "tar=%d,size:%d",Target_Num,StatusStack_Size(&stack_car)) ;
+    // PID
+    if (Serial_GetNewPackageFlag_ABC(&Serial1))
+    {
+        // 得到数据
+        Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Track.Kp) ;
+        Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Track.Ki) ;
+        Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Track.Kd) ;
+    }
 }
 
 // 小车状态转换台

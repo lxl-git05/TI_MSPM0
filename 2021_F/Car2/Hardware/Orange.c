@@ -186,7 +186,7 @@ void Road_Get(void)
 // 树莓派通信
 void Oran_Init(void)
 {
-    PID_Init(&PID_Track, 1.15f, 0.0f, 0.6f, 250, -250, 1000) ;
+    PID_Init(&PID_Track, 1.32f, 0.0f, 1.39f, 30, -30, 1000) ;
     Serial2.Hex_Data.Serial_New_Package[2] = 1000 ; // 初始化没寻到线就是0(1000-1000)
 }
 
@@ -214,48 +214,6 @@ void Oran_Data_Update(void)
 
         Road_Get() ;
 
-        // // 到达双字模地点
-        // if (Oran_Num[0] && Oran_Num[1] && !(Oran_Num[2] && Oran_Num[3]))
-        // {
-        //     // Road2(中端)
-        //     if (road_State == ROAD_IDLE)
-        //     {
-        //         Road2[0] = Oran_Num[0] ;
-        //         Road2[1] = Oran_Num[1] ;
-        //         road_State_Change(ROAD_GET_2) ;
-        //         // road_State = ROAD_GET_2 ;
-        //     }
-        //     // 远端Road
-        //     else if (road_State == ROAD_GET_3)
-        //     {
-        //         // 识别左端
-        //         if (Road3[0] == Oran_Num[0] || Road3[0] == Oran_Num[1])
-        //         {
-        //             Road4_L[0] = Oran_Num[0] ;
-        //             Road4_L[1] = Oran_Num[1] ;
-        //             // road_State = ROAD_FINISH ;
-        //             road_State_Change(ROAD_GET_4L) ;
-        //         }
-        //         // 右端
-        //         else 
-        //         {
-        //             Road4_R[0] = Oran_Num[0] ;
-        //             Road4_R[1] = Oran_Num[1] ;
-        //             // road_State = ROAD_FINISH ;
-        //             road_State_Change(ROAD_GET_4R) ;
-        //         }
-        //     }
-        // }
-        // // 到达4字模地点
-        // if (Oran_Num[0] && Oran_Num[1] && (Oran_Num[2] && Oran_Num[3]) && road_State == ROAD_GET_2)
-        // {
-        //     Road3[0] = Oran_Num[0] ;
-        //     Road3[1] = Oran_Num[1] ;
-        //     Road3[2] = Oran_Num[2] ;
-        //     Road3[3] = Oran_Num[3] ;
-        //     // road_State = ROAD_GET_3 ;
-        //     road_State_Change(ROAD_GET_3) ;
-        // }
         Over_y      = Serial2.Hex_Data.Serial_New_Package[10];           // 10. 终点的y值
 
         isRoad_T = Serial2.Hex_Data.Serial_New_Package[11];
