@@ -16,6 +16,8 @@ extern StatusStack_Typedef stack_car ;
 
 bool Car1_Back_Enable_Tigao1 = false ;
 
+extern bool HandMode ;
+
 void Mode_Con_3_Setup(void)
 {
     OLED_Clear() ;
@@ -26,13 +28,27 @@ void Mode_Con_3_Setup(void)
 void Mode_Con_3_Loop(void)
 {
     // 小车装填与否判断
-    if (isLoad() == true) { isCarLoad = true ; RGB_Set(0,1,0) ;}
-    else {isCarLoad = false ; RGB_Set(1,0,0) ; }
+    if (isLoad() == true && HandMode == false) 
+    { 
+        isCarLoad = true ; RGB_Set(0,1,0) ;
+    }
+    else if (isLoad() == false && HandMode == false) 
+    {
+        isCarLoad = false ;  
+    }
+
+    RGB_Set(isCarLoad,!isCarLoad,0); // 小车Load后为R, Load前为G
 
     // 模拟数字识别
+    if (Key_Check(KEY_1, KEY_SINGLE))
+    {
+        Target_Num = Target_Num == 4 ? 3 : 4 ;      // 3和4之间选择
+    }
     if (Key_Check(KEY_1, KEY_DOUBLE))
     {
-        Target_Num = Target_Num == 4 ? 3 : 4 ;  // 3和4之间选择
+        Target_Num = (Target_Num == 4 ? 4 : 3) ;    // 模拟目标数字
+        isCarLoad = true ;
+        HandMode = true ;
     }
     
     // 起跑判断
@@ -51,7 +67,7 @@ void Mode_Con_3_Loop(void)
     // 回城判断:小车已经运行了为前提
     if (Car_Start == true && Car1_Back_Enable_Tigao1 == false)
     {
-        if (isCarLoad == false || Key_Check(KEY_1, KEY_SINGLE))
+        if (isCarLoad == false || Key_Check(KEY_1, KEY_LONG))
         {
             Car_Back_Enable = true ;    // 回城
             Car1_Back_Enable_Tigao1 = true ;    // 只允许执行一次回城确认
@@ -133,20 +149,21 @@ void Car_Control_Change_TiGao_1(void)
                 else if (Track_Status == Track_Over )
                 {
                     Car_Status_Change(Car_Stop , 1);
-                    // 打印栈元素
-                    // 点亮指示灯
+                    // 发送数模信息给小车2,(提高1)
+                    Serial_Printf_Normal(&Serial3, "@rd_two_L=%d$#",Road2[0]) ; // 发送中端数模给小车2
+                    Serial_Printf_Normal(&Serial3, "@rd_two_R=%d$#",Road2[1]) ; // 发送中端数模给小车2
                 }
                 Track_Status = Track_Null ;
                 break;
             }
             case Car_Turn_L : 
             {
-                if (Con_MPU_Get_Yaw() > 90) {Car_Status_Change(Car_Forward , 1);}
+                if (MPU6050_Turn_Yaw_Is_Ok(90)) {Car_Status_Change(Car_Forward , 1);}
                 break;
             }
             case Car_Turn_R : 
             {
-                if (Con_MPU_Get_Yaw() < -90) {Car_Status_Change(Car_Forward , 1);}
+                if (MPU6050_Turn_Yaw_Is_Ok(-90)) {Car_Status_Change(Car_Forward , 1);}
                 break;
             }
             case Car_Turn_F : 
@@ -156,7 +173,7 @@ void Car_Control_Change_TiGao_1(void)
             }
             case Car_Turn_H : 
             {
-                if (Con_MPU_Get_Yaw() > 180) {Car_Status_Change(Car_Forward , 1);}
+                if (MPU6050_Turn_Yaw_Is_Ok(180)) {Car_Status_Change(Car_Forward , 1);}
                 break;
             }
             case Car_Stop:
@@ -192,7 +209,7 @@ void Car_Control_Change_TiGao_1(void)
             
             case Car_Turn_L : 
             {
-                if (Con_MPU_Get_Yaw() > 90) 
+                if (MPU6050_Turn_Yaw_Is_Ok(90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
                     Serial_Printf_Normal(&Serial3, "@Car2_Enable_Back$#") ; // 转向完成之后允许小车2返程
@@ -201,7 +218,7 @@ void Car_Control_Change_TiGao_1(void)
             }
             case Car_Turn_R : 
             {
-                if (Con_MPU_Get_Yaw() < -90) 
+                if (MPU6050_Turn_Yaw_Is_Ok(-90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
                     Serial_Printf_Normal(&Serial3, "@Car2_Enable_Back$#") ; // 转向完成之后允许小车2返程
@@ -218,7 +235,7 @@ void Car_Control_Change_TiGao_1(void)
             }
             case Car_Turn_H : 
             {
-                if (Con_MPU_Get_Yaw() > 180) 
+                if (MPU6050_Turn_Yaw_Is_Ok(180)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
                 }
