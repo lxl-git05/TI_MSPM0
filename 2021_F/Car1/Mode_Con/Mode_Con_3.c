@@ -200,7 +200,6 @@ void Car_Control_Change_TiGao_1(void)
                 else if (Track_Status == Track_T_Inter)
                 {
                     Car_To_Next_Status_From_Stack() ;
-                    Car2_Enable_Back = 100 ;    // 允许小车2回城
                 }
                 else if (Track_Status == Track_Over )
                 {
@@ -214,7 +213,7 @@ void Car_Control_Change_TiGao_1(void)
                 if (MPU6050_Turn_Yaw_Is_Ok(90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
-                    Car2_Enable_Back = 100 ;
+                    Car2_Enable_Back = true ;
                 }
                 break;
             }
@@ -223,7 +222,7 @@ void Car_Control_Change_TiGao_1(void)
                 if (MPU6050_Turn_Yaw_Is_Ok(-90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
-                    Car2_Enable_Back = 100 ;
+                    Car2_Enable_Back = true ;
                 }
                 break;
             }

@@ -2,13 +2,6 @@
 #include "AllHeader.h"
 #include "BLE.h"
 
-extern int Road2[2] ;
-extern int Road3[4] ;
-extern int Road4_L[2] ;
-extern int Road4_R[2] ;
-
-extern int Car_1_Target_Num ; 
-
 // #define MPU6050_Check 
 
 Mode_Typedef curr_mode = Mode_Null  ;       // 当前模式
@@ -68,6 +61,7 @@ void Timer_1_Callback(void)
 {
     // 通信数据更新
     Oran_Data_Update();
+    BLE_Get() ; // 蓝牙通信
     // 电机运动转换状态
     if (curr_mode == Mode_Con_2)
     {

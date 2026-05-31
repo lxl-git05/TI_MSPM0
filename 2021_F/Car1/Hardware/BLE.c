@@ -8,7 +8,7 @@ extern int Road4_R[2] ;
 
 extern int Target_Num ; 
 
-int Car2_Enable_Back = 0 ;
+bool Car2_Enable_Back = 0 ;
 
 void BLE_SendData(void)
 {
@@ -18,7 +18,7 @@ void BLE_SendData(void)
     Data[0] = Target_Num;
 
     // 2. 是否允许Car2倒车
-    Data[1] = Car2_Enable_Back; // 100对应true, 0对应false
+    Data[1] = Car2_Enable_Back == true ? 100 : 0 ; // 100对应true, 0对应false
 
     // 3. Road2
     Data[2] = Road2[0] * 10
@@ -38,8 +38,6 @@ void BLE_SendData(void)
     Data[5] = Road4_R[0] * 10
             + Road4_R[1];
 
-    Serial_Send_HEX_Package(&Serial3,
-                            Data,
-                            6);
+    Serial_Send_HEX_Package(&Serial3, Data, 6);
 }
 

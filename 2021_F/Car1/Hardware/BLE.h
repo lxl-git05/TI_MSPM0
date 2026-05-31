@@ -6,6 +6,6 @@
 
 void BLE_SendData(void) ;
 
-extern int Car2_Enable_Back ;
+extern bool Car2_Enable_Back ;
 
 #endif
