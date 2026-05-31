@@ -1,8 +1,7 @@
 #include "Orange.h"
 
+// Pid_Typedef PID_Line;   // 寻迹角度环
 Pid_Typedef PID_Track ; // 寻迹PID
-
-#define Track_Speed 120 // 寻迹的基础速度
 int goalSpeed_All = Track_Speed ; // 寻迹的真实速度
 
 // 寻迹状态机
@@ -51,8 +50,7 @@ int Road3[4] = {0,0,0,0} ;      // 远端数字(4个)
 int Road4_L[2] = {0,0} ;        // 远端左边(2个)
 int Road4_R[2] = {0,0} ;        // 远端右边(2个)
 
-int Pos_last;           // 1.1
-int Pos_curr;           // 1.2
+int Pos_x;              // 1.
 int line_x ;            // 2.
 int Road_y = 0 ;        // 4.
 int Oran_Num[4] = {0} ; // 5.6.7.8. 
@@ -199,6 +197,8 @@ void Road_Get(void)
 void Oran_Init(void)
 {
     PID_Init(&PID_Track, 1.32f, 0.0f, 1.39f, 30, -30, 1000) ;
+    // PID_Init(&PID_Line ,  0.0f, 0.0f,  0.0f, 30, -30, 1000) ;
+    // PID_Line.goalPoint = 0;
     Serial2.Hex_Data.Serial_New_Package[2] = 1000 ; // 初始化没寻到线就是0(1000-1000)
 }
 
@@ -216,6 +216,7 @@ void Oran_Data_Update(void)
 {
     if (Serial_GetNewPackageFlag_HEX(&Serial2))
     {
+        Pos_x       = Serial2.Hex_Data.Serial_New_Package[2] - 180  ;    // 1: Pos_x 
         line_x      = Serial2.Hex_Data.Serial_New_Package[2] - 1000 ;    // 2: x_line 
         Road_y      = Serial2.Hex_Data.Serial_New_Package[4] ;           // 4: Road_y
 
@@ -235,7 +236,7 @@ void Oran_Data_Update(void)
 
 
 // 寻迹PID代码 20ms
-void Oran_Track_Tick(void)
+void Oran_Track_Tick(int BaseSpeed)
 {
     // 1. 更新香橙派参数
     Oran_Data_Update();
@@ -248,6 +249,9 @@ void Oran_Track_Tick(void)
     
     // 2. PID计算
     PID_Update(&PID_Track, PID_Track.realPoint_Now) ;
+    // PID_Update(&PID_Line , Pos_x) ; // 外环
+
+    // 3.0 外环
 
     // 3.1 加1步校准
     if ((PID_Track.realPoint_Now > 20 || PID_Track.realPoint_Now < -20) && Angle_Track_Check == true)
@@ -258,8 +262,8 @@ void Oran_Track_Tick(void)
     // 3.2 正常跑
     else 
     {
-        Motor_SetSpeed(&Motor_A, goalSpeed_All - PID_Track.setPoint) ;
-        Motor_SetSpeed(&Motor_B, goalSpeed_All + PID_Track.setPoint) ;
+        Motor_SetSpeed(&Motor_A, BaseSpeed - PID_Track.setPoint) ;
+        Motor_SetSpeed(&Motor_B, BaseSpeed + PID_Track.setPoint) ;
         Angle_Track_Check = false ;
     }
 

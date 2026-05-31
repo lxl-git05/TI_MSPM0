@@ -3,8 +3,8 @@
 
 // #define MPU6050_Check 
 
-Mode_Typedef curr_mode = Mode_Null  ;       // 当前模式
-Mode_Typedef next_mode = Mode_Con_1  ;       // 下一个模式
+Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
+Mode_Typedef next_mode = Mode_Con_2  ;       // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -64,17 +64,21 @@ void Timer_1_Callback(void)
     if (curr_mode == Mode_Con_2)
     {
         Car_Control_Change_1() ;
+        // 小车运动控制台
+        Car_Control() ;
     }
     else if (curr_mode == Mode_Con_3)
     {
         Car_Control_Change_TiGao_1() ;
+        // 小车运动控制台
+        Car_Control() ;
     }
     else if (curr_mode == Mode_Con_1)
     {
         Car_Control_Change_TiGao_2() ;
+        // 小车运动控制台
+        Car_Control() ;
     }
-    // 小车运动控制台
-    Car_Control() ;
     // 全局
     Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数
@@ -82,7 +86,8 @@ void Timer_1_Callback(void)
         MPU6050_Angle_Update_Tick() ;   // 耗时1.45ms
     #endif                  
     // 模式选择
-    if (curr_mode == Mode_PID)  { Mode_1_Tick() ;}  // 打印AB的PID参数
+    if (curr_mode == Mode_PID)    { Mode_1_Tick() ;}  // 打印AB的PID参数
+    if (curr_mode == Mode_Angle)  { Mode_2_Tick() ;}  // MPU6050转向环
 }
 
 // ========================== 系统状态配置 ==========================

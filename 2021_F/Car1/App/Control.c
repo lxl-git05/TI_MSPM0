@@ -18,11 +18,11 @@ void Car_Control(void)
     {
         switch (curr_Status)
         {
-            case Car_Forward  : Oran_Track_Tick() ;       break;    // 寻迹环
-            case Car_Turn_L   : Con_MPU_Motor_Tick() ;    break;    // 角度环左转,直到有指令修改Status
-            case Car_Turn_R   : Con_MPU_Motor_Tick() ;    break;    // 角度环右转,直到有指令修改Status
-            case Car_Turn_F   : Motor_SetSpeed(&Motor_A , 120) ;Motor_SetSpeed(&Motor_B , 120) ; break; // 路口直行
-            case Car_Turn_H   : Con_MPU_Motor_Tick() ;    break;    // half圈,也就是180度翻转
+            case Car_Forward  : Oran_Track_Tick(Track_Speed) ; break; // 寻迹环
+            case Car_Turn_L   : Con_MPU_Motor_Tick() ;    break;      // 角度环左转,直到有指令修改Status
+            case Car_Turn_R   : Con_MPU_Motor_Tick() ;    break;      // 角度环右转,直到有指令修改Status
+            case Car_Turn_F   : Motor_SetSpeed(&Motor_A , Track_Speed) ;Motor_SetSpeed(&Motor_B , Track_Speed) ; break; // 路口直行
+            case Car_Turn_H   : Con_MPU_Motor_Turn180_Tick() ;    break;    // half圈,也就是180度翻转
             case Car_Stop     : Motor_SetSpeed(&Motor_A , 0) ;Motor_SetSpeed(&Motor_B , 0) ; break; // 停车
         }
     }
@@ -31,10 +31,10 @@ void Car_Control(void)
         switch (next_Status) // setup
         {
             case Car_Forward  : PID_Param_Reset(&PID_Track) ; break;
-            case Car_Turn_L   : Angle_Track_Check = true ; PID_Param_Reset(&PID_Angle) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw( 100) ; break;  // 左转
-            case Car_Turn_R   : Angle_Track_Check = true ; PID_Param_Reset(&PID_Angle) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(-100) ; break;  // 右转
+            case Car_Turn_L   : Angle_Track_Check = true ; PID_Param_Reset(&Motor_A.PID_s) ;PID_Param_Reset(&PID_Angle) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(90)  ; break;  // 左转
+            case Car_Turn_R   : Angle_Track_Check = true ; PID_Param_Reset(&Motor_A.PID_s) ;PID_Param_Reset(&PID_Angle) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(-90) ; break;  // 右转
             case Car_Turn_F   : PID_Param_Reset(&PID_Track) ; break; // 路口直行
-            case Car_Turn_H   : Angle_Track_Check = true ; PID_Param_Reset(&Motor_A.PID_s) ; PID_Param_Reset(&Motor_B.PID_s) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw( 200) ; break;  // 180度旋转
+            case Car_Turn_H   : Angle_Track_Check = true ; PID_Param_Reset(&Motor_A.PID_s) ;PID_Param_Reset(&Motor_A.PID_s) ; PID_Param_Reset(&Motor_B.PID_s) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(95) ; break;  // 180度旋转,前面90没毛病，因为是半圈旋转接下
             case Car_Stop     : Motor_SetSpeed(&Motor_A , 0) ;Motor_SetSpeed(&Motor_B , 0) ; break; // 停车
         }
     }

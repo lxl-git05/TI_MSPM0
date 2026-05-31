@@ -149,12 +149,12 @@ void Car_Control_Change_1(void)
             }
             case Car_Turn_L : 
             {
-                if (Con_MPU_Get_Yaw() > 90) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
+                if (MPU6050_Turn_Yaw_Is_Ok(90)) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
                 break;
             }
             case Car_Turn_R : 
             {
-                if (Con_MPU_Get_Yaw() < -90) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
+                if (MPU6050_Turn_Yaw_Is_Ok(-90)) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
                 break;
             }
             case Car_Turn_F : 
@@ -164,7 +164,7 @@ void Car_Control_Change_1(void)
             }
             case Car_Turn_H : 
             {
-                if (Con_MPU_Get_Yaw() > 180) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
+                if (MPU6050_Turn_Yaw_Is_Ok(180)) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
                 break;
             }
             case Car_Stop:
@@ -204,7 +204,7 @@ void Car_Control_Change_1(void)
             
             case Car_Turn_L : 
             {
-                if (Con_MPU_Get_Yaw() > 90) 
+                if (MPU6050_Turn_Yaw_Is_Ok(90)) 
                 {
                     Car_Status_Typedef  Track_Pop ;
                     StatusStack_Pop(&stack_car, &Track_Pop) ; 
@@ -214,7 +214,7 @@ void Car_Control_Change_1(void)
             }
             case Car_Turn_R : 
             {
-                if (Con_MPU_Get_Yaw() < -90) 
+                if (MPU6050_Turn_Yaw_Is_Ok(-90)) 
                 {
                     Car_Status_Typedef  Track_Pop ;
                     StatusStack_Pop(&stack_car, &Track_Pop) ; 
@@ -234,7 +234,7 @@ void Car_Control_Change_1(void)
             }
             case Car_Turn_H : 
             {
-                if (Con_MPU_Get_Yaw() > 180) 
+                if (MPU6050_Turn_Yaw_Is_Ok(180)) 
                 {
                     Car_Status_Typedef  Track_Pop ;
                     StatusStack_Pop(&stack_car, &Track_Pop) ; 

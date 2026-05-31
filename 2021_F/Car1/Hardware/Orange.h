@@ -6,6 +6,8 @@
 #include "Timer_Counter.h"
 #include "ti_msp_dl_config.h"
 
+#define Track_Speed 120 // 寻迹的基础速度
+
 extern Pid_Typedef PID_Track ;
 
 extern bool isRoad_T ;  // 判断是否到达T字路口
@@ -24,7 +26,7 @@ void Oran_Init(void) ;
 void Oran_Data_Update(void) ;
 
 // 寻迹PID代码 20ms
-void Oran_Track_Tick(void) ;
+void Oran_Track_Tick(int BaseSpeed) ;
 
 // 得到目标数字
 void Oran_Get_Target(void) ;

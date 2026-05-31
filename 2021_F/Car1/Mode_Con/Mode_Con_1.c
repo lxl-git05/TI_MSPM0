@@ -54,7 +54,7 @@ void Mode_Con_1_Loop(void)
             Car_Back_Enable = true ;    // 回城
             Car1_Back_Enable_Tigao2 = true ;    // 只允许执行一次回城确认
 
-            // 小车状态激活        
+            // 小车状态激活
             Car_Status_Typedef temp;
             if (StatusStack_Pop(&stack_car, &temp))
             {
@@ -173,7 +173,7 @@ void Car_Control_Change_TiGao_2(void)
                    // 第2个十字路口通知小车2回程(回程的T字在视觉方面识别为十字)
                    static int Inter_cnt = 0 ;
                    Inter_cnt ++ ;
-                   if (T_cnt >= 2)
+                   if (Inter_cnt >= 2)
                    {
                         Serial_Printf_Normal(&Serial3, "@Car2_Enable_Back$#") ; // 蓝牙: 允许小车2启动
                    }

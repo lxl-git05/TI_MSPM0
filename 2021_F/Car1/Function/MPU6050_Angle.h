@@ -66,4 +66,6 @@ void MPU6050_Angle_Init(void) ;
 void MPU6050_Data_Error_Check(int Sanple_Cnt) ;
 // 得到陀螺仪的六个较精确角度
 void MPU6050_Angle_Update_Tick(void) ;	// 耗时1.45ms
+// 检查转向到目标角度是否完成
+bool MPU6050_Turn_Yaw_Is_Ok(int targetYaw) ;
 #endif

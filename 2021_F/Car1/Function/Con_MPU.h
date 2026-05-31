@@ -21,4 +21,6 @@ void Con_MPU_Tar_Yaw(int Traget_Yaw) ;
 // 得到当前yaw角度
 int Con_MPU_Get_Yaw(void) ;
 
+void Con_MPU_Motor_Turn180_Tick(void) ;
+
 #endif
