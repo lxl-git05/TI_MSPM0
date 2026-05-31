@@ -118,6 +118,18 @@ void MPU6050_Angle_Update_Tick(void)
 	MPU6050_Raw_Deal(20);
 }
 
+// 检查转向到目标角度是否完成
+bool MPU6050_Turn_Yaw_Is_Ok(int targetYaw)
+{
+    float err = fabs(targetYaw - MPU_Real.yaw);
+    float gyro = fabs(MPU_Cali.GZ);	// 角速度小,代表几乎暂停,说明转向完成
+    if (err < 5.0f && gyro < 7.0f)
+    {
+        return true;
+    }
+    return false;
+}
+
 /*
 	后续可能会使用的函数
 */

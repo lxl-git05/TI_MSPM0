@@ -64,24 +64,21 @@ void Timer_1_Callback(void)
     if (curr_mode == Mode_Con_2)
     {
         Car_Control_Change_1() ;
-        // 小车运动控制台
         Car_Control() ;
     }
     else if (curr_mode == Mode_Con_3)
     {
         Car_Control_Change_TiGao_1() ;
-        // 小车运动控制台
         Car_Control() ;
     }
     else if (curr_mode == Mode_Con_1)
     {
         Car_Control_Change_TiGao_2() ;
-        // 小车运动控制台
         Car_Control() ;
     }
     else if (curr_mode == Mode_Angle) 
     {
-        Oran_Track_Tick() ;
+        Oran_Track_Tick(0) ;
     }
     
     // 全局

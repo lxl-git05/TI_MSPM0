@@ -1,8 +1,6 @@
 #include "Orange.h"
 
 Pid_Typedef PID_Track ; // 寻迹PID
-
-#define Track_Speed 60 // 寻迹的基础速度
 int goalSpeed_All = Track_Speed ; // 寻迹的真实速度
 
 // 寻迹状态机
@@ -235,7 +233,7 @@ void Oran_Data_Update(void)
 
 
 // 寻迹PID代码 20ms
-void Oran_Track_Tick(void)
+void Oran_Track_Tick(int BaseSpeed)
 {
     // 1. 更新香橙派参数
     Oran_Data_Update();
@@ -258,8 +256,8 @@ void Oran_Track_Tick(void)
     // 3.2 正常跑
     else 
     {
-        Motor_SetSpeed(&Motor_A, goalSpeed_All - PID_Track.setPoint) ;
-        Motor_SetSpeed(&Motor_B, goalSpeed_All + PID_Track.setPoint) ;
+        Motor_SetSpeed(&Motor_A, BaseSpeed - PID_Track.setPoint) ;
+        Motor_SetSpeed(&Motor_B, BaseSpeed + PID_Track.setPoint) ;
         Angle_Track_Check = false ;
     }
 
