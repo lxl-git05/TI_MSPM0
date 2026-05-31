@@ -14,6 +14,10 @@ extern bool Car_Start ;
 extern bool Car_Back_Enable ;
 extern StatusStack_Typedef stack_car ;
 
+extern bool HandMode; // 手动模拟启动信号: 一旦开启,那么只能手动进行
+int Car_1_Target_Num ;  // 小车1的目标数字
+bool Car2_Enable_Back = false ;
+
 void Mode_Con_3_Setup(void)
 {
     OLED_Clear() ;
@@ -24,13 +28,25 @@ void Mode_Con_3_Setup(void)
 void Mode_Con_3_Loop(void)
 {
     // 小车装填与否判断
-    if (isLoad() == true) { isCarLoad = true ; RGB_Set(0,1,0) ;}
-    else {isCarLoad = false ; RGB_Set(1,0,0) ; }
+    if (isLoad() == true && HandMode == false)
+    {
+        isCarLoad = true ;
+    }
+    else if (isLoad() == false && HandMode == false)
+    {
+        isCarLoad = false ;
+    }
 
     // 模拟
+    if (Key_Check(KEY_1, KEY_SINGLE))
+    {
+        Target_Num = Target_Num == 4 ? 3 : 4 ;      // 3和4之间选择
+    }
     if (Key_Check(KEY_1, KEY_DOUBLE))
     {
-        Target_Num = Target_Num == 4 ? 3 : 4 ;  // 3和4之间选择
+        Target_Num = (Target_Num == 0 ? 4 : Target_Num) ;    // 模拟目标数字
+        isCarLoad = true ;
+        HandMode = true ;
     }
 
     // 起跑判断
@@ -40,13 +56,24 @@ void Mode_Con_3_Loop(void)
         if (isCarLoad == true && Target_Num != 0)
         {
             Car_Start = true ;
-            Serial_printf(&Serial1, "Target : %d\n\n",Target_Num) ;
+            Serial_printf(&Serial1, "[Car2]Target : %d\n\n",Target_Num) ;
             Car_Status_Change(Car_Forward , 1) ;    // 记录小车运动轨迹
         }
     }
     // 回城判断
     // 1. 模拟回城 2. 正式版:蓝牙控制回城
-    if ( (Key_Check(KEY_1, KEY_SINGLE) || ( Serial_GetNewPackageFlag_ABC(&Serial3) && Serial_CheckCmd(&Serial3,"Car2_Enable_Back"))) && Car_Start )
+    if (Key_Check(KEY_1, KEY_LONG) && Car_Start)
+    {
+        // 小车开始回城
+        Car_Back_Enable = true ;
+        // 小车状态激活        
+        Car_Status_Typedef temp;
+        if (StatusStack_Pop(&stack_car, &temp))
+        {
+            next_Status = Car_Status_Fan_1(temp);
+        }
+    }
+    else if (Car_Start && Car2_Enable_Back) 
     {
         // 小车开始回城
         Car_Back_Enable = true ;
@@ -58,8 +85,39 @@ void Mode_Con_3_Loop(void)
         }
     }
     // OLED
+    OLED_Clear() ;
+    OLED_Printf(0, 0, OLED_6X8, "[Car2]Mode_TiGao_1") ;
     OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
-    OLED_Printf(0, 30, OLED_6X8, "roa=%d,tar=%d,size:%d", Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
+    OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,c_1:%d",Road_y,Target_Num,Car_1_Target_Num) ;
+    OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
+    OLED_Printf(0, 50, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
+    // BLE
+    if (Serial_GetNewPackageFlag_HEX(&Serial3))
+    {
+        // 1. 目标数字
+        Car_1_Target_Num = Serial3.Hex_Data.Serial_New_Package[1];
+
+        // // 2. 是否允许倒车
+        Car2_Enable_Back = Serial3.Hex_Data.Serial_New_Package[2] == 100 ? 1 : 0 ;
+
+        // 3. Road2
+        Road2[0] = Serial3.Hex_Data.Serial_New_Package[3] / 10;
+        Road2[1] = Serial3.Hex_Data.Serial_New_Package[3] % 10;
+
+        // 4. Road3
+        Road3[0] = Serial3.Hex_Data.Serial_New_Package[4] / 1000;
+        Road3[1] = (Serial3.Hex_Data.Serial_New_Package[4] / 100) % 10;
+        Road3[2] = (Serial3.Hex_Data.Serial_New_Package[4] / 10) % 10;
+        Road3[3] = Serial3.Hex_Data.Serial_New_Package[4] % 10;
+
+        // 5. 左路
+        Road4_L[0] = Serial3.Hex_Data.Serial_New_Package[5] / 10;
+        Road4_L[1] = Serial3.Hex_Data.Serial_New_Package[5] % 10;
+
+        // 6. 右路
+        Road4_R[0] = Serial3.Hex_Data.Serial_New_Package[6] / 10;
+        Road4_R[1] = Serial3.Hex_Data.Serial_New_Package[6] % 10;
+    }
 }
 
 // 状态转换台
@@ -143,7 +201,7 @@ void Car_Control_Change_TiGao_1(void)
             }
             case Car_Turn_H : 
             {
-                if (Con_MPU_Get_Yaw() > 180) 
+                if (MPU6050_Turn_Yaw_Is_Ok(180)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
                 }
@@ -155,7 +213,7 @@ void Car_Control_Change_TiGao_1(void)
             }
             case Car_Turn_L:
             {
-                if (Con_MPU_Get_Yaw() > 90) 
+                if (MPU6050_Turn_Yaw_Is_Ok(90)) 
                 {
                     Car_Status_Change(Car_Forward , 0);
                 }
@@ -164,7 +222,7 @@ void Car_Control_Change_TiGao_1(void)
             
             case Car_Turn_R:
             {
-                if (Con_MPU_Get_Yaw() < -90) 
+                if (MPU6050_Turn_Yaw_Is_Ok(-90)) 
                 {
                     Car_Status_Change(Car_Forward , 0);
                 }

@@ -16,6 +16,8 @@ extern StatusStack_Typedef stack_car ;
 
 bool Car1_Back_Enable_Tigao2 = false ;
 
+extern bool HandMode ;
+
 void Mode_Con_1_Setup(void)
 {
     OLED_Clear() ;
@@ -25,14 +27,26 @@ void Mode_Con_1_Setup(void)
 
 void Mode_Con_1_Loop(void)
 {
-    // 小车装填与否判断
-    if (isLoad() == true) { isCarLoad = true ; RGB_Set(0,1,0) ;}
-    else {isCarLoad = false ; RGB_Set(1,0,0) ; }
-
-    // 模拟数字识别
-    if (Key_Check(KEY_1, KEY_DOUBLE))
+    // 指示灯
+    if (isLoad() == true && HandMode == false)
+    {
+        isCarLoad = true ;
+    }
+    else if (isLoad() == false && HandMode == false)
+    {
+        isCarLoad = false ;
+    }
+    RGB_Set(isCarLoad, !isCarLoad, 0) ; // 小车Load后为R,Load前为G
+    // 模拟目标数字
+    if (Key_Check(KEY_1, KEY_SINGLE))
     {
         Target_Num = (Target_Num + 1 == 9 || Target_Num + 1 == 1) ? 5 : Target_Num + 1 ;
+    }
+    if (Key_Check(KEY_1, KEY_DOUBLE))
+    {
+        Target_Num = (Target_Num == 0 ? 5 : Target_Num) ;    // 模拟目标数字
+        isCarLoad = true ;
+        HandMode = true ;
     }
 
     // 起跑判断
@@ -134,12 +148,12 @@ void Car_Control_Change_TiGao_2(void)
             }
             case Car_Turn_L : 
             {
-                if (Con_MPU_Get_Yaw() > 90) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
+                if (MPU6050_Turn_Yaw_Is_Ok(90)) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
                 break;
             }
             case Car_Turn_R : 
             {
-                if (Con_MPU_Get_Yaw() < -90) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
+                if (MPU6050_Turn_Yaw_Is_Ok(-90)) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
                 break;
             }
             case Car_Turn_F : 
@@ -149,7 +163,7 @@ void Car_Control_Change_TiGao_2(void)
             }
             case Car_Turn_H : 
             {
-                if (Con_MPU_Get_Yaw() > 180) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
+                if (MPU6050_Turn_Yaw_Is_Ok(180)) {Car_Status_Change(Car_Forward , !Car_Back_Enable);}
                 break;
             }
             case Car_Stop:
@@ -192,7 +206,7 @@ void Car_Control_Change_TiGao_2(void)
             
             case Car_Turn_L : 
             {
-                if (Con_MPU_Get_Yaw() > 90) 
+                if (MPU6050_Turn_Yaw_Is_Ok(90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
                 }
@@ -200,7 +214,7 @@ void Car_Control_Change_TiGao_2(void)
             }
             case Car_Turn_R : 
             {
-                if (Con_MPU_Get_Yaw() < -90) 
+                if (MPU6050_Turn_Yaw_Is_Ok(-90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
                 }
@@ -216,7 +230,7 @@ void Car_Control_Change_TiGao_2(void)
             }
             case Car_Turn_H : 
             {
-                if (Con_MPU_Get_Yaw() > 180) 
+                if (MPU6050_Turn_Yaw_Is_Ok(180)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
                 }

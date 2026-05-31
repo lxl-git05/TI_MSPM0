@@ -60,8 +60,6 @@ void Mode_Con_3_Loop(void)
             Car_Start = true ;
             Serial_printf(&Serial1, "Target : %d\n\n",Target_Num) ;
             Car_Status_Change(Car_Forward , 1) ;    // 记录小车运动轨迹
-            // 新增:发送小车1的目标数字
-            Serial_Printf_Normal(&Serial3, "@Car1_Target=%d$#" , Target_Num) ;
         }
     }
     // 回城判断:小车已经运行了为前提
@@ -87,6 +85,12 @@ void Mode_Con_3_Loop(void)
     OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,size:%d",Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
     OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
     OLED_Printf(0, 50, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
+
+    // 检查小车之间的通信
+    if (Key_Check(KEY_2, KEY_SINGLE))
+    {
+        Serial_Printf_Normal(&Serial3, "@Test=%d$#" , 100) ;
+    }
 }
 
 // 状态转换台
@@ -149,9 +153,6 @@ void Car_Control_Change_TiGao_1(void)
                 else if (Track_Status == Track_Over )
                 {
                     Car_Status_Change(Car_Stop , 1);
-                    // 发送数模信息给小车2,(提高1)
-                    Serial_Printf_Normal(&Serial3, "@rd_two_L=%d$#",Road2[0]) ; // 发送中端数模给小车2
-                    Serial_Printf_Normal(&Serial3, "@rd_two_R=%d$#",Road2[1]) ; // 发送中端数模给小车2
                 }
                 Track_Status = Track_Null ;
                 break;
@@ -199,6 +200,7 @@ void Car_Control_Change_TiGao_1(void)
                 else if (Track_Status == Track_T_Inter)
                 {
                     Car_To_Next_Status_From_Stack() ;
+                    Car2_Enable_Back = 100 ;    // 允许小车2回城
                 }
                 else if (Track_Status == Track_Over )
                 {
@@ -212,7 +214,7 @@ void Car_Control_Change_TiGao_1(void)
                 if (MPU6050_Turn_Yaw_Is_Ok(90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
-                    Serial_Printf_Normal(&Serial3, "@Car2_Enable_Back$#") ; // 转向完成之后允许小车2返程
+                    Car2_Enable_Back = 100 ;
                 }
                 break;
             }
@@ -221,7 +223,7 @@ void Car_Control_Change_TiGao_1(void)
                 if (MPU6050_Turn_Yaw_Is_Ok(-90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
-                    Serial_Printf_Normal(&Serial3, "@Car2_Enable_Back$#") ; // 转向完成之后允许小车2返程
+                    Car2_Enable_Back = 100 ;
                 }
                 break;
             }

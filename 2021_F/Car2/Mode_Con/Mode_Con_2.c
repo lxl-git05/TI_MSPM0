@@ -1,6 +1,6 @@
 #include "AllHeader.h"
 
-// 基础部分123-Car2-测试
+// 基础部分123-Car2-完成
 
 // 外部参数
 extern int Road2[2] ;
@@ -14,6 +14,7 @@ extern bool Car_Back_Enable ;
 extern StatusStack_Typedef stack_car ;
 
 bool HandMode = false ; // 手动模拟启动信号: 一旦开启,那么只能手动进行
+extern int Car_1_Target_Num ;
 
 void Mode_Con_2_Setup(void)
 {
@@ -70,8 +71,8 @@ void Mode_Con_2_Loop(void)
     // OLED打印栈元素
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "[Car2]Mode_JiChu") ;
-    OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
-    OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,size:%d",Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
+    OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,is_T=%d,ne=%d", MPU_Real.yaw,isRoad_T,next_Status) ;
+    OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,c_1:%d",Road_y,Target_Num,Car_1_Target_Num) ;
     OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
     OLED_Printf(0, 50, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
     // PID

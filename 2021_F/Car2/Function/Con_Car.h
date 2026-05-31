@@ -4,6 +4,10 @@
 #include "ti_msp_dl_config.h"
 #include "AllHeader.h"
 
+// 阈值
+#define Track_Inter_Th (225)
+#define Track_Over_Th  (100)
+
 // 小车初始化
 void Car_Init(void) ;
 

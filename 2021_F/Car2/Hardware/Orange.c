@@ -1,4 +1,5 @@
 #include "Orange.h"
+#include "RGB.h"
 
 Pid_Typedef PID_Track ; // 寻迹PID
 int goalSpeed_All = Track_Speed ; // 寻迹的真实速度
@@ -59,6 +60,7 @@ int Over_y ;            // 10.
 bool isRoad_T = false;  // 11. 判断是否到达T字路口
 
 bool Angle_Track_Check = true ;
+extern int Car_1_Target_Num ;
 
 // 寻路判定
 bool Is_Road2(void)
@@ -110,8 +112,9 @@ void Road_Get(void)
 
             if(Is_Road2())
             {
-                Road2[0] = Oran_Num[0];
-                Road2[1] = Oran_Num[1];
+                // 逻辑: 如果大车先发送了数字字模，那么就屏蔽树莓派发来的数模,否则就接收树莓派的数据
+                Road2[0] = Road2[0] == 0 ? Oran_Num[0] : Road2[0] ;
+                Road2[1] = Road2[1] == 0 ? Oran_Num[1] : Road2[1] ;
                 road_State_Change(ROAD_GET_2);
                 Serial_printf( &Serial1, "Road2 = [%d %d]\n", Road2[0], Road2[1] );
             }
@@ -125,10 +128,11 @@ void Road_Get(void)
         case ROAD_GET_2:
             if(Is_Road4())
             {
-                Road3[0] = Oran_Num[0];
-                Road3[1] = Oran_Num[1];
-                Road3[2] = Oran_Num[2];
-                Road3[3] = Oran_Num[3];
+                // 逻辑: 如果大车先发送了数字字模，那么就屏蔽树莓派发来的数模,否则就接收树莓派的数据
+                Road3[0] = Road3[0] == 0 ? Oran_Num[0] : Road3[0] ;
+                Road3[1] = Road3[1] == 0 ? Oran_Num[1] : Road3[1] ;
+                Road3[2] = Road3[2] == 0 ? Oran_Num[2] : Road3[2] ;
+                Road3[3] = Road3[3] == 0 ? Oran_Num[3] : Road3[3] ;
 
                 road_State_Change(ROAD_GET_3);
 
@@ -145,10 +149,10 @@ void Road_Get(void)
             // Road4重新更新
             if(Is_Road4())
             {
-                Road3[0] = Oran_Num[0];
-                Road3[1] = Oran_Num[1];
-                Road3[2] = Oran_Num[2];
-                Road3[3] = Oran_Num[3];
+                Road3[0] = Road3[0] == 0 ? Oran_Num[0] : Road3[0] ;
+                Road3[1] = Road3[1] == 0 ? Oran_Num[1] : Road3[1] ;
+                Road3[2] = Road3[2] == 0 ? Oran_Num[2] : Road3[2] ;
+                Road3[3] = Road3[3] == 0 ? Oran_Num[3] : Road3[3] ;
 
                 Serial_printf( &Serial1, "Road3 again = [%d %d %d %d]\n", Road3[0], Road3[1], Road3[2], Road3[3] );
             }
@@ -164,8 +168,8 @@ void Road_Get(void)
                 // 左路
                 else if(Is_Left_Road())
                 {
-                    Road4_L[0] = Oran_Num[0];
-                    Road4_L[1] = Oran_Num[1];
+                    Road4_L[0] = Road4_L[0] == 0 ? Oran_Num[0] : Road4_L[0] ;
+                    Road4_L[1] = Road4_L[1] == 0 ? Oran_Num[1] : Road4_L[1] ;
 
                     road_State_Change(ROAD_GET_4L);
 
@@ -174,8 +178,8 @@ void Road_Get(void)
                 // 右路
                 else if (Is_Right_Road())
                 {
-                    Road4_R[0] = Oran_Num[0];
-                    Road4_R[1] = Oran_Num[1];
+                    Road4_R[0] = Road4_R[0] == 0 ? Oran_Num[0] : Road4_R[0] ;
+                    Road4_R[1] = Road4_R[1] == 0 ? Oran_Num[1] : Road4_R[1] ;
 
                     road_State_Change(ROAD_GET_4R);
 
@@ -226,7 +230,12 @@ void Oran_Data_Update(void)
 
         Over_y      = Serial2.Hex_Data.Serial_New_Package[10] > 250 ? 0 : Serial2.Hex_Data.Serial_New_Package[10];           // 10. 终点的y值
 
-        isRoad_T = Serial2.Hex_Data.Serial_New_Package[11];
+        isRoad_T = Serial2.Hex_Data.Serial_New_Package[11] == 100 ? 1 : 0;
+
+        if (isRoad_T == 1)
+        {
+            RGB_Set(0, 0, 1);
+        }
 
     }
 }

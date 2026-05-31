@@ -1,10 +1,18 @@
 #include "Mode_G.h"
 #include "AllHeader.h"
+#include "BLE.h"
+
+extern int Road2[2] ;
+extern int Road3[4] ;
+extern int Road4_L[2] ;
+extern int Road4_R[2] ;
+
+extern int Car_1_Target_Num ; 
 
 // #define MPU6050_Check 
 
 Mode_Typedef curr_mode = Mode_Null  ;       // 当前模式
-Mode_Typedef next_mode = Mode_Con_2  ;       // 下一个模式
+Mode_Typedef next_mode = Mode_Con_3  ;       // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -19,7 +27,7 @@ void Mode_G_Setup(void)
     // 小车控制系统初始化
     Car_Init() ;
     // 日志打印
-    Serial_printf(&Serial1, "\n\n\n================= Begin==================\n");
+    Serial_printf(&Serial1, "\n\n\n================= Begin ==================\n");
 }
 
 // 循环loop
@@ -80,7 +88,6 @@ void Timer_1_Callback(void)
     {
         Oran_Track_Tick(0) ;
     }
-    
     // 全局
     Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数

@@ -149,4 +149,13 @@ void Serial_Printf_Normal(Serial_Typedef *pSerial, const char *fmt, ...) ;
 // 打印数据,记得加减乘除都要在后方进行而不是""里面进行
 void Serial_printf(Serial_Typedef *pSerial, const char *fmt, ...);	// 200 - 300us -> 1个%占位符
 
+// HEX
+void Serial_SendBytes(Serial_Typedef *pSerial,
+                      uint8_t *buf,
+                      uint16_t len);
+	
+void Serial_Send_HEX_Package(Serial_Typedef *pSerial,
+                             uint16_t *data,
+                             uint8_t count) ;
+
 #endif

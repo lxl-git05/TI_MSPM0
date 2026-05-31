@@ -4,7 +4,7 @@
 // #define MPU6050_Check 
 
 Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
-Mode_Typedef next_mode = Mode_Con_2  ;       // 下一个模式
+Mode_Typedef next_mode = Mode_Con_3  ;       // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -79,6 +79,8 @@ void Timer_1_Callback(void)
         // 小车运动控制台
         Car_Control() ;
     }
+    // 蓝牙通信
+    BLE_SendData() ;
     // 全局
     Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数
