@@ -7,10 +7,6 @@
 Car_Status_Typedef curr_Status = Car_Stop;
 Car_Status_Typedef next_Status = Car_Stop;
 
-// 路口检测
-Track_Status_Typedef Track_Status      = Track_Null;
-Track_Status_Typedef Track_Status_Back = Track_Null;
-
 // 电机外环控制台,切记控制台只进行控制，不实现状态转换，所以需要手动判断是否控制完成然后进行状态转换
 void Car_Control(void)
 {
