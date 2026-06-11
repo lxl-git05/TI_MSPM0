@@ -34,7 +34,7 @@ void Car_Control(void)
             case Car_Turn_L   : Angle_Track_Check = true ; PID_Param_Reset(&Motor_A.PID_s) ;PID_Param_Reset(&PID_Angle) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(90)  ; break;  // 左转
             case Car_Turn_R   : Angle_Track_Check = true ; PID_Param_Reset(&Motor_A.PID_s) ;PID_Param_Reset(&PID_Angle) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(-90) ; break;  // 右转
             case Car_Turn_F   : PID_Param_Reset(&PID_Track) ; break; // 路口直行
-            case Car_Turn_H   : Angle_Track_Check = true ; PID_Param_Reset(&Motor_A.PID_s) ;PID_Param_Reset(&Motor_A.PID_s) ; PID_Param_Reset(&Motor_B.PID_s) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(95) ; break;  // 180度旋转,前面90没毛病，因为是半圈旋转接下
+            case Car_Turn_H   : Angle_Track_Check = true ; PID_Param_Reset(&PID_Angle) ;  PID_Param_Reset(&Motor_A.PID_s) ; PID_Param_Reset(&Motor_B.PID_s) ; Con_MPU_Yaw_Reset() ; Con_MPU_Tar_Yaw(95) ; break;  // 180度旋转,前面90没毛病，因为是半圈旋转接下
             case Car_Stop     : Motor_SetSpeed(&Motor_A , 0) ;Motor_SetSpeed(&Motor_B , 0) ; break; // 停车
         }
     }

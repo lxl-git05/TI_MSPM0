@@ -84,5 +84,116 @@ void Mode_Con_1_Tick(void)
 
 void Car_Control_Change_TiGao_2(void)
 {
-    
+    // 当前状态和下次状态相同才能进入切换状态
+    if (curr_Status != next_Status) {return;}
+
+    // 开始进行状态转换以及记录
+    // 直行到远端另一端
+    // if (Car_Back_Enable == false)
+    // {
+    //     switch (curr_Status) 
+    //     {
+    //         case Car_Forward: 
+    //         {
+    //             Track_Status_Typedef Track_Status = Car_Inter_Check() ; // 得到路口状态
+    //             // 十字路口 直接直行
+    //             if (Track_Status == Track_Inter)
+    //             {
+    //                 // 直接装填 T_F , 不需要拐弯
+    //                 Car_Status_Change(Car_Turn_F , 1);
+    //             }
+    //             // T字路口作为停止判定
+    //             else if (Track_Status == Track_T_Inter)
+    //             {
+    //                 // 停止
+    //                 Car_Status_Change(Car_Stop , 1);
+    //             }
+    //             break;
+    //         }
+    //         case Car_Turn_F : 
+    //         {
+    //             if (Road_y < 20) {Car_Status_Change(Car_Forward , 1);}
+    //             break;
+    //         }
+    //         case Car_Stop:
+    //         {
+    //             break;
+    //         }
+    //         default:
+    //         {
+    //             // 其他状态都默认不理
+    //             Serial_printf(&Serial1, "Car2 Get Error Status\n") ;
+    //             break;
+    //         }
+    //     }
+    // }
+    // else    // 开始去病房,是直接去到Car_1的病房,而非回城
+    // {
+    //     switch (curr_Status) 
+    //     {
+    //         case Car_Forward: 
+    //         {
+    //             // 得到路口状态
+    //             Track_Status_Typedef Track_Status = Car_Inter_Check() ;
+    //             // 下一状态配置
+    //             if (Track_Status == Track_Inter)
+    //             {
+    //                 // 识别到十字路口,需要根据目标数字进行左转或者是右转
+    //                 if (Target_Num == Road2[0])
+    //                 {
+    //                     Car_Status_Change(Car_Turn_R , 0);
+    //                 }
+    //                 else 
+    //                 {
+    //                     Car_Status_Change(Car_Turn_L , 0);  // 4号左转
+    //                 }
+    //             }
+    //             // T字路口
+    //             else if (Track_Status == Track_T_Inter)
+    //             {
+    //                 // 不可能识别到T型路口
+    //                 Serial_printf(&Serial1, "Car2 Tigao Back Get Error Data") ;
+    //             }
+    //             else if (Track_Status == Track_Over )
+    //             {
+    //                 next_Status = Car_Stop ;    // 直接停车
+    //             }
+    //             break;
+    //         }
+    //         case Car_Turn_H : 
+    //         {
+    //             if (MPU6050_Turn_Yaw_Is_Ok(180)) 
+    //             {
+    //                 Car_To_Next_Status_From_Stack() ;
+    //             }
+    //             break;
+    //         }
+    //         case Car_Stop:
+    //         {
+    //             break;
+    //         }
+    //         case Car_Turn_L:
+    //         {
+    //             if (MPU6050_Turn_Yaw_Is_Ok(90)) 
+    //             {
+    //                 Car_Status_Change(Car_Forward , 0);
+    //             }
+    //             break;
+    //         }
+            
+    //         case Car_Turn_R:
+    //         {
+    //             if (MPU6050_Turn_Yaw_Is_Ok(-90)) 
+    //             {
+    //                 Car_Status_Change(Car_Forward , 0);
+    //             }
+    //             break;
+    //         }
+    //         default:
+    //         {
+    //             // 其他状态都默认不理
+    //             Serial_printf(&Serial1, "[Back]Car2 Get Error Status\n") ;
+    //         }
+    //     }
+    // }
 } 

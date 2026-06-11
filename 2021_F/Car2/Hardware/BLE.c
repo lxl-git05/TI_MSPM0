@@ -16,7 +16,7 @@ void BLE_Get(void)
     if (Serial_GetNewPackageFlag_HEX(&Serial3))
     {
         // 1. 目标数字
-        Car_1_Target_Num = Serial3.Hex_Data.Serial_New_Package[1];
+        Car_1_Target_Num = Serial3.Hex_Data.Serial_New_Package[1] > 8 ? Car_1_Target_Num : Serial3.Hex_Data.Serial_New_Package[1];
 
         // // 2. 是否允许倒车
         Car2_Enable_Back = Serial3.Hex_Data.Serial_New_Package[2] == 100 ? true : false ;
@@ -38,5 +38,13 @@ void BLE_Get(void)
         // 6. 右路
         Road4_R[0] = Serial3.Hex_Data.Serial_New_Package[6] / 10;
         Road4_R[1] = Serial3.Hex_Data.Serial_New_Package[6] % 10;
+
+        static int send_cnt = 0 ;
+        send_cnt ++ ;
+        if (send_cnt >= 50)
+        {
+            send_cnt = 0 ;
+            Serial_printf(&Serial1, "Car_1_Target_Num=%d,Car2_Enable_Back=%d\n",Car_1_Target_Num , Car2_Enable_Back) ;
+        }
     }
 }

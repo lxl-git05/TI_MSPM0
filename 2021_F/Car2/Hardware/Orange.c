@@ -230,7 +230,7 @@ void Oran_Data_Update(void)
 
         Over_y      = Serial2.Hex_Data.Serial_New_Package[10] > 250 ? 0 : Serial2.Hex_Data.Serial_New_Package[10];           // 10. 终点的y值
 
-        isRoad_T = Serial2.Hex_Data.Serial_New_Package[11] == 100 ? 1 : 0;
+        isRoad_T = (Serial2.Hex_Data.Serial_New_Package[11] == 100 || Serial2.Hex_Data.Serial_New_Package[11] == 1) ? 1 : 0;
 
         if (isRoad_T == 1)
         {

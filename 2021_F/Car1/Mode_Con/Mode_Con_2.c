@@ -179,6 +179,7 @@ void Car_Control_Change_1(void)
         {
             case Car_Forward: 
             {
+                Serial_printf(&Serial1, "road_y=%d\n",Road_y) ;
                 // 得到路口状态
                 Track_Status_Typedef Track_Status = Car_Inter_Check() ;
                 // 下一状态配置

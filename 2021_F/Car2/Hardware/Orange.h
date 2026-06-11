@@ -6,7 +6,7 @@
 #include "Timer_Counter.h"
 #include "ti_msp_dl_config.h"
 
-#define Track_Speed 60 // 寻迹的基础速度
+#define Track_Speed 90 // 寻迹的基础速度
 
 extern Pid_Typedef PID_Track ;
 
