@@ -27,6 +27,8 @@ void Mode_Con_2_Loop(void)
     // 指示灯
     if (isLoad() == true && HandMode == false)
     {
+       // 延时1s
+       Delay_ms(1000) ;
         isCarLoad = true ;
     }
     else if (isLoad() == false && HandMode == false)

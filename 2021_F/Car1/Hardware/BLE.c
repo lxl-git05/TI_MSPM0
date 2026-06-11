@@ -42,10 +42,10 @@ void BLE_SendData(void)
 
     static int send_cnt = 0 ;
     send_cnt ++ ;
-    if (send_cnt >= 50)
-    {
-        send_cnt = 0 ;
-        Serial_printf(&Serial1, "Tar=%d,Car2_Enable_Back=%d\n",Data[0] , Data[1]) ;
-    }
+//     if (send_cnt >= 50)
+//     {
+//         send_cnt = 0 ;
+//         Serial_printf(&Serial1, "Tar=%d,Car2_Enable_Back=%d\n",Data[0] , Data[1]) ;
+//     }
 }
 

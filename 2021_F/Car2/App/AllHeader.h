@@ -20,6 +20,7 @@
 #include "LED_Flash.h"
 #include "Key_Check.h"
 #include "Timer_Counter.h"
+#include "Delay.h"
 
 // app层
 #include "Menu_Key.h"

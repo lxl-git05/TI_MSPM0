@@ -53,6 +53,8 @@ void Timer_0_Callback(void)
     Key_Tick() ;
     // 功能2:LED闪烁监控
     Flash_Mode_Tick() ;
+    // 功能3:全局时间累加
+    Delay_Global_Tick() ;
 }
 
 // 20ms定时器

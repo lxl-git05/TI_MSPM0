@@ -30,6 +30,8 @@ void Mode_Con_3_Loop(void)
     // 小车装填与否判断
     if (isLoad() == true && HandMode == false) 
     { 
+        // 延时1s
+       Delay_ms(1000) ;
         isCarLoad = true ; RGB_Set(0,1,0) ;
     }
     else if (isLoad() == false && HandMode == false) 
