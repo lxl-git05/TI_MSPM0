@@ -7,7 +7,7 @@ Pid_Typedef PID_Angle ;
 // 初始化MPU控制参数
 void Con_MPU_Init(void)
 {
-    PID_Init(&PID_Angle, 6.96, 0.0f, 40.0f, 100, -100, 1000) ;
+    PID_Init(&PID_Angle, 6.0f, 0.0f, 20.0f, 100, -100, 1000) ;
 }
 
 // 20ms让小车旋转固定角度

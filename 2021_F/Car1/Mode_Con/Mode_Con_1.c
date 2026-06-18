@@ -1,7 +1,8 @@
 #include "AllHeader.h"
 #include "Control.h"
+#include "BLE.h"
 
-// 提高题2-Car1-测试
+// 提高题2-Car1：到终点 BLE 发 Car2_Enable_Go；卸药后等 Car1_Enable_Back 再回程
 
 // 外部参数
 extern int Road2[2] ;
@@ -20,6 +21,8 @@ extern bool HandMode ;
 
 void Mode_Con_1_Setup(void)
 {
+    Car2_Enable_Go = false ;
+    Car1_Enable_Back = false ;
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "[Car1]Mode_TiGao_2") ;
     Serial_printf(&Serial1, "[Car1]Mode_TiGao_2\n") ;
@@ -27,6 +30,8 @@ void Mode_Con_1_Setup(void)
 
 void Mode_Con_1_Loop(void)
 {
+    Manual_Serial1_Parse() ;
+
     // 指示灯
     if (isLoad() == true && HandMode == false)
     {
@@ -55,6 +60,7 @@ void Mode_Con_1_Loop(void)
         Oran_Get_Target() ; // 得到目标数字
         if (isCarLoad == true && Target_Num != 0)
         {
+            Delay_ms(1000) ;
             Car_Start = true ;
             Serial_printf(&Serial1, "Target : %d\n\n",Target_Num) ;
             Car_Status_Change(Car_Forward , 1) ;    // 记录小车运动轨迹
@@ -63,7 +69,7 @@ void Mode_Con_1_Loop(void)
     // 回城判断:小车已经运行了为前提
     if (Car_Start == true && Car1_Back_Enable_Tigao2 == false)
     {
-        if (isCarLoad == false || Key_Check(KEY_1, KEY_SINGLE))
+        if ((isCarLoad == false && Car1_Enable_Back) || Key_Check(KEY_1, KEY_LONG))
         {
             Car_Back_Enable = true ;    // 回城
             Car1_Back_Enable_Tigao2 = true ;    // 只允许执行一次回城确认
@@ -83,6 +89,7 @@ void Mode_Con_1_Loop(void)
     OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,size:%d",Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
     OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
     OLED_Printf(0, 50, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
+    OLED_Printf(0, 60, OLED_6X8, "Go:%d,C1Bk:%d", Car2_Enable_Go, Car1_Enable_Back);
 }
 
 // 小车状态转换台-提高2
@@ -139,9 +146,13 @@ void Car_Control_Change_TiGao_2(void)
                 else if (Track_Status == Track_Over )
                 {
                     Car_Status_Change(Car_Stop , !Car_Back_Enable);
-                    // 完成出发路径                    
-                    // 发送自身数字,提醒小车2出发
-                    Serial_Printf_Normal(&Serial3, "@Car1_Target=%d$#" , Target_Num) ;
+                    static bool car1_go_sent = false ;
+                    if (!car1_go_sent)
+                    {
+                        car1_go_sent = true ;
+                        Car2_Enable_Go = true ;
+                        Serial_printf(&Serial1, "[Tigao2] Car2_Enable_Go sent\n") ;
+                    }
                 }
                 Track_Status = Track_Null ;
                 break;
@@ -184,13 +195,6 @@ void Car_Control_Change_TiGao_2(void)
                 if (Track_Status == Track_Inter)
                 {
                    Car_To_Next_Status_From_Stack() ;
-                   // 第2个十字路口通知小车2回程(回程的T字在视觉方面识别为十字)
-                   static int Inter_cnt = 0 ;
-                   Inter_cnt ++ ;
-                   if (Inter_cnt >= 2)
-                   {
-                        Serial_Printf_Normal(&Serial3, "@Car2_Enable_Back$#") ; // 蓝牙: 允许小车2启动
-                   }
                 }
                 // T字路口
                 else if (Track_Status == Track_T_Inter)

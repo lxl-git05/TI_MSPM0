@@ -140,6 +140,8 @@ bool Serial_SetFloatData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , 
 // 文本:2. 封装一个函数,实现简易整数变量调试
 bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , int *Data) ;
 
+// *文本:3. 查看是否接收到相应命令
+bool Serial_CheckCmd(Serial_Typedef *pSerial , char *cmd) ;
 
 //串口发送字符串
 void Serial_send_string(Serial_Typedef *pSerial,char* str) ;

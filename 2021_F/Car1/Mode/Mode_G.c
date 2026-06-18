@@ -1,10 +1,11 @@
 #include "Mode_G.h"
 #include "AllHeader.h"
+#include "BLE.h"
 
 // #define MPU6050_Check 
 
 Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
-Mode_Typedef next_mode = Mode_Con_3  ;       // 下一个模式
+Mode_Typedef next_mode = Mode_Con_1  ;       // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -74,15 +75,18 @@ void Timer_1_Callback(void)
         Car_Control_Change_TiGao_1() ;
         // 小车运动控制台
         Car_Control() ;
+        // 蓝牙通信,提高1:小车1发送指令要求小车2做动作
+        BLE_SendData() ;
     }
     else if (curr_mode == Mode_Con_1)
     {
         Car_Control_Change_TiGao_2() ;
         // 小车运动控制台
         Car_Control() ;
+        BLE_Get() ;
+        BLE_SendData() ;
     }
-    // 蓝牙通信
-    BLE_SendData() ;
+    
     // 全局
     Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数

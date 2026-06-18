@@ -200,7 +200,7 @@ void Road_Get(void)
 // 树莓派通信
 void Oran_Init(void)
 {
-    PID_Init(&PID_Track, 1.32f, 0.0f, 1.39f, 30, -30, 1000) ;
+    PID_Init(&PID_Track, 1.0f, 0.0f, 2.5f , 30, -30, 1000) ;
     Serial2.Hex_Data.Serial_New_Package[2] = 1000 ; // 初始化没寻到线就是0(1000-1000)
 }
 

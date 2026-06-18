@@ -603,3 +603,32 @@ void UART_2_INST_IRQHandler(void)
     }
 #endif
 }
+
+void Serial_SendBytes(Serial_Typedef *pSerial, uint8_t *buf, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; i++)
+    {
+        uart_send_char(pSerial, buf[i]);
+    }
+}
+
+void Serial_Send_HEX_Package(Serial_Typedef *pSerial, uint16_t *data, uint8_t count)
+{
+    uint8_t txBuf[64];
+    uint16_t idx = 0;
+
+    txBuf[idx++] = 0xFF;
+    txBuf[idx++] = 0xAA;
+    txBuf[idx++] = count * 2;
+
+    for (uint8_t i = 0; i < count; i++)
+    {
+        txBuf[idx++] = (data[i] >> 8) & 0xFF;
+        txBuf[idx++] = data[i] & 0xFF;
+    }
+
+    txBuf[idx++] = 0x55;
+    txBuf[idx++] = 0xFE;
+
+    Serial_SendBytes(pSerial, txBuf, idx);
+}

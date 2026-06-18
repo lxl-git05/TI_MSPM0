@@ -355,6 +355,12 @@ bool Serial_SetIntData( Serial_Typedef *pSerial , char *KeyWord , char *cmd , in
 	}
 }
 
+// *文本:3. 查看是否接收到相应命令
+bool Serial_CheckCmd(Serial_Typedef *pSerial , char *cmd)
+{
+    return (strcmp(pSerial->ABC_Data.Serial_New_Package_ABC , cmd) == 0);
+}
+
 // ========================== Serial_printf部分(有DMA的才能使用) ==========================
 
 static void Serial_WriteBuf(Serial_Typedef *pSerial, uint8_t *data, uint16_t len)

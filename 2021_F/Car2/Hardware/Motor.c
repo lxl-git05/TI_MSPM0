@@ -33,7 +33,7 @@ void Motor_A_Init(void)
 	Motor_A.Encoder_Dir = 1;            // 编码器修正方向,这里正常不变
 	
     // PID参数
-    PID_Init(&Motor_A.PID_s , 8.0f , 0.80f , 0.0f , 1000 , -1000 , 1000) ;
+    PID_Init(&Motor_A.PID_s , 8.0f , 0.80f , 2.0f , 1000 , -1000 , 1000) ;
 
     // 状态参数
     Motor_A.State = MOTOR_RUN;
@@ -75,7 +75,7 @@ void Motor_B_Init(void)
 	Motor_B.Encoder_Dir = 1;            // 编码器修正方向,这里为负
 	
     // PID参数
-    PID_Init(&Motor_B.PID_s , 8.0f , 0.80f , 0.0f , 1000 , -1000 , 1000) ;
+    PID_Init(&Motor_B.PID_s , 8.0f , 0.80f , 2.0f , 1000 , -1000 , 1000) ;
 
     // 状态参数
     Motor_B.State = MOTOR_RUN;

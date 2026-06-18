@@ -76,11 +76,11 @@ void Mode_Con_3_Loop(void)
     // OLED
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "[Car2]Mode_TiGao_1") ;
-    OLED_Printf(0, 20, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
-    OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,c_1:%d",Road_y,Target_Num,Car_1_Target_Num) ;
-    OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
-    OLED_Printf(0, 50, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
-    OLED_Printf(0, 60, OLED_6X8, "Enback:%d",Car2_Enable_Back);
+    OLED_Printf(0, 10, OLED_6X8, "yaw=%.2f,cu=%d,ne=%d", MPU_Real.yaw,curr_Status,next_Status) ;
+    OLED_Printf(0, 20, OLED_6X8, "road=%d,tar=%d,c_1:%d",Road_y,Target_Num,Car_1_Target_Num) ;
+    OLED_Printf(0, 30, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
+    OLED_Printf(0, 40, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
+    OLED_Printf(0, 50, OLED_6X8, "Enback:%d",Car2_Enable_Back);
 }
 
 // 状态转换台
