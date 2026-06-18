@@ -44,7 +44,8 @@ void Mode_2_Loop(void)
 // 20ms让小车旋转固定角度
 void Mode_2_Tick(void)
 {
-    Con_MPU_Motor_Turn180_Tick() ;
+    Con_MPU_Motor_Tick() ;
+    // Con_MPU_Motor_Turn180_Tick() ;
 }
 
 void Mode_2_Exit(void)

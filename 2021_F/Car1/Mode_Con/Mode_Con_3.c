@@ -1,7 +1,7 @@
 #include "AllHeader.h"
 #include "Con_Car.h"
 
-// 提高题部分1-Car1-完成
+// 提高题1-Car1：识别3/4上药→去病房→卸药回程→首个十字转向完成后 BLE 发 Enable→Car2 可去同病房
 
 // 外部参数
 extern int Road2[2] ;
@@ -14,12 +14,26 @@ extern bool Car_Start ;
 extern bool Car_Back_Enable ;
 extern StatusStack_Typedef stack_car ;
 
-bool Car1_Back_Enable_Tigao1 = false ;
-
+bool Car1_Back_Enable_Tigao1 = false ; // 卸药回程只触发一次
 extern bool HandMode ;
+
+static bool car1_cross_enable_pending = false ; // 回程已遇十字、等本次 maneuver 完成
+static bool car1_cross_enable_sent = false ;   // Enable 整局只发一次
+
+static void Car1_Try_Send_Car2_Enable(void)
+{
+    if (car1_cross_enable_pending && !car1_cross_enable_sent)
+    {
+        Car2_Enable_Back = true ; // BLE Data[1]=100
+        car1_cross_enable_sent = true ;
+        car1_cross_enable_pending = false ;
+    }
+}
 
 void Mode_Con_3_Setup(void)
 {
+    car1_cross_enable_pending = false ;
+    car1_cross_enable_sent = false ;
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "=====[Car1]Mode_TiGao_1=====") ;
     Serial_printf(&Serial1, "=====[Car1]Mode_TiGao_1=====\n") ;
@@ -27,7 +41,8 @@ void Mode_Con_3_Setup(void)
 
 void Mode_Con_3_Loop(void)
 {
-    // 小车装填与否判断
+    Manual_Serial1_Parse() ; // 仅 @EnBack 测广播；Target/Road 仍来自香橙派
+
     if (isLoad() == true && HandMode == false) 
     { 
         // 延时1s
@@ -87,18 +102,11 @@ void Mode_Con_3_Loop(void)
     OLED_Printf(0, 30, OLED_6X8, "road=%d,tar=%d,size:%d",Road_y,Target_Num,StatusStack_Size(&stack_car)) ;
     OLED_Printf(0, 40, OLED_6X8, "rd2=%d%d,rd3=%d%d%d%d",Road2[0],Road2[1],Road3[0],Road3[1],Road3[2],Road3[3]);
     OLED_Printf(0, 50, OLED_6X8, "rd4L=%d%d,rd4R=%d%d",Road4_L[0],Road4_L[1],Road4_R[0],Road4_R[1]);
-
-    // 检查小车之间的通信
-    if (Key_Check(KEY_2, KEY_SINGLE))
-    {
-        Serial_Printf_Normal(&Serial3, "@Test=%d$#" , 100) ;
-    }
+    OLED_Printf(0, 60, OLED_6X8, "C2En:%d,H:%d", Car2_Enable_Back, HandMode) ;
 }
 
-// 状态转换台
 void Car_Control_Change_TiGao_1(void)
 {
-    // 当前状态和下次状态相同才能进入切换状态
     if (curr_Status != next_Status) {return;}
 
     // 开始进行状态转换以及记录
@@ -108,46 +116,38 @@ void Car_Control_Change_TiGao_1(void)
         {
             case Car_Forward: 
             {
-                // 得到路口状态
                 Track_Status_Typedef Track_Status = Car_Inter_Check() ;
-                // 下一状态配置
-                // 十字路口只有1处含数字
                 if (Track_Status == Track_Inter)
                 {
                     if      (Target_Num == 1)           { Car_Status_Change(Car_Turn_L , 1);}
                     else if (Target_Num == 2)           { Car_Status_Change(Car_Turn_R , 1);}
                     else if (Target_Num == Road2[0])    { Car_Status_Change(Car_Turn_L , 1);}
                     else if (Target_Num == Road2[1])    { Car_Status_Change(Car_Turn_R , 1);}
-                    else                                { Car_Status_Change(Car_Turn_F , 1);}    // 路口直行
+                    else                                { Car_Status_Change(Car_Turn_F , 1);}
                 }
-                // T字路口有两类数字列( 4 + 2(L) + 2(R) )
                 else if (Track_Status == Track_T_Inter)
                 {
-                    // 还在直道
                     if (StatusStack_Size(&stack_car) < 8)
                     {
                         if      (Target_Num == Road3[0]) { Car_Status_Change(Car_Turn_L , 1);}
                         else if (Target_Num == Road3[1]) { Car_Status_Change(Car_Turn_L , 1);}
                         else if (Target_Num == Road3[2]) { Car_Status_Change(Car_Turn_R , 1);}
                         else if (Target_Num == Road3[3]) { Car_Status_Change(Car_Turn_R , 1);}
-                        else { Serial_printf(&Serial1, "T[4] Catch Failed") ;}    // 报警
+                        else { Serial_printf(&Serial1, "T[4] Catch Failed") ;}
                     }
-                    // 在最后的T字路口
                     else
                     {
-                        // 左转路口
                         if (Target_Num == Road3[0] || Target_Num == Road3[1])
                         {
-                            if (Target_Num == Road4_L[0])         { Car_Status_Change(Car_Turn_L , 1);}
-                            else if (Target_Num == Road4_L[1])    { Car_Status_Change(Car_Turn_R , 1);}
-                            else { Serial_printf(&Serial1, "T[2] Left Catch Failed") ;}    // 报警
+                            if      (Target_Num == Road4_L[0]) { Car_Status_Change(Car_Turn_L , 1);}
+                            else if (Target_Num == Road4_L[1]) { Car_Status_Change(Car_Turn_R , 1);}
+                            else { Serial_printf(&Serial1, "T[2] Left Catch Failed") ;}
                         }
-                        // 右转路口
                         else if (Target_Num == Road3[2] || Target_Num == Road3[3])
                         {
-                            if (Target_Num == Road4_R[0])         { Car_Status_Change(Car_Turn_L , 1);}
-                            else if (Target_Num == Road4_R[1])    { Car_Status_Change(Car_Turn_R , 1);}
-                            else { Serial_printf(&Serial1, "T[2] Right Catch Failed") ;}    // 报警
+                            if      (Target_Num == Road4_R[0]) { Car_Status_Change(Car_Turn_L , 1);}
+                            else if (Target_Num == Road4_R[1]) { Car_Status_Change(Car_Turn_R , 1);}
+                            else { Serial_printf(&Serial1, "T[2] Right Catch Failed") ;}
                         }
                     }
                 }
@@ -185,37 +185,34 @@ void Car_Control_Change_TiGao_1(void)
             }
         }
     }
-    else    // 开始回程
+    else // 回程：栈 pop；首个十字 maneuver 完成后发 Enable（丁字不 pending）
     {
         switch (curr_Status) 
         {
             case Car_Forward: 
             {
-                // 得到路口状态
                 Track_Status_Typedef Track_Status = Car_Inter_Check() ;
-                // 下一状态配置
                 if (Track_Status == Track_Inter)
                 {
                     Car_To_Next_Status_From_Stack() ;
+                    if (!car1_cross_enable_sent) { car1_cross_enable_pending = true ; }
                 }
-                // T字路口
                 else if (Track_Status == Track_T_Inter)
                 {
                     Car_To_Next_Status_From_Stack() ;
                 }
                 else if (Track_Status == Track_Over )
                 {
-                    next_Status = Car_Stop ;    // 直接停车
+                    next_Status = Car_Stop ;
                 }
                 break;
             }
-            
             case Car_Turn_L : 
             {
                 if (MPU6050_Turn_Yaw_Is_Ok(90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
-                    Car2_Enable_Back = true ;
+                    Car1_Try_Send_Car2_Enable() ;
                 }
                 break;
             }
@@ -224,15 +221,16 @@ void Car_Control_Change_TiGao_1(void)
                 if (MPU6050_Turn_Yaw_Is_Ok(-90)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
-                    Car2_Enable_Back = true ;
+                    Car1_Try_Send_Car2_Enable() ;
                 }
                 break;
             }
             case Car_Turn_F : 
             {
-                if (Road_y < 20) 
+                if (Road_y < 20) // 回程十字也可能是直行
                 {
                     Car_To_Next_Status_From_Stack() ;
+                    Car1_Try_Send_Car2_Enable() ;
                 }
                 break;
             }
@@ -241,6 +239,7 @@ void Car_Control_Change_TiGao_1(void)
                 if (MPU6050_Turn_Yaw_Is_Ok(180)) 
                 {
                     Car_To_Next_Status_From_Stack() ;
+                    Car1_Try_Send_Car2_Enable() ;
                 }
                 break;
             }

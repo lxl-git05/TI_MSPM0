@@ -113,8 +113,8 @@ void Road_Get(void)
             if(Is_Road2())
             {
                 // 逻辑: 如果大车先发送了数字字模，那么就屏蔽树莓派发来的数模,否则就接收树莓派的数据
-                Road2[0] = Road2[0] == 0 ? Oran_Num[0] : Road2[0] ;
-                Road2[1] = Road2[1] == 0 ? Oran_Num[1] : Road2[1] ;
+                Road2[0] = Oran_Num[0];
+                Road2[1] = Oran_Num[1];
                 road_State_Change(ROAD_GET_2);
                 Serial_printf( &Serial1, "Road2 = [%d %d]\n", Road2[0], Road2[1] );
             }
@@ -129,10 +129,10 @@ void Road_Get(void)
             if(Is_Road4())
             {
                 // 逻辑: 如果大车先发送了数字字模，那么就屏蔽树莓派发来的数模,否则就接收树莓派的数据
-                Road3[0] = Road3[0] == 0 ? Oran_Num[0] : Road3[0] ;
-                Road3[1] = Road3[1] == 0 ? Oran_Num[1] : Road3[1] ;
-                Road3[2] = Road3[2] == 0 ? Oran_Num[2] : Road3[2] ;
-                Road3[3] = Road3[3] == 0 ? Oran_Num[3] : Road3[3] ;
+                Road3[0] = Oran_Num[0];
+                Road3[1] = Oran_Num[1];
+                Road3[2] = Oran_Num[2];
+                Road3[3] = Oran_Num[3];
 
                 road_State_Change(ROAD_GET_3);
 
@@ -149,10 +149,10 @@ void Road_Get(void)
             // Road4重新更新
             if(Is_Road4())
             {
-                Road3[0] = Road3[0] == 0 ? Oran_Num[0] : Road3[0] ;
-                Road3[1] = Road3[1] == 0 ? Oran_Num[1] : Road3[1] ;
-                Road3[2] = Road3[2] == 0 ? Oran_Num[2] : Road3[2] ;
-                Road3[3] = Road3[3] == 0 ? Oran_Num[3] : Road3[3] ;
+                Road3[0] = Oran_Num[0];
+                Road3[1] = Oran_Num[1];
+                Road3[2] = Oran_Num[2];
+                Road3[3] = Oran_Num[3];
 
                 Serial_printf( &Serial1, "Road3 again = [%d %d %d %d]\n", Road3[0], Road3[1], Road3[2], Road3[3] );
             }
@@ -168,8 +168,8 @@ void Road_Get(void)
                 // 左路
                 else if(Is_Left_Road())
                 {
-                    Road4_L[0] = Road4_L[0] == 0 ? Oran_Num[0] : Road4_L[0] ;
-                    Road4_L[1] = Road4_L[1] == 0 ? Oran_Num[1] : Road4_L[1] ;
+                    Road4_L[0] = Oran_Num[0];
+                    Road4_L[1] = Oran_Num[1];
 
                     road_State_Change(ROAD_GET_4L);
 
@@ -178,8 +178,8 @@ void Road_Get(void)
                 // 右路
                 else if (Is_Right_Road())
                 {
-                    Road4_R[0] = Road4_R[0] == 0 ? Oran_Num[0] : Road4_R[0] ;
-                    Road4_R[1] = Road4_R[1] == 0 ? Oran_Num[1] : Road4_R[1] ;
+                    Road4_R[0] = Oran_Num[0];
+                    Road4_R[1] = Oran_Num[1];
 
                     road_State_Change(ROAD_GET_4R);
 

@@ -5,7 +5,7 @@
 // #define MPU6050_Check 
 
 Mode_Typedef curr_mode = Mode_Null  ;       // 当前模式
-Mode_Typedef next_mode = Mode_Con_2  ;       // 下一个模式
+Mode_Typedef next_mode = Mode_Con_3  ;       // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -54,6 +54,8 @@ void Timer_0_Callback(void)
     Key_Tick() ;
     // 功能2:LED闪烁监控
     Flash_Mode_Tick() ;
+    // 功能3:全局时间累加
+    Delay_Global_Tick() ;
 }
 
 // 20ms定时器
@@ -61,7 +63,6 @@ void Timer_1_Callback(void)
 {
     // 通信数据更新
     Oran_Data_Update();
-    BLE_Get() ; // 蓝牙通信
     // 电机运动转换状态
     if (curr_mode == Mode_Con_2)
     {
@@ -72,11 +73,13 @@ void Timer_1_Callback(void)
     {
         Car_Control_Change_TiGao_1() ;
         Car_Control() ;
+        BLE_Get() ; // 蓝牙通信
     }
     else if (curr_mode == Mode_Con_1)
     {
         Car_Control_Change_TiGao_2() ;
         Car_Control() ;
+        BLE_Get() ; // 蓝牙通信
     }
     else if (curr_mode == Mode_Angle) 
     {

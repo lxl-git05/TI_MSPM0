@@ -16,9 +16,11 @@ extern StatusStack_Typedef stack_car ;
 
 extern bool HandMode; // 手动模拟启动信号: 一旦开启,那么只能手动进行
 int Car_1_Target_Num ;  // 小车1的目标数字
+bool Car2_Back_Enable_Tigao1 = false ; // Enable 只响应一次，防蓝牙持续为 true 重复 pop 栈
 
 void Mode_Con_3_Setup(void)
 {
+    Car2_Back_Enable_Tigao1 = false ;
     OLED_Clear() ;
     OLED_Printf(0, 0, OLED_6X8, "=====[Car2]Mode_TiGao_1=====") ;
     Serial_printf(&Serial1, "=====[Car2]Mode_TiGao_1=====\n") ;
@@ -59,17 +61,16 @@ void Mode_Con_3_Loop(void)
             Car_Status_Change(Car_Forward , 1) ;    // 记录小车运动轨迹
         }
     }
-    // 回城判断
-    // 1. 模拟回城 2. 正式版:蓝牙控制回城
-    if ( (Key_Check(KEY_1, KEY_LONG) || Car2_Enable_Back) && Car_Start)
+    // 收到 Enable 后掉头去病房（单次）；KEY 长按作调试兜底
+    if (Car_Start == true && Car2_Back_Enable_Tigao1 == false
+        && (Key_Check(KEY_1, KEY_LONG) || Car2_Enable_Back))
     {
-        // 小车开始回城
         Car_Back_Enable = true ;
-        // 小车状态激活        
+        Car2_Back_Enable_Tigao1 = true ;
         Car_Status_Typedef temp;
         if (StatusStack_Pop(&stack_car, &temp))
         {
-            next_Status = Car_Status_Fan_1(temp);
+            next_Status = Car_Status_Fan_1(temp); // Stop → Turn_H
         }
     }
     // OLED
@@ -165,7 +166,7 @@ void Car_Control_Change_TiGao_1(void)
             {
                 if (MPU6050_Turn_Yaw_Is_Ok(180)) 
                 {
-                    Car_To_Next_Status_From_Stack() ;
+                    Car_Status_Change(Car_Forward , 0) ; // 掉头后直行，不再 pop 去程栈
                 }
                 break;
             }

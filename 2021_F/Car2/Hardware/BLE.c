@@ -39,12 +39,12 @@ void BLE_Get(void)
         Road4_R[0] = Serial3.Hex_Data.Serial_New_Package[6] / 10;
         Road4_R[1] = Serial3.Hex_Data.Serial_New_Package[6] % 10;
 
-        static int send_cnt = 0 ;
-        send_cnt ++ ;
-        if (send_cnt >= 50)
-        {
-            send_cnt = 0 ;
-            Serial_printf(&Serial1, "Car_1_Target_Num=%d,Car2_Enable_Back=%d\n",Car_1_Target_Num , Car2_Enable_Back) ;
-        }
+        // static int send_cnt = 0 ;
+        // send_cnt ++ ;
+        // if (send_cnt >= 50)
+        // {
+        //     send_cnt = 0 ;
+        //     Serial_printf(&Serial1, "Car_1_Target_Num=%d,Car2_Enable_Back=%d\n",Car_1_Target_Num , Car2_Enable_Back) ;
+        // }
     }
 }
