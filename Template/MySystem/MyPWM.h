@@ -1,7 +1,7 @@
 #ifndef __MyPWM_H
 #define __MyPWM_H
 
-#include "ti_msp_dl_config.h"
+#include "MySystem.h"
 
 typedef struct
 {

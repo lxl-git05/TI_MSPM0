@@ -1,7 +1,7 @@
 #ifndef __MODE_1_H
 #define __MODE_1_H
 
-#include "ti_msp_dl_config.h"
+#include "MySystem.h"
 
 void Mode_1_Setup(void);
 

@@ -1,9 +1,5 @@
 #include "MyEncoder.h"
 
-// 0. 编码器定义
-MyEncoder_Typedef Motor_A_Encoder = {GPIO_ENCODER_A_PORT , GPIO_ENCODER_A_A_Encoder_1_PIN , GPIO_ENCODER_A_A_Encoder_2_PIN , GPIO_MULTIPLE_GPIOB_INT_IRQN , 2U, 0, 0};
-MyEncoder_Typedef Motor_B_Encoder = {GPIO_ENCODER_B_PORT , GPIO_ENCODER_B_B_Encoder_1_PIN , GPIO_ENCODER_B_B_Encoder_2_PIN , GPIO_MULTIPLE_GPIOB_INT_IRQN , 2U, 0, 0};
-
 // 1. 编码器初始化
 void MyEncoder_Init(MyEncoder_Typedef* MyEncoder)
 {

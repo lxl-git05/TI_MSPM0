@@ -1,10 +1,5 @@
 #include "MySystem.h"
 
-// 0. PWM定义
-// MyPWM_Typedef MyPWM_Servo1 = {...};
-MyPWM_Typedef MyPWM_Motor_A_IN1 = {PWM_MOTOR_PWM_INST , GPIO_PWM_MOTOR_PWM_C0_IDX , 1000.0f};
-MyPWM_Typedef MyPWM_Motor_B_IN1 = {PWM_MOTOR_PWM_INST , GPIO_PWM_MOTOR_PWM_C1_IDX , 1000.0f};
-
 // 1. PWM初始化 - TI工程中由 SysConfig 统一初始化，此处保留兼容入口
 void MyPWM_Init(MyPWM_Typedef* MyPWM)
 {

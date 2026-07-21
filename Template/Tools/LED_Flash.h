@@ -1,7 +1,7 @@
 #ifndef __LED_FLASH_H
 #define __LED_FLASH_H
 
-#include "ti_msp_dl_config.h"
+#include "MySystem.h"
 
 // =========== 枚举类型 ===========
 // LED闪烁模式
@@ -9,7 +9,7 @@ typedef enum
 {
 	Flash_Mode_ON ,							// LED常亮
 	Flash_Mode_OFF,							// LED常灭
-	Flash_Mode_Slow , 						// 慢闪 0.5灭 + 0.5亮
+	Flash_Mode_Slow , 					// 慢闪 0.5灭 + 0.5亮
 	Flash_Mode_Fast ,						// 快闪 0.1亮 + 0.1灭
 	Flash_Mode_Topp							// 瞬闪 0.9灭 + 0.1亮
 }Flash_Mode_Typedef ;

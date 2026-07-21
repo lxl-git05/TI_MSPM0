@@ -1,4 +1,4 @@
-#include "ti_msp_dl_config.h"
+#include "MySystem.h"
 #include "OLED.h"
 #include <string.h>
 #include <math.h>
@@ -22,12 +22,11 @@ void OLED_W_SCL( uint8_t x )
 {
 	if ( x )
 	{
-		DL_GPIO_setPins(GPIO_OLED_PORT, GPIO_OLED_OLED_SCL_PIN);
+		MyGPIO_WritePin(&MyGPIO_OLED_SCL, 1);
 	}
 	else
 	{
-		DL_GPIO_clearPins(GPIO_OLED_PORT, GPIO_OLED_OLED_SCL_PIN) ;
-
+		MyGPIO_WritePin(&MyGPIO_OLED_SCL, 0);
 	}
 	for (volatile int i = 0; i < 5; i++);   // 小延时,必须有
 }
@@ -44,11 +43,11 @@ void OLED_W_SDA( uint8_t x )
 {
 	if ( x )
 	{
-		DL_GPIO_setPins(GPIO_OLED_PORT, GPIO_OLED_OLED_SDA_PIN) ;
+		MyGPIO_WritePin(&MyGPIO_OLED_SDA, 1);
 	}
 	else
 	{
-		DL_GPIO_clearPins(GPIO_OLED_PORT, GPIO_OLED_OLED_SDA_PIN) ;
+		MyGPIO_WritePin(&MyGPIO_OLED_SDA, 0);
 	}
 	for (volatile int i = 0; i < 5; i++);   // 小延时,必须有
 }

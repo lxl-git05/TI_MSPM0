@@ -3,7 +3,7 @@
 
 /* TI平台编码器使用GPIO外部中断(双边沿) */
 
-#include "ti_msp_dl_config.h"
+#include "MySystem.h"
 
 typedef struct
 {

@@ -2,7 +2,7 @@
 #include "AllHeader.h"
 #include "BLE.h"
 
-// #define MPU6050_Check 
+// #define MPU6050_Check
 
 Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
 Mode_Typedef next_mode = Mode_2      ;        // 下一个模式
@@ -14,35 +14,57 @@ void Mode_G_Setup(void)
 {
     // 全局初始化
     Initial_All() ;
-    // Oran_Init();
     // 定时器必须最后初始化!!!
-    Timer_Init() ;
-    // 小车控制系统初始化
-    // Car_Init() ;
-    // 日志打印
-    Serial_printf(&Serial1, "\n\n\n================= Begin==================\n");
+    Timer_Initial() ;
 }
 
-// 循环loop
+// 循环loop — 全局按键 + 模式分发
 void Mode_G_Loop(void)
 {
-    // 检测程序是否可行
-    if (Key_Check(KEY_0, KEY_SINGLE))// 单击
+    // ===== 全局按键（所有模式共享）=====
+    // Key2 单击: 切换 LED 闪烁模式
+    if (Key_Check(KEY_2, KEY_SINGLE))
     {
-        Flash_Mode_Set(Flash_Mode_Fast) ;  
-        #ifdef MPU6050_Check
-            MPU6050_Data_Error_Check(1000) ;
-        #endif
+        Flash_Mode_Set(Flash_Mode_Fast) ;
     }
-    // 进入下一个模式
-    if (Key_Check(KEY_0, KEY_DOUBLE))// 双击
+    // Key2 双击: 进入下一个模式
+    if (Key_Check(KEY_2, KEY_DOUBLE))
     {
         Mode_To_Next() ;
     }
-    if (curr_mode == Mode_Null) { OLED_Printf(0, 0, OLED_6X8, "=====Mode_Null=====") ; }
-    // =========================== 测试代码 ===========================
-    
-    
+
+    // ===== 模式分发 =====
+    if (curr_mode == next_mode)
+    {
+        // 运行当前模式的 Loop
+        switch (curr_mode)
+        {
+            case Mode_1: Mode_1_Loop(); break;
+            case Mode_2: Mode_2_Loop(); break;
+            case Mode_3: Mode_3_Loop(); break;
+            default: break;
+        }
+    }
+    else
+    {
+        // 退出旧模式
+        switch (curr_mode)
+        {
+            case Mode_1: Mode_1_Exit(); break;
+            case Mode_2: Mode_2_Exit(); break;
+            case Mode_3: Mode_3_Exit(); break;
+            default: break;
+        }
+        // 进入新模式
+        switch (next_mode)
+        {
+            case Mode_1: Mode_1_Setup(); break;
+            case Mode_2: Mode_2_Setup(); break;
+            case Mode_3: Mode_3_Setup(); break;
+            default: break;
+        }
+        curr_mode = next_mode ;
+    }
 }
 
 // ========================== 系统定时器配置 ==========================
@@ -54,25 +76,19 @@ void Timer_1ms_Callback(void)
     Key_Tick() ;
     // 功能2:LED闪烁监控
     Flash_Mode_Tick() ;
-    // 功能3:全局时间累加
-    // Delay_Global_Tick() ;
 }
 
 // 20ms定时器
 void Timer_20ms_Callback(void)
 {
-    // 通信数据更新
-    // Oran_Data_Update();
-    
-    // 全局
-    // Motor_Update_Tick() ;                           // AB电机状态更新
-    // MPU6050更新参数
-    #ifndef MPU6050_Check 
-        // MPU6050_Angle_Update_Tick() ;   // 耗时1.45ms
-    #endif                  
-    // 模式选择
-    // if (curr_mode == Mode_PID)    { Mode_1_Tick() ;}  // 打印AB的PID参数
-    // if (curr_mode == Mode_Angle)  { Mode_2_Tick() ;}  // MPU6050转向环
+    // 当前模式的 Tick
+    switch (curr_mode)
+    {
+        case Mode_1: Mode_1_Tick(); break;
+        case Mode_2: Mode_2_Tick(); break;
+        case Mode_3: Mode_3_Tick(); break;
+        default: break;
+    }
 }
 
 // ========================== 系统状态配置 ==========================
@@ -87,7 +103,7 @@ void Mode_To_Next(void)
 // 将当前状态转换为:
 void Mode_ChangeTo(Mode_Typedef nextmode)
 {
-    if (nextmode >= Mode_End) { return;}  
+    if (nextmode >= Mode_End) { return;}
 
     next_mode = nextmode ;
 }

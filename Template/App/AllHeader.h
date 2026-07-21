@@ -39,7 +39,4 @@
 // ================== 初始化函数 ==================
 void Initial_All(void) ;
 
-// 定时器初始化必须在最后面
-void Timer_Init(void) ;
-
 #endif

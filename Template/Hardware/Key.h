@@ -1,7 +1,7 @@
 #ifndef __KEY_H
 #define __KEY_H
 
-#include "ti_msp_dl_config.h"
+#include "MySystem.h"
 
 #define KEY_COUNT				4
 

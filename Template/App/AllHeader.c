@@ -16,9 +16,3 @@ void Initial_All(void)
     // Motor_Init() ;
     // Con_MPU_Init() ;
 }
-
-void Timer_Init(void)
-{
-    // 定时器初始化(放在最后面)
-    Timer_Init();
-}

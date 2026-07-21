@@ -1,7 +1,7 @@
 #ifndef __MYTIMER_H
 #define __MYTIMER_H
 
-#include "ti_msp_dl_config.h"
+#include "MySystem.h"
 
 void Timer_Initial(void) ;
 void Timer_1ms_Callback(void) ;

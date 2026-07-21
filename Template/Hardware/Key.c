@@ -1,4 +1,5 @@
 #include "Key.h"
+#include "MySystem.h"
 
 #define KEY_PRESSED				1
 #define KEY_UNPRESSED			0
@@ -16,28 +17,28 @@ uint8_t Key_GetState(uint8_t n)		// 得到按键状态
 {
 	if (n == KEY_0)
 	{
-		if (DL_GPIO_readPins(GPIO_KEY_KEY_0_PORT, GPIO_KEY_KEY_0_PIN) == 0)
+		if (MyGPIO_ReadPin(&MyGPIO_Key0) == 0)
 		{
 			return KEY_PRESSED;
 		}
 	}
 	if (n == KEY_1)
 	{
-		if (DL_GPIO_readPins(GPIO_KEY_KEY_1_PORT, GPIO_KEY_KEY_1_PIN) == 0)
+		if (MyGPIO_ReadPin(&MyGPIO_Key1) == 0)
 		{
 			return KEY_PRESSED;
 		}
 	}
 	if (n == KEY_2)
 	{
-		if (DL_GPIO_readPins(GPIO_KEY_KEY_2_PORT, GPIO_KEY_KEY_2_PIN) == 0)
+		if (MyGPIO_ReadPin(&MyGPIO_Key2) == 0)
 		{
 			return KEY_PRESSED;
 		}
 	}
 //	else if (n == KEY_4)
 //	{
-//		if (DL_GPIO_readPins(KEY4_GPIO_Port, KEY4_Pin) == 0)
+//		if (MyGPIO_ReadPin(&MyGPIO_Key3) == 0)
 //		{
 //			return KEY_PRESSED;
 //		}
