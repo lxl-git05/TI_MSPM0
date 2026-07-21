@@ -1,8 +1,5 @@
 #include "Mode_G.h"
 #include "AllHeader.h"
-#include "BLE.h"
-
-// #define MPU6050_Check
 
 Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
 Mode_Typedef next_mode = Mode_2      ;        // 下一个模式

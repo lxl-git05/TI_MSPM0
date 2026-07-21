@@ -14,8 +14,8 @@ int main(void)
 
     while (1)
     {
+        OLED_Clear() ;
         Mode_G_Loop() ; 
-        OLED_Update() ;
 
         if (curr_mode == next_mode)
         {
@@ -48,5 +48,6 @@ int main(void)
             }
         }
         curr_mode = next_mode ; // 状态更新
+        OLED_Update() ;
     }
 }
