@@ -60,6 +60,9 @@
 |        |                  |                                       |
 | PB   15   | UART_2_TX        | 使用蓝牙进行双车通信                  |
 | PB   16   | UART_2_RX        |                                       |
+|         |                  |                                       |
+| PA 26   | UART_3_TX        | 串口屏 |
+| PA 25   | UART_3_RX        | |
 
 
 
@@ -148,7 +151,7 @@
 
 | 引脚号 |   Label    | 备注 |
 | :----: | :--------: | :--: |
-|  PA26  | PWM_Servo1 | CH0  |
+|  PA29  | PWM_Servo1 | CH0  |
 |  PA2   | PWM_Servo2 | CH1  |
 
 
