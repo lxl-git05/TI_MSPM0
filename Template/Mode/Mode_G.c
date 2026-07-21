@@ -5,7 +5,7 @@
 // #define MPU6050_Check 
 
 Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
-Mode_Typedef next_mode = Mode_Null  ;       // 下一个模式
+Mode_Typedef next_mode = Mode_2      ;        // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -14,11 +14,11 @@ void Mode_G_Setup(void)
 {
     // 全局初始化
     Initial_All() ;
-    Oran_Init();
+    // Oran_Init();
     // 定时器必须最后初始化!!!
     Timer_Init() ;
     // 小车控制系统初始化
-    Car_Init() ;
+    // Car_Init() ;
     // 日志打印
     Serial_printf(&Serial1, "\n\n\n================= Begin==================\n");
 }
@@ -55,24 +55,24 @@ void Timer_1ms_Callback(void)
     // 功能2:LED闪烁监控
     Flash_Mode_Tick() ;
     // 功能3:全局时间累加
-    Delay_Global_Tick() ;
+    // Delay_Global_Tick() ;
 }
 
 // 20ms定时器
 void Timer_20ms_Callback(void)
 {
     // 通信数据更新
-    Oran_Data_Update();
+    // Oran_Data_Update();
     
     // 全局
-    Motor_Update_Tick() ;                           // AB电机状态更新
+    // Motor_Update_Tick() ;                           // AB电机状态更新
     // MPU6050更新参数
     #ifndef MPU6050_Check 
-        MPU6050_Angle_Update_Tick() ;   // 耗时1.45ms
+        // MPU6050_Angle_Update_Tick() ;   // 耗时1.45ms
     #endif                  
     // 模式选择
-    if (curr_mode == Mode_PID)    { Mode_1_Tick() ;}  // 打印AB的PID参数
-    if (curr_mode == Mode_Angle)  { Mode_2_Tick() ;}  // MPU6050转向环
+    // if (curr_mode == Mode_PID)    { Mode_1_Tick() ;}  // 打印AB的PID参数
+    // if (curr_mode == Mode_Angle)  { Mode_2_Tick() ;}  // MPU6050转向环
 }
 
 // ========================== 系统状态配置 ==========================
