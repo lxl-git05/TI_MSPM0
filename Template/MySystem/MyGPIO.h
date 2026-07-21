@@ -14,6 +14,7 @@ typedef struct
 
 // 基础 I/O
 extern MyGPIO_Typedef MyGPIO_LED0          ;   // LED 指示灯
+extern MyGPIO_Typedef MyGPIO_LED_Time      ;   // LED 计时输出引脚
 
 extern MyGPIO_Typedef MyGPIO_Key0          ;   // 按键0（已预留，勿用于测试）
 extern MyGPIO_Typedef MyGPIO_Key1          ;   // 按键1（可用于交互测试）

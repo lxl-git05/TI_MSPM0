@@ -20,12 +20,12 @@ void Mode_G_Loop(void)
 {
     // ===== 全局按键（所有模式共享）=====
     // Key2 单击: 切换 LED 闪烁模式
-    if (Key_Check(KEY_2, KEY_SINGLE))
+    if (Key_Check(KEY_0, KEY_SINGLE))
     {
         Flash_Mode_Set(Flash_Mode_Fast) ;
     }
     // Key2 双击: 进入下一个模式
-    if (Key_Check(KEY_2, KEY_DOUBLE))
+    if (Key_Check(KEY_0, KEY_DOUBLE))
     {
         Mode_To_Next() ;
     }

@@ -1,7 +1,7 @@
 #ifndef __TIMER_COUNTER_H
 #define __TIMER_COUNTER_H
 
-#include "ti_msp_dl_config.h"
+#include "MySystem.h"
 
 // 开始计时
 void Timer_Counter_Begin(void) ;

@@ -6,6 +6,7 @@
 
 // 基础 I/O
 MyGPIO_Typedef MyGPIO_LED0          = {GPIO_LED_PORT , GPIO_LED_LED_PIN_0_PIN};
+MyGPIO_Typedef MyGPIO_LED_Time      = {GPIO_LED_PORT , GPIO_LED_LED_Time_PIN};
 
 MyGPIO_Typedef MyGPIO_Key0          = {GPIO_KEY_KEY_0_PORT , GPIO_KEY_KEY_0_PIN};
 MyGPIO_Typedef MyGPIO_Key1          = {GPIO_KEY_KEY_1_PORT , GPIO_KEY_KEY_1_PIN};

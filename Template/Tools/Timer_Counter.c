@@ -2,12 +2,12 @@
 
 void Timer_Counter_Begin(void)
 {
-    DL_GPIO_setPins(GPIO_LED_PORT, GPIO_LED_LED_Time_PIN) ;
+    MyGPIO_WritePin(&MyGPIO_LED_Time, 1) ;
 }
 
 void Timer_Counter_End(void)
 {
-    DL_GPIO_clearPins(GPIO_LED_PORT, GPIO_LED_LED_Time_PIN) ;
+    MyGPIO_WritePin(&MyGPIO_LED_Time, 0) ;
 }
 
 // 每次状态变化指示被调用一次
@@ -17,11 +17,11 @@ void Timer_Counter_Func(void)
 
     if (Timer_Counter_1_Mode == true)
     {
-        DL_GPIO_setPins(GPIO_LED_PORT, GPIO_LED_LED_Time_PIN) ;
+        MyGPIO_WritePin(&MyGPIO_LED_Time, 1) ;
     }
     else 
     {
-        DL_GPIO_clearPins(GPIO_LED_PORT, GPIO_LED_LED_Time_PIN) ;
+        MyGPIO_WritePin(&MyGPIO_LED_Time, 0) ;
     }
     
     Timer_Counter_1_Mode = !Timer_Counter_1_Mode ;
