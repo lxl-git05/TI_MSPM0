@@ -24,7 +24,7 @@ void Con_Motor_Init(void)
 	(
 		&Motor_A , &MyPWM_Motor_A_IN1 , &Motor_A_Encoder ,
 		&MyGPIO_Motor_A_IN1 , &MyGPIO_Motor_A_IN2 , &Motor_Param , 
-		Motor_DIR_N , Motor_DIR_P , 
+		Motor_DIR_N , Motor_DIR_N , 
 		Motor_A.PID_s , Motor_A.PID_Angle , Motor_A.PID_Pos
 	);
 	
@@ -32,7 +32,7 @@ void Con_Motor_Init(void)
 	(
 		&Motor_B , &MyPWM_Motor_B_IN1 , &Motor_B_Encoder ,
 		&MyGPIO_Motor_B_IN1 , &MyGPIO_Motor_B_IN2 , &Motor_Param , 
-		Motor_DIR_P , Motor_DIR_N , 
+		Motor_DIR_N , Motor_DIR_N , 
 		Motor_B.PID_s , Motor_B.PID_Angle , Motor_B.PID_Pos
 	);
 	

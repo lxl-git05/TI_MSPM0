@@ -36,22 +36,25 @@ extern MyGPIO_Typedef MyGPIO_RGB_R         ;   // RGB 红色通道
 extern MyGPIO_Typedef MyGPIO_RGB_G         ;   // RGB 绿色通道
 extern MyGPIO_Typedef MyGPIO_RGB_B         ;   // RGB 蓝色通道
 
-// 其他外设（来自F407，暂未分配引脚）
-extern MyGPIO_Typedef MyGPIO_Buzzer        ;   // 蜂鸣器
-extern MyGPIO_Typedef MyGPIO_EC11_Key      ;   // EC11 编码器按键
-extern MyGPIO_Typedef MyGPIO_Elec          ;   // 电磁阀
-extern MyGPIO_Typedef MyGPIO_TCRT          ;   // TCRT 载重传感器
+// 其他外设
+extern MyGPIO_Typedef MyGPIO_Buzzer        ;   // 蜂鸣器（PB23, +5V有源）
+extern MyGPIO_Typedef MyGPIO_Elec          ;   // 电磁铁（PB24, +5V IO+GND驱动）
+extern MyGPIO_Typedef MyGPIO_TCRT          ;   // TCRT 载重传感器（PA13, 输入上拉）
 
-// 步进电机
-extern MyGPIO_Typedef MyGPIO_Stepper_En    ;   // 步进1 使能
-extern MyGPIO_Typedef MyGPIO_Stepper2_En   ;   // 步进2 使能
-extern MyGPIO_Typedef MyGPIO_Stepper_Dir   ;   // 步进1 方向
-extern MyGPIO_Typedef MyGPIO_Stepper2_Dir  ;   // 步进2 方向
+// EC11 旋转编码器
+extern MyGPIO_Typedef MyGPIO_EC11_Key      ;   // EC11 按键（PA16, 输入上拉）
+extern MyGPIO_Typedef MyGPIO_EC11_S1       ;   // EC11 信号S1（PA12, 输入上拉, 下降沿中断）
+extern MyGPIO_Typedef MyGPIO_EC11_S2       ;   // EC11 信号S2（PA14, 输入上拉, 下降沿中断）
 
-// Y8 巡线模块地址线
-extern MyGPIO_Typedef MyGPIO_Y8_Addr0     ;   // Y8 地址位0
-extern MyGPIO_Typedef MyGPIO_Y8_Addr1     ;   // Y8 地址位1
-extern MyGPIO_Typedef MyGPIO_Y8_Addr2     ;   // Y8 地址位2
+// 步进电机（云台）
+extern MyGPIO_Typedef MyGPIO_Stepper_En    ;   // 云台1 使能（PA18, 推挽输出）
+extern MyGPIO_Typedef MyGPIO_Stepper2_En   ;   // 云台2 使能（PB18, 推挽输出）
+extern MyGPIO_Typedef MyGPIO_Stepper_Dir   ;   // 云台1 方向（PB17, 推挽输出）
+extern MyGPIO_Typedef MyGPIO_Stepper2_Dir  ;   // 云台2 方向（PB19, 推挽输出）
+
+// Y8 巡线模块（移位寄存器接口）
+extern MyGPIO_Typedef MyGPIO_Y8_CLK        ;   // Y8 时钟线（PA22, 推挽输出）
+extern MyGPIO_Typedef MyGPIO_Y8_DAT        ;   // Y8 数据线（PB20, 输入上拉）
 
 // ==================== GPIO 操作函数 ====================
 

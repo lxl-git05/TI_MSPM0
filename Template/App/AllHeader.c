@@ -6,9 +6,10 @@ void Initial_All(void)
     MyEncoder_Init(&Motor_A_Encoder);
     MyEncoder_Init(&Motor_B_Encoder);
 
-    // hardware
+    // Hardware
     OLED_Init() ;
     MPU6050_Angle_Init() ;
+    Con_Motor_Init() ;
 
     // tools
     Flash_Mode_Init() ;
@@ -16,5 +17,6 @@ void Initial_All(void)
 
     // function
     Serial_Init();
+    Encoder_Init();     // EC11 旋转编码器（GPIOA中断初始化）
 
 }

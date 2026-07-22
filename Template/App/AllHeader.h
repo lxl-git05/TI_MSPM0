@@ -11,6 +11,7 @@
 #include "Buzzer.h"
 #include "Elec.h"
 #include "RGB.h"
+#include "Encoder_Key.h"
 
 // Hardware层
 #include "MyPID.h"
@@ -25,6 +26,7 @@
 #include "MPU6050_Angle.h"
 #include "Serial_porting.h"
 #include "Control.h"
+#include "Con_Motor.h"
 
 
 // Mode层

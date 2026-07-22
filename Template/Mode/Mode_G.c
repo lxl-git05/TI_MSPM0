@@ -2,7 +2,7 @@
 #include "AllHeader.h"
 
 Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
-Mode_Typedef next_mode = Mode_2      ;        // 下一个模式
+Mode_Typedef next_mode = Mode_3      ;        // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -117,6 +117,11 @@ void GROUP1_IRQHandler(void)
         case GPIO_MULTIPLE_GPIOB_INT_IIDX:
             MyEncoder_ISR(&Motor_A_Encoder);
             MyEncoder_ISR(&Motor_B_Encoder);
+            break;
+
+        // GPIOA端口中断 — EC11 旋转编码器
+        case DL_INTERRUPT_GROUP1_IIDX_GPIOA:
+            EC11_Encoder_ISR();
             break;
 
         // 其他GROUP1中断源在此扩展...

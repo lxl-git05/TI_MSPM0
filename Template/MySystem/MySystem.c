@@ -27,19 +27,27 @@ MyGPIO_Typedef MyGPIO_RGB_R         = {GPIO_RGB_PORT , GPIO_RGB_LED_R_PIN};
 MyGPIO_Typedef MyGPIO_RGB_G         = {GPIO_RGB_PORT , GPIO_RGB_LED_G_PIN};
 MyGPIO_Typedef MyGPIO_RGB_B         = {GPIO_RGB_PORT , GPIO_RGB_LED_B_PIN};
 
-// 未分配引脚的外设 — 空占位（port=0, pin=0），MyGPIO_WritePin/ReadPin 会自动跳过
-MyGPIO_Typedef MyGPIO_Key3          = {0, 0};
-MyGPIO_Typedef MyGPIO_Buzzer        = {0, 0};
-MyGPIO_Typedef MyGPIO_EC11_Key      = {0, 0};
-MyGPIO_Typedef MyGPIO_Elec          = {0, 0};
-MyGPIO_Typedef MyGPIO_TCRT          = {0, 0};
-MyGPIO_Typedef MyGPIO_Stepper_En    = {0, 0};
-MyGPIO_Typedef MyGPIO_Stepper2_En   = {0, 0};
-MyGPIO_Typedef MyGPIO_Stepper_Dir   = {0, 0};
-MyGPIO_Typedef MyGPIO_Stepper2_Dir  = {0, 0};
-MyGPIO_Typedef MyGPIO_Y8_Addr0      = {0, 0};
-MyGPIO_Typedef MyGPIO_Y8_Addr1      = {0, 0};
-MyGPIO_Typedef MyGPIO_Y8_Addr2      = {0, 0};
+// 其他外设（完整引脚分配 — 对照 empty.syscfg + README.md）
+MyGPIO_Typedef MyGPIO_Buzzer        = {GPIO_Buzzer_PORT, GPIO_Buzzer_PIN_Buzzer_PIN};                         // PB23, +5V有源蜂鸣器
+MyGPIO_Typedef MyGPIO_Elec          = {GPIO_Elec_PORT, GPIO_Elec_PIN_Elec_PIN};                               // PB24, 电磁铁
+MyGPIO_Typedef MyGPIO_TCRT          = {GPIO_TCRT_PORT, GPIO_TCRT_TCRT_0_PIN};                                 // PA13, INPUT+PULL_UP
+
+// EC11 旋转编码器（均在 PORTA → 共用端口宏）
+MyGPIO_Typedef MyGPIO_EC11_Key      = {GPIO_EC11_PORT, GPIO_EC11_GPIO_EC11_KEY_PIN};                          // PA16, INPUT+PULL_UP
+MyGPIO_Typedef MyGPIO_EC11_S1       = {GPIO_EC11_PORT, GPIO_EC11_GPIO_EC11_S1_PIN};                           // PA12, INPUT+PULL_UP, FALL_INT
+MyGPIO_Typedef MyGPIO_EC11_S2       = {GPIO_EC11_PORT, GPIO_EC11_GPIO_EC11_S2_PIN};                           // PA14, INPUT+PULL_UP, FALL_INT
+
+// 步进电机 — 云台1（En1=PA18 PORTA, Dir1=PB17 PORTB → 不同端口, per-pin port宏）
+MyGPIO_Typedef MyGPIO_Stepper_En    = {GPIO_Stepper1_PIN_En1_PORT,  GPIO_Stepper1_PIN_En1_PIN};               // PA18
+MyGPIO_Typedef MyGPIO_Stepper_Dir   = {GPIO_Stepper1_PIN_Dir1_PORT, GPIO_Stepper1_PIN_Dir1_PIN};              // PB17
+
+// 步进电机 — 云台2（均在 PORTB → 共用端口宏）
+MyGPIO_Typedef MyGPIO_Stepper2_En   = {GPIO_Stepper2_PORT, GPIO_Stepper2_PIN_En2_PIN};                         // PB18
+MyGPIO_Typedef MyGPIO_Stepper2_Dir  = {GPIO_Stepper2_PORT, GPIO_Stepper2_PIN_Dir2_PIN};                        // PB19
+
+// Y8 巡线模块（CLK=PA22 PORTA, DAT=PB20 PORTB → 不同端口, per-pin port宏）
+MyGPIO_Typedef MyGPIO_Y8_CLK        = {GPIO_Y8_PIN_Y8_CLK_PORT, GPIO_Y8_PIN_Y8_CLK_PIN};                       // PA22, OUTPUT
+MyGPIO_Typedef MyGPIO_Y8_DAT        = {GPIO_Y8_PIN_Y8_DAT_PORT, GPIO_Y8_PIN_Y8_DAT_PIN};                       // PB20, INPUT+PULL_UP
 
 // ====================================================================
 // PWM 实例定义

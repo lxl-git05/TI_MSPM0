@@ -81,3 +81,21 @@
 | Serial_porting.c | ./Function/Serial_porting.c | 修改 | ISR完全重写为显式状态机(switch-case)；新增 Serial_SendBytes/Serial_Send_HEX_Package/Serial_CheckCmd；Head2验证防止0xFF误触发 |
 | CLAUDE.md | ./CLAUDE.md | 修改 | 更新标题：状态机重构记录 |
 | Claude_Change.md | ./Claude_Change.md | 修改 | 本轮变更记录 |
+
+## 2026-07-22 17:30 | 完善MySystem引脚声明（对照syscfg+README）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| MyGPIO.h | ./MySystem/MyGPIO.h | 修改 | 新增 EC11_S1/S2 声明；Y8_Addr0/1/2 → Y8_CLK/DAT（对齐syscfg命名）；所有引脚补充物理位置注释 |
+| MySystem.c | ./MySystem/MySystem.c | 修改 | 9个 {0,0} 占位填充实际引脚(Buzzer/Elec/TCRT/EC11_Key/Stepper_En+Dir/Stepper2_En+Dir)；新增 EC11_S1/S2 定义；Y8 重命名；保留 Key3={0,0} 预留 |
+
+## 2026-07-22 18:00 | 移植EC11旋转编码器（Encoder_Key模块，MySystem方案）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Encoder_Key.h | ./Hardware/Encoder_Key.h | 新增 | EC11编码器头文件：Encoder_Init/Get/ISR声明 |
+| Encoder_Key.c | ./Hardware/Encoder_Key.c | 新增 | 移植F407逻辑到MSPM0：GPIOA中断检测S1/S2下降沿 → 去抖 → 方向判断；NVIC使能参照MyEncoder_Init模式 |
+| Mode_G.c | ./Mode/Mode_G.c | 修改 | GROUP1_IRQHandler 新增 DL_GPIO_MULTIPLE_GPIOA_INT_IIDX 分支→EC11_Encoder_ISR |
+| AllHeader.h | ./App/AllHeader.h | 修改 | 新增 #include "Encoder_Key.h" |
+| AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All 新增 Encoder_Init() 调用 |
+| Key.c | ./Hardware/Key.c | 修改 | Key_GetState 新增 KEY_3 → MyGPIO_EC11_Key 映射（替代注释掉的 Key3 占位） |
