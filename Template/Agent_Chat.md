@@ -52,7 +52,13 @@ todo:
 + [ ] 暂时删去本文件bsp_at24c02软件IIC的所有内容
 + [ ] 在Mode2进行简单读写实验
 
++++
 
++ 现在去到D:\github\HUST_STI\HUST_STI_1\Templete\Templete_STM32F407ZGT6\Template_F407ZGT6
+
++ [ ] 读取Con_Mode_1的全局表，在本工程暂时也这样配置
++ [ ] 实现Param_AT24C02、at24c02_manager、ParamEdit、Encoder_Key的编写
++ [ ] 先进行移植计划
 
 
 

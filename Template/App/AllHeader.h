@@ -33,6 +33,9 @@
 #include "Con_Motor.h"
 #include "Con_Stepper.h"
 
+// 脱机阈值功能
+#include "ParamEdit.h"
+
 
 // Mode层
 #include "Mode_G.h"
