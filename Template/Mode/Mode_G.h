@@ -8,6 +8,9 @@ typedef enum
     Mode_1 ,      // 模式1:保留
     Mode_2 ,      // 模式2:专门测试模式
     Mode_3 ,      // 模式3:电机驱动模式
+    Mode_4 ,      // 模式4:保留
+    Mode_5 ,      // 模式5:保留
+    Mode_6 ,      // 模式6:保留
     Mode_End ,      // 注册模式不能在这个下面!!!
 }Mode_Typedef;
 

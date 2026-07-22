@@ -99,3 +99,29 @@
 | AllHeader.h | ./App/AllHeader.h | 修改 | 新增 #include "Encoder_Key.h" |
 | AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All 新增 Encoder_Init() 调用 |
 | Key.c | ./Hardware/Key.c | 修改 | Key_GetState 新增 KEY_3 → MyGPIO_EC11_Key 映射（替代注释掉的 Key3 占位） |
+
+## 2026-07-22 15:00 | 新增 Mode_4/5/6 和 Con_Mode_1~6 模块框架
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Mode_4.h | ./Mode/Mode_4.h | 新增 | Mode_4 头文件（Setup/Loop/Tick/Exit 声明） |
+| Mode_4.c | ./Mode/Mode_4.c | 新增 | Mode_4 实现（OLED 显示 "===Mode_4==="） |
+| Mode_5.h | ./Mode/Mode_5.h | 新增 | Mode_5 头文件（Setup/Loop/Tick/Exit 声明） |
+| Mode_5.c | ./Mode/Mode_5.c | 新增 | Mode_5 实现（OLED 显示 "===Mode_5==="） |
+| Mode_6.h | ./Mode/Mode_6.h | 新增 | Mode_6 头文件（Setup/Loop/Tick/Exit 声明） |
+| Mode_6.c | ./Mode/Mode_6.c | 新增 | Mode_6 实现（OLED 显示 "===Mode_6==="） |
+| Con_Mode_1.h | ./Function/Con_Mode_1.h | 新增 | Con_Mode_1 头文件（Setup/Loop/Tick/Exit 声明） |
+| Con_Mode_1.c | ./Function/Con_Mode_1.c | 新增 | Con_Mode_1 实现（空函数框架） |
+| Con_Mode_2.h | ./Function/Con_Mode_2.h | 新增 | Con_Mode_2 头文件（Setup/Loop/Tick/Exit 声明） |
+| Con_Mode_2.c | ./Function/Con_Mode_2.c | 新增 | Con_Mode_2 实现（空函数框架） |
+| Con_Mode_3.h | ./Function/Con_Mode_3.h | 新增 | Con_Mode_3 头文件（Setup/Loop/Tick/Exit 声明） |
+| Con_Mode_3.c | ./Function/Con_Mode_3.c | 新增 | Con_Mode_3 实现（空函数框架） |
+| Con_Mode_4.h | ./Function/Con_Mode_4.h | 新增 | Con_Mode_4 头文件（Setup/Loop/Tick/Exit 声明） |
+| Con_Mode_4.c | ./Function/Con_Mode_4.c | 新增 | Con_Mode_4 实现（空函数框架） |
+| Con_Mode_5.h | ./Function/Con_Mode_5.h | 新增 | Con_Mode_5 头文件（Setup/Loop/Tick/Exit 声明） |
+| Con_Mode_5.c | ./Function/Con_Mode_5.c | 新增 | Con_Mode_5 实现（空函数框架） |
+| Con_Mode_6.h | ./Function/Con_Mode_6.h | 新增 | Con_Mode_6 头文件（Setup/Loop/Tick/Exit 声明） |
+| Con_Mode_6.c | ./Function/Con_Mode_6.c | 新增 | Con_Mode_6 实现（空函数框架） |
+| AllHeader.h | ./App/AllHeader.h | 修改 | 新增 Mode_4/5/6 和 Con_Mode_1~6 的 include |
+| Mode_G.h | ./Mode/Mode_G.h | 修改 | 枚举新增 Mode_4/5/6 |
+| Mode_G.c | ./Mode/Mode_G.c | 修改 | Switch 分发新增 Mode_4/5/6 的 Setup/Loop/Exit/Tick 分支 |
