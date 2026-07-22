@@ -42,6 +42,9 @@ void Timer_Counter_End(void);
 void Timer_Counter_Func(void);
 
 // 得到当前的ms数
-uint32_t Timer_Get_Ms(void) ;
+uint32_t Timer_Get_Ms(void);
+
+// 得到原始tick值（4MHz，用于ISR中超时判断，避免64位运算）
+uint32_t Timer_Get_Ticks(void);
 
 #endif

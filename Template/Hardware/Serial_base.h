@@ -8,7 +8,7 @@
 // 注意：以下"字"指 int16_t 数据（高低位合成后的完整数据）
 //       "高低位对"指 D_H + D_L（1个字占3字节：高位+低位+校验码）
 
-#define Serial_RX_MAX_WORDS  256   	 // 最大接收"字"的个数（高低位对的个数）
+#define Serial_RX_MAX_WORDS  30   	 // 最大接收"字"的个数（高低位对的个数）
                                      // 例：LEN=10 表示接收10个int16_t数据（占30字节数据区）
 
 #define Serial_RX_BUF_SIZE   (3 * Serial_RX_MAX_WORDS + 5)

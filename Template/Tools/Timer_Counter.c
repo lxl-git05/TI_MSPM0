@@ -85,3 +85,9 @@ uint32_t Timer_Get_Ms(void)
 
     return (uint32_t)(total_tick / 4000ULL);
 }
+
+// 得到原始tick值（4MHz，用于ISR中超时判断）
+uint32_t Timer_Get_Ticks(void)
+{
+    return TICKS_Get();
+}

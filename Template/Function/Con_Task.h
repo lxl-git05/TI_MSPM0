@@ -7,20 +7,16 @@
 #include "Queue.h"
 
 // ==================== 日志开关 ====================
- #define CON_TASK_LOG  // ★ 取消注释以开启任务日志（Serial1 输出）
+//  #define CON_TASK_LOG  // ★ 取消注释以开启任务日志（Serial1 输出）
 
 // ==================== 全局任务枚举（所有 Mode 共用） ====================
 typedef enum {
     TASK_NONE = 0,
     TASK_WAIT_TIME,       // 等待指定毫秒: p[0]=ms
-		TASK_Motor_Speed,			// 电机速度控制: p[0]=速度rpm, p[1]=持续时间ms
-		TASK_Motor_Angle,			// 电机角度控制: p[0]=目标角度°, p[1]=容差°(默认20)
+		// TASK_Motor_Speed,			// 电机速度控制: p[0]=速度rpm, p[1]=持续时间ms
+		// TASK_Motor_Angle,			// 电机角度控制: p[0]=目标角度°, p[1]=容差°(默认20)
 		// 比赛逻辑
-		Task_Tar_XY,					// 装置去到目标x,y位置
-		Task_Down,						// 装置下降
-		Task_Back,						// 装置回位
-		Task_Elec,						// 取/放棋子
-		Task_Up	 ,						// 装置上升
+		
 		// ★ 枚举总数，必须放最后
     TASK_COUNT             
 } Task_Type;
@@ -33,7 +29,7 @@ typedef void (*Task_TickFunc) (float params[4]);     // 20ms 中断调用，可�
 
 // ==================== 任务执行记录（性能分析用） ====================
 #define TASK_RECORD_MAX 64              // 最多记录条数
-// #define CON_TASK_RECORD_CLEAR_ON_INIT  // ★ 取消注释：Con_Task_Init 时自动清空记录数组
+#define CON_TASK_RECORD_CLEAR_ON_INIT  // ★ 取消注释：Con_Task_Init 时自动清空记录数组
 
 typedef struct {
     int         task_index;     // 任务序号（第1条=1, 第2条=2 ...）

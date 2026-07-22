@@ -63,3 +63,21 @@
 | Encoder.h | ./MySystem/Encoder.h | 删除 | 冗余包装层（零外部引用），功能已内聚到 MyEncoder |
 | Encoder.c | ./MySystem/Encoder.c | 删除 | 同上 |
 | Mode_2.c | ./Mode/Mode_2.c | 修改 | 编码器测试显示：OLED 展示 A/B 两路脉冲增量（20ms周期）和累计脉冲数 |
+
+## 2026-07-22 16:00 | HEX模式bug修复：假帧头锁死/错误码残留/校验失败静默
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Serial_porting.h | ./Function/Serial_porting.h | 修改 | 新增 frame_start_tick 字段 + HEX_FRAME_TIMEOUT_TICKS 宏(10ms) |
+| Serial_porting.c | ./Function/Serial_porting.c | 修改 | ISR: LEN非法/超长/帧尾不匹配/超时→立即复位；Parse_HEX: 成功清err + 校验失败清零 |
+| Timer_Counter.h | ./Tools/Timer_Counter.h | 修改 | 新增 Timer_Get_Ticks() 声明（ISR中超时判断用） |
+| Timer_Counter.c | ./Tools/Timer_Counter.c | 修改 | 新增 Timer_Get_Ticks() 实现（直接读TIMG12计数器） |
+
+## 2026-07-22 17:00 | ISR状态机重构 + 新增Send/Check函数（借鉴待移植库+F4参考）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Serial_porting.h | ./Function/Serial_porting.h | 修改 | 新增 Serial_Rx_State 枚举(Idle/HEX/ABC) + rxState字段 + Serial_SendBytes/Serial_Send_HEX_Package/Serial_CheckCmd 声明 |
+| Serial_porting.c | ./Function/Serial_porting.c | 修改 | ISR完全重写为显式状态机(switch-case)；新增 Serial_SendBytes/Serial_Send_HEX_Package/Serial_CheckCmd；Head2验证防止0xFF误触发 |
+| CLAUDE.md | ./CLAUDE.md | 修改 | 更新标题：状态机重构记录 |
+| Claude_Change.md | ./Claude_Change.md | 修改 | 本轮变更记录 |

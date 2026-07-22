@@ -2,6 +2,7 @@
 #include "Con_Task.h"
 #include "AllHeader.h"
 #include <string.h>
+#include "Timer_Counter.h"
 
 // ==================== 内部状态 ====================
 Queue_Typedef                   Task_Queue;        // 任务队列
@@ -83,7 +84,7 @@ void Con_Task_Loop(void)
     {
         const Task_Descriptor_Typedef *desc = &Task_Table[Task_Next];
 
-        Task_StartTick = HAL_GetTick();                         // ★ 记录任务开始时刻
+        Task_StartTick = Timer_Get_Ms();                         // ★ 记录任务开始时刻
 
 #ifdef CON_TASK_LOG
         Serial_printf(&Serial1, "[Task:%d Setup]\r\n", Task_Next);
@@ -108,7 +109,7 @@ void Con_Task_Loop(void)
         if (desc->IsExit && desc->IsExit(Task_Params))
         {
             // ★ 记录本次任务耗时
-            float elapsed_s = (HAL_GetTick() - Task_StartTick) / 1000.0f;
+            float elapsed_s = (Timer_Get_Ms() - Task_StartTick) / 1000.0f;
             if (Task_Record_Count < TASK_RECORD_MAX)
             {
                 Task_Exec_Index++;

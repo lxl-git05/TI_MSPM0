@@ -23,6 +23,9 @@
 
 // function层
 #include "MPU6050_Angle.h"
+#include "Serial_porting.h"
+#include "Control.h"
+
 
 // Mode层
 #include "Mode_G.h"

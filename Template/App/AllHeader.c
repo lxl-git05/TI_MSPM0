@@ -8,11 +8,13 @@ void Initial_All(void)
 
     // hardware
     OLED_Init() ;
+    MPU6050_Angle_Init() ;
 
     // tools
     Flash_Mode_Init() ;
     Timer_Counter_Init() ;
 
     // function
+    Serial_Init();
 
 }
