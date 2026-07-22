@@ -21,7 +21,7 @@
 | PA15   | KEY_1            |                          |
 | PA17   | KEY_2            |                          |
 |        |                  |                          |
-| PB6    | **LED_R**        | 红灯                     |
+| PB   6 | **LED_R**        | 红灯                     |
 | PB   7    | **LED_G**        | 绿灯                     |
 | PB   8    | **LED_B**        | 黄灯                     |
 | ==PB   9== | **LED_Time**     | 时间检测GPIO口           |

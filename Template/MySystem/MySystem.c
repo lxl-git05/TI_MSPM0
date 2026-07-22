@@ -44,11 +44,17 @@ MyGPIO_Typedef MyGPIO_Y8_Addr2      = {0, 0};
 // ====================================================================
 // PWM 实例定义
 // ====================================================================
-MyPWM_Typedef MyPWM_Motor_A_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C0_IDX, 1000.0f};
-MyPWM_Typedef MyPWM_Motor_B_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C1_IDX, 1000.0f};
+MyPWM_Typedef MyPWM_Motor_A_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C0_IDX, 1000.0f, 0.0f};
+MyPWM_Typedef MyPWM_Motor_B_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C1_IDX, 1000.0f, 0.0f};
 
 // ====================================================================
 // Encoder 实例定义
 // ====================================================================
-MyEncoder_Typedef Motor_A_Encoder  = {GPIO_ENCODER_A_PORT, GPIO_ENCODER_A_A_Encoder_1_PIN, GPIO_ENCODER_A_A_Encoder_2_PIN, GPIO_MULTIPLE_GPIOB_INT_IRQN, 2U, 0, 0};
-MyEncoder_Typedef Motor_B_Encoder  = {GPIO_ENCODER_B_PORT, GPIO_ENCODER_B_B_Encoder_1_PIN, GPIO_ENCODER_B_B_Encoder_2_PIN, GPIO_MULTIPLE_GPIOB_INT_IRQN, 2U, 0, 0};
+MyEncoder_Typedef Motor_A_Encoder = {
+    {GPIO_ENCODER_A_PORT, GPIO_ENCODER_A_A_Encoder_1_PIN, GPIO_ENCODER_A_A_Encoder_2_PIN},
+    GPIO_MULTIPLE_GPIOB_INT_IRQN, 2U, 0, 0
+};
+MyEncoder_Typedef Motor_B_Encoder = {
+    {GPIO_ENCODER_B_PORT, GPIO_ENCODER_B_B_Encoder_1_PIN, GPIO_ENCODER_B_B_Encoder_2_PIN},
+    GPIO_MULTIPLE_GPIOB_INT_IRQN, 2U, 0, 0
+};

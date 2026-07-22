@@ -41,4 +41,7 @@ void Timer_Counter_End(void);
 // 函数间隔计时 — 计算距上次调用的时间，结果存入 time_Func_us / time_Func_ms
 void Timer_Counter_Func(void);
 
+// 得到当前的ms数
+uint32_t Timer_Get_Ms(void) ;
+
 #endif

@@ -42,3 +42,24 @@
 | 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
 |--------|----------------------|----------|------|
 | README.md | ./README.md | 修改 | 修正编码器中断描述(PB1/PB10)、LED_B黄色修正；新增PWM/定时器/DMA/时钟/调试/开发环境章节；新增Tianmengxing特殊引脚提醒 |
+
+## 2026-07-22 10:30 | 移植 F407 MyPWM API 到 MSPM0
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| MyPWM.h | ./MySystem/MyPWM.h | 修改 | 结构体 PWM_MAX→Compare_Max，新增 Compare_Min 下限；SetCompare 参数 uint16_t→float 对齐 F407 |
+| MyPWM.c | ./MySystem/MyPWM.c | 修改 | Init 改为读取 LOAD 寄存器校验+参数补全；SetCompare 改为双限幅[Min,Max]；GetFre 改为读取 LOAD 寄存器计算 |
+| MySystem.c | ./MySystem/MySystem.c | 修改 | PWM 实例初始化增加 Compare_Min 字段（0.0f） |
+
+## 2026-07-22 11:00 | 移植 F407 MyEncoder → MSPM0（GPIO双引脚中断模式）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| MyEncoder.h | ./MySystem/MyEncoder.h | 修改 | 新增 MyEncoder_Pins 子结构体封装 port+pin_A+pin_B（2个GPIO作为一个编码器整体）；MyEncoder_Counter_Tick 重命名为 MyEncoder_ISR |
+| MyEncoder.c | ./MySystem/MyEncoder.c | 修改 | 移除 GROUP1_IRQHandler（上移至 Mode_G 总入口）；适配新结构体字段 access；代码注释重组 |
+| Mode_G.c | ./Mode/Mode_G.c | 修改 | 新增 GROUP1_IRQHandler 总中断分发器（DL_Interrupt_getPendingGroup + IIDX switch），case GPIOB → MyEncoder_ISR |
+| AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All 新增 MyEncoder_Init 初始化两路编码器 NVIC 中断 |
+| MySystem.c | ./MySystem/MySystem.c | 修改 | Encoder 实例初始化改为嵌套初始化列表（MyEncoder_Pins 子结构体） |
+| Encoder.h | ./MySystem/Encoder.h | 删除 | 冗余包装层（零外部引用），功能已内聚到 MyEncoder |
+| Encoder.c | ./MySystem/Encoder.c | 删除 | 同上 |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | 编码器测试显示：OLED 展示 A/B 两路脉冲增量（20ms周期）和累计脉冲数 |

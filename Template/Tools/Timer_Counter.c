@@ -69,3 +69,19 @@ void Timer_Counter_Func(void)
     time_Func_ms = time_Func_us / 1000.0f;
     Timer_Counter_Before = Timer_Counter_Now;
 }
+
+// 得到当前运行的毫秒数
+uint32_t Timer_Get_Ms(void)
+{
+    static uint32_t last_tick = 0;
+    static uint64_t total_tick = 0;
+
+    uint32_t now_tick = TICKS_Get();
+
+    // uint32减法自动处理溢出
+    total_tick += (uint32_t)(now_tick - last_tick);
+
+    last_tick = now_tick;
+
+    return (uint32_t)(total_tick / 4000ULL);
+}

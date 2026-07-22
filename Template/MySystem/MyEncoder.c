@@ -1,84 +1,100 @@
 #include "MyEncoder.h"
 
-// 1. 编码器初始化
-void MyEncoder_Init(MyEncoder_Typedef* MyEncoder)
+// ====================================================================
+// 1. 编码器初始化 — 清除并使能NVIC中断
+// ====================================================================
+void MyEncoder_Init(MyEncoder_Typedef *encoder)
 {
-	if ((MyEncoder == 0) || (MyEncoder->Encoder_GPIO_Port == 0) ||
-	    (MyEncoder->Encoder_Pin_1 == 0U) || (MyEncoder->Encoder_Pin_2 == 0U))
-	{
-		return;
-	}
+    if (encoder == 0 || encoder->pins.port == 0 ||
+        encoder->pins.pin_A == 0U || encoder->pins.pin_B == 0U)
+    {
+        return;
+    }
 
-	NVIC_ClearPendingIRQ(MyEncoder->Encoder_IRQN);
-	NVIC_EnableIRQ(MyEncoder->Encoder_IRQN);
+    NVIC_ClearPendingIRQ(encoder->IRQN);
+    NVIC_EnableIRQ(encoder->IRQN);
 }
 
-// 1.1 更新编码器中断计数(双边沿触发)
-void MyEncoder_Counter_Tick(MyEncoder_Typedef* MyEncoder)
+// ====================================================================
+// 2. 编码器中断服务 — 双边沿触发方向判断与计数
+//    Pin_A 双边沿触发中断, 读取 Pin_B 电平判断方向
+//    A==B → 正转(+1), A!=B → 反转(-1)
+// ====================================================================
+void MyEncoder_ISR(MyEncoder_Typedef *encoder)
 {
-	uint32_t pinA;
-	uint32_t pinB;
+    uint32_t pinA_level, pinB_level;
 
-	if ((MyEncoder == 0) || (MyEncoder->Encoder_GPIO_Port == 0))
-	{
-		return;
-	}
+    if (encoder == 0 || encoder->pins.port == 0)
+    {
+        return;
+    }
 
-	if (DL_GPIO_getEnabledInterruptStatus(MyEncoder->Encoder_GPIO_Port, MyEncoder->Encoder_Pin_1) != MyEncoder->Encoder_Pin_1)
-	{
-		return;
-	}
+    // 确认是否为本编码器的Pin_A触发的中断
+    if (DL_GPIO_getEnabledInterruptStatus(encoder->pins.port, encoder->pins.pin_A)
+        != encoder->pins.pin_A)
+    {
+        return;
+    }
 
-	pinA = (DL_GPIO_readPins(MyEncoder->Encoder_GPIO_Port, MyEncoder->Encoder_Pin_1) != 0U) ? 1U : 0U;
-	pinB = (DL_GPIO_readPins(MyEncoder->Encoder_GPIO_Port, MyEncoder->Encoder_Pin_2) != 0U) ? 1U : 0U;
+    // 读取A/B两相电平
+    pinA_level = (DL_GPIO_readPins(encoder->pins.port, encoder->pins.pin_A) != 0U) ? 1U : 0U;
+    pinB_level = (DL_GPIO_readPins(encoder->pins.port, encoder->pins.pin_B) != 0U) ? 1U : 0U;
 
-	if (pinA == pinB)
-	{
-		MyEncoder->cnt++;
-	}
-	else
-	{
-		MyEncoder->cnt--;
-	}
+    // 方向判断
+    if (pinA_level == pinB_level)
+    {
+        encoder->cnt++;
+    }
+    else
+    {
+        encoder->cnt--;
+    }
 
-	DL_GPIO_clearInterruptStatus(MyEncoder->Encoder_GPIO_Port, MyEncoder->Encoder_Pin_1);
+    // 清除Pin_A中断标志
+    DL_GPIO_clearInterruptStatus(encoder->pins.port, encoder->pins.pin_A);
 }
 
-// 2. 得到编码器的脉冲数
-int MyEncoder_Get_CNT(MyEncoder_Typedef* MyEncoder)
+// ====================================================================
+// 3. 获取并清零本次周期脉冲增量（自动累加到total_cnt）
+//    调用频率: 20ms 周期（Timer_20ms_Callback → Mode_X_Tick）
+// ====================================================================
+int MyEncoder_Get_CNT(MyEncoder_Typedef *encoder)
 {
-	int32_t cnt;
+    int32_t cnt;
 
-	if (MyEncoder == 0)
-	{
-		return 0;
-	}
+    if (encoder == 0)
+    {
+        return 0;
+    }
 
-	cnt = MyEncoder->cnt;
-	MyEncoder->cnt = 0;
-	MyEncoder->total_cnt += cnt;
+    cnt = encoder->cnt;
+    encoder->cnt = 0;
+    encoder->total_cnt += cnt;
 
-	// 返回本次周期的计数值
-	return (int)cnt;
+    return (int)cnt;
 }
 
-// 3. 得到累计脉冲数
-int MyEncoder_Get_Total_CNT(MyEncoder_Typedef* MyEncoder)
+// ====================================================================
+// 4. 获取累计脉冲数
+// ====================================================================
+int MyEncoder_Get_Total_CNT(MyEncoder_Typedef *encoder)
 {
-	if (MyEncoder == 0)
-	{
-		return 0;
-	}
-	return (int)MyEncoder->total_cnt;
+    if (encoder == 0)
+    {
+        return 0;
+    }
+    return (int)encoder->total_cnt;
 }
 
-// 4. 清除累计脉冲数
-void MyEncoder_Total_Cnt_Clear(MyEncoder_Typedef* MyEncoder)
+// ====================================================================
+// 5. 清除累计脉冲数
+// ====================================================================
+void MyEncoder_Total_Cnt_Clear(MyEncoder_Typedef *encoder)
 {
-	if (MyEncoder == 0)
-	{
-		return;
-	}
-	MyEncoder->cnt = 0;
-	MyEncoder->total_cnt = 0 ;
+    if (encoder == 0)
+    {
+        return;
+    }
+    encoder->cnt = 0;
+    encoder->total_cnt = 0;
 }

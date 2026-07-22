@@ -104,3 +104,24 @@ void Mode_ChangeTo(Mode_Typedef nextmode)
 
     next_mode = nextmode ;
 }
+
+// ====================================================================
+// GROUP1 中断总入口 — 所有GPIO端口(GPIOA/GPIOB等)共享此中断向量
+// 通过 IIDX 区分具体是哪个GPIO端口触发的中断
+// ====================================================================
+void GROUP1_IRQHandler(void)
+{
+    switch (DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1))
+    {
+        // GPIOB端口中断 — 编码器A/B电机测速
+        case GPIO_MULTIPLE_GPIOB_INT_IIDX:
+            MyEncoder_ISR(&Motor_A_Encoder);
+            MyEncoder_ISR(&Motor_B_Encoder);
+            break;
+
+        // 其他GROUP1中断源在此扩展...
+
+        default:
+            break;
+    }
+}

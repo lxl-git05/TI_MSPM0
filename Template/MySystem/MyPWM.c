@@ -1,45 +1,54 @@
-#include "MySystem.h"
+#include "MyPWM.h"
 
-// 1. PWM初始化 - TI工程中由 SysConfig 统一初始化，此处保留兼容入口
-void MyPWM_Init(MyPWM_Typedef* MyPWM)
+// PWM初始化 — 校验LOAD配置是否合理，补全默认参数
+void MyPWM_Init(MyPWM_Typedef *pwm)
 {
-    if (MyPWM == 0)
-    {
+    if (pwm == 0) {
         return;
     }
 
-    if (MyPWM->PWM_MAX <= 0.0f)
-    {
-        MyPWM->PWM_MAX = 1.0f;
+    // 读取PWM周期值(LOAD)，校验范围
+    uint32_t load = DL_TimerG_getLoadValue(pwm->gptimer);
+
+    // LOAD异常则卡死（方便调试发现配置问题）
+    if (load == 0 || load > 65535) {
+        while (1) { }
     }
+
+    // 参数合法性补全
+    if (pwm->Compare_Max <= 0.0f) {
+        pwm->Compare_Max = (float)load;  // 默认使用LOAD值作为上限
+    }
+    if (pwm->Compare_Min < 0.0f) {
+        pwm->Compare_Min = 0.0f;
+    }
+
+    // MSPM0中PWM由SysConfig统一初始化并启动，此处仅做参数校验
 }
 
-// 2. 设置PWM值 - 添加限幅功能
-void MyPWM_SetCompare(MyPWM_Typedef* MyPWM, uint16_t Compare)
+// 设置PWM比较值 — 自动限幅到[Compare_Min, Compare_Max]
+void MyPWM_SetCompare(MyPWM_Typedef *pwm, float compare)
 {
-    uint32_t limited_compare;
-
-    if ((MyPWM == 0) || (MyPWM->gptimer == 0))
-    {
+    if (pwm == 0 || pwm->gptimer == 0) {
         return;
     }
 
-    limited_compare = (uint32_t)Compare;
-    if (limited_compare > (uint32_t)MyPWM->PWM_MAX)
-    {
-        limited_compare = (uint32_t)MyPWM->PWM_MAX;
-    }
-
-    // 设置比较值
-    DL_TimerG_setCaptureCompareValue(MyPWM->gptimer, limited_compare, MyPWM->ccIndex);
+    if (compare > pwm->Compare_Max) compare = pwm->Compare_Max;
+    if (compare < pwm->Compare_Min) compare = pwm->Compare_Min;
+    DL_TimerG_setCaptureCompareValue(pwm->gptimer, (uint32_t)compare, pwm->ccIndex);
 }
 
-// 3. 得到PWM的频率(近似值，按PWM_MAX对应周期计算)
-int MyPWM_GetFre(MyPWM_Typedef* MyPWM)
+// 获取PWM频率
+int MyPWM_GetFre(MyPWM_Typedef *pwm)
 {
-    if ((MyPWM == 0) || (MyPWM->PWM_MAX <= 0.0f))
-    {
+    if (pwm == 0 || pwm->gptimer == 0) {
         return 0;
     }
-    return (int)(MySystem_Fre / MyPWM->PWM_MAX);
+
+    uint32_t load = DL_TimerG_getLoadValue(pwm->gptimer);
+    if (load == 0) {
+        return 0;
+    }
+
+    return (int)(MySystem_Fre / (load + 1));
 }

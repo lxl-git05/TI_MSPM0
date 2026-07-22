@@ -8,6 +8,12 @@
 // Hardware层
 #include "Key.h"
 #include "OLED.h"
+#include "Buzzer.h"
+#include "Elec.h"
+#include "RGB.h"
+
+// Hardware层
+#include "MyPID.h"
 
 // tools层
 #include "LED_Flash.h"
@@ -16,6 +22,7 @@
 // app层
 
 // function层
+#include "MPU6050_Angle.h"
 
 // Mode层
 #include "Mode_G.h"

@@ -3,6 +3,8 @@
 void Initial_All(void)
 {
     // system
+    MyEncoder_Init(&Motor_A_Encoder);
+    MyEncoder_Init(&Motor_B_Encoder);
 
     // hardware
     OLED_Init() ;
