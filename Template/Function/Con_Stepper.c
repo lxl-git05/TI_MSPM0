@@ -4,14 +4,18 @@
 
 void Stepper_Init(void)
 {
-	// 假设 1.8° 步进角，16 细分 → 0.1125°/脉冲，正方向暂用STEPPER_DIR_P
+	// 使能步进电机驱动（EN=1 使能，高有效）
+	MyGPIO_WritePin(&MyGPIO_Stepper_En, 1);
+	MyGPIO_WritePin(&MyGPIO_Stepper2_En, 1);
+
+	// 1.8° 步进角，16 细分 → 0.1125°/脉冲，方向暂用 STEPPER_DIR_P
 	Stepper_PWM_Init(&Stepper1, &MyPWM_Stepper1, &MyGPIO_Stepper_Dir, 0.1125f, STEPPER_DIR_P);
 	Stepper_PWM_Init(&Stepper2, &MyPWM_Stepper2, &MyGPIO_Stepper2_Dir, 0.1125f, STEPPER_DIR_P);
-	
+
 	PID_Init(&Stepper1.PID_Angle , 0.217f , 0.0f , 0.829f , 100.0f , -100.0f , 1000.0f) ;
 	PID_Init(&Stepper2.PID_Angle , 0.081f , 0.0f , 0.224f , 100.0f , -100.0f , 1000.0f) ;
 
-	// 软件限位配置
+	// 软件限位配置（根据需要启用）
 //	Stepper_PWM_Limit_Config(&Stepper1, 120.0f, -120.0f);  // 电机1 水平旋转 ±120°
 //	Stepper_PWM_Limit_Config(&Stepper2, 50.0f,  -50.0f);   // 电机2 竖直旋转 ±50°
 }

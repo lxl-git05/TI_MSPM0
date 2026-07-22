@@ -34,8 +34,8 @@ void Motor_SetAngle(Motor_Typedef *Motor , int Angle);
 // 9. 得到电机当前位置
 float Motor_Get_Angle(Motor_Typedef *Motor) ;
 
-// 10. 检查电机位置
-bool Motor_Is_Angle(Motor_Typedef *Motor , int Angle , int Tolerance) ;
+// 10. 检查电机位置（三重检查：状态+速度+角度容差，Speed_Tol 单位 rpm）
+bool Motor_Is_Angle(Motor_Typedef *Motor , float Angle , float Tolerance , float Speed_Tol) ;
 
 //// Pos函数
 //// 1. 设置电机目标位移

@@ -42,6 +42,12 @@ void Mode_G_Loop(void)
             case Mode_4: Mode_4_Loop(); break;
             case Mode_5: Mode_5_Loop(); break;
             case Mode_6: Mode_6_Loop(); break;
+            case Con_Mode_1: Con_Mode_1_Loop(); break;
+            case Con_Mode_2: Con_Mode_2_Loop(); break;
+            case Con_Mode_3: Con_Mode_3_Loop(); break;
+            case Con_Mode_4: Con_Mode_4_Loop(); break;
+            case Con_Mode_5: Con_Mode_5_Loop(); break;
+            case Con_Mode_6: Con_Mode_6_Loop(); break;
             default: break;
         }
     }
@@ -56,6 +62,12 @@ void Mode_G_Loop(void)
             case Mode_4: Mode_4_Exit(); break;
             case Mode_5: Mode_5_Exit(); break;
             case Mode_6: Mode_6_Exit(); break;
+            case Con_Mode_1: Con_Mode_1_Exit(); break;
+            case Con_Mode_2: Con_Mode_2_Exit(); break;
+            case Con_Mode_3: Con_Mode_3_Exit(); break;
+            case Con_Mode_4: Con_Mode_4_Exit(); break;
+            case Con_Mode_5: Con_Mode_5_Exit(); break;
+            case Con_Mode_6: Con_Mode_6_Exit(); break;
             default: break;
         }
         // 进入新模式
@@ -67,6 +79,12 @@ void Mode_G_Loop(void)
             case Mode_4: Mode_4_Setup(); break;
             case Mode_5: Mode_5_Setup(); break;
             case Mode_6: Mode_6_Setup(); break;
+            case Con_Mode_1: Con_Mode_1_Setup(); break;
+            case Con_Mode_2: Con_Mode_2_Setup(); break;
+            case Con_Mode_3: Con_Mode_3_Setup(); break;
+            case Con_Mode_4: Con_Mode_4_Setup(); break;
+            case Con_Mode_5: Con_Mode_5_Setup(); break;
+            case Con_Mode_6: Con_Mode_6_Setup(); break;
             default: break;
         }
         curr_mode = next_mode ;
@@ -82,6 +100,12 @@ void Timer_1ms_Callback(void)
     Key_Tick() ;
     // 功能2:LED闪烁监控
     Flash_Mode_Tick() ;
+    // 功能3:步进电机速度ramp（加速度渐进）
+    Stepper_PWM_Speed_Tick(&Stepper1);
+    Stepper_PWM_Speed_Tick(&Stepper2);
+    // 功能4:步进电机位控状态机（T型/三角形速度曲线）
+    Stepper_PWM_Pos_Tick(&Stepper1);
+    Stepper_PWM_Pos_Tick(&Stepper2);
 }
 
 // 20ms定时器
@@ -96,8 +120,16 @@ void Timer_20ms_Callback(void)
         case Mode_4: Mode_4_Tick(); break;
         case Mode_5: Mode_5_Tick(); break;
         case Mode_6: Mode_6_Tick(); break;
+        case Con_Mode_1: Con_Mode_1_Tick(); break;
+        case Con_Mode_2: Con_Mode_2_Tick(); break;
+        case Con_Mode_3: Con_Mode_3_Tick(); break;
+        case Con_Mode_4: Con_Mode_4_Tick(); break;
+        case Con_Mode_5: Con_Mode_5_Tick(); break;
+        case Con_Mode_6: Con_Mode_6_Tick(); break;
         default: break;
     }
+    // 电机速度内环最后驱动
+    Motor_Speed_Update_Tick(20);    
 }
 
 // ========================== 系统状态配置 ==========================
@@ -138,6 +170,37 @@ void GROUP1_IRQHandler(void)
 
         // 其他GROUP1中断源在此扩展...
 
+        default:
+            break;
+    }
+}
+
+// ====================================================================
+// TIMG6 脉冲中断 — 步进电机1（Stepper1）
+// 每个 PWM 周期（脉冲）触发一次，用于步数累加 + 到位停止
+// ====================================================================
+void TIMG6_IRQHandler(void)
+{
+    switch (DL_TimerG_getPendingInterrupt(PWM_Stepper1_INST))
+    {
+        case DL_TIMER_IIDX_ZERO:
+            Stepper_PWM_Pulse_Count(&Stepper1);
+            break;
+        default:
+            break;
+    }
+}
+
+// ====================================================================
+// TIMG7 脉冲中断 — 步进电机2（Stepper2）
+// ====================================================================
+void TIMG7_IRQHandler(void)
+{
+    switch (DL_TimerG_getPendingInterrupt(PWM_Stepper2_INST))
+    {
+        case DL_TIMER_IIDX_ZERO:
+            Stepper_PWM_Pulse_Count(&Stepper2);
+            break;
         default:
             break;
     }

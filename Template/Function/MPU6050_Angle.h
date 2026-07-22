@@ -66,6 +66,8 @@ void MPU6050_Angle_Init(void) ;
 void MPU6050_Data_Error_Check(int Sanple_Cnt) ;
 // 得到陀螺仪的六个较精确角度
 void MPU6050_Angle_Update_Tick(void) ;	// 耗时1.45ms
-// 检查转向到目标角度是否完成
+// 检查转向到目标角度是否完成（默认阈值：5.0° 角度容差, 7.0°/s 角速度容差）
 bool MPU6050_Turn_Yaw_Is_Ok(int targetYaw) ;
+// 可自定义双阈值的版本
+bool MPU6050_Turn_Yaw_Is_Ok_Ex(float targetYaw , float angle_tol , float gyro_tol) ;
 #endif

@@ -94,7 +94,6 @@ void Mode_3_Tick(void)
 					Motorx_Angle_Update_Tick(pMotor, -1);
 				}
     }
-    Motor_Speed_Update_Tick(20);
 
     // 每20ms通过串口打印：目标, 当前值, PID输出
     if (Motor_Pos_Enable)

@@ -52,8 +52,10 @@ MyGPIO_Typedef MyGPIO_Y8_DAT        = {GPIO_Y8_PIN_Y8_DAT_PORT, GPIO_Y8_PIN_Y8_D
 // ====================================================================
 // PWM 实例定义
 // ====================================================================
-MyPWM_Typedef MyPWM_Motor_A_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C0_IDX, 1000.0f, 0.0f};
-MyPWM_Typedef MyPWM_Motor_B_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C1_IDX, 1000.0f, 0.0f};
+MyPWM_Typedef MyPWM_Motor_A_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C0_IDX, 1000.0f, 0.0f, 4000000, 0};
+MyPWM_Typedef MyPWM_Motor_B_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C1_IDX, 1000.0f, 0.0f, 4000000, 0};
+MyPWM_Typedef MyPWM_Stepper1    = {PWM_Stepper1_INST, GPIO_PWM_Stepper1_C0_IDX, 65535.0f, 0.0f, PWM_Stepper1_INST_CLK_FREQ, PWM_Stepper1_INST_INT_IRQN};
+MyPWM_Typedef MyPWM_Stepper2    = {PWM_Stepper2_INST, GPIO_PWM_Stepper2_C0_IDX, 65535.0f, 0.0f, PWM_Stepper2_INST_CLK_FREQ, PWM_Stepper2_INST_INT_IRQN};
 
 // ====================================================================
 // Encoder 实例定义

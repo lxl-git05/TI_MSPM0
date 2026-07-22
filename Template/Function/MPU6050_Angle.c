@@ -118,16 +118,22 @@ void MPU6050_Angle_Update_Tick(void)
 	MPU6050_Raw_Deal(20);
 }
 
-// 检查转向到目标角度是否完成
-bool MPU6050_Turn_Yaw_Is_Ok(int targetYaw)
+// 检查转向到目标角度是否完成（可自定义阈值版本）
+bool MPU6050_Turn_Yaw_Is_Ok_Ex(float targetYaw , float angle_tol , float gyro_tol)
 {
     float err = fabs(targetYaw - MPU_Real.yaw);
     float gyro = fabs(MPU_Cali.GZ);	// 角速度小,代表几乎暂停,说明转向完成
-    if (err < 5.0f && gyro < 7.0f)
+    if (err < angle_tol && gyro < gyro_tol)
     {
         return true;
     }
     return false;
+}
+
+// 旧接口兼容（默认阈值：5.0° 角度, 7.0°/s 角速度）
+bool MPU6050_Turn_Yaw_Is_Ok(int targetYaw)
+{
+    return MPU6050_Turn_Yaw_Is_Ok_Ex((float)targetYaw , 5.0f , 7.0f);
 }
 
 /*

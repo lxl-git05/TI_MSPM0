@@ -24,31 +24,35 @@ int16_t Encoder_Get(void)
 }
 
 // ========== EC11 中断服务（GROUP1 GPIOA）==========
-// 原理：EC11旋转编码器A/B相正交信号
-//   正转: S1下降沿时S2为低 → ++
-//   反转: S2下降沿时S1为低 → --
+// EC11 原理：A/B两相正交，每 detent 产生 4 个边沿（A↓→B↓→A↑→B↑ 或反向）
+// 方向判断：某相下降沿时，看另一相电平即可确定旋转方向
+//   正转(CW):  S1↓ 时 S2=HIGH  → ++
+//   正转(CW):  S2↓ 时 S1=LOW   → ++
+//   反转(CCW): S1↓ 时 S2=LOW   → --
+//   反转(CCW): S2↓ 时 S1=HIGH  → --
 void EC11_Encoder_ISR(void)
 {
-    // 检查 S1 (PA12) 中断标志
+    // 检查 S1 (PA12) 下降沿
     if (DL_GPIO_getEnabledInterruptStatus(MyGPIO_EC11_S1.GPIO_Port, MyGPIO_EC11_S1.GPIO_Pin)) {
         DL_GPIO_clearInterruptStatus(MyGPIO_EC11_S1.GPIO_Port, MyGPIO_EC11_S1.GPIO_Pin);
-        // 去抖动：再次确认 S1 仍为低电平
-        if (MyGPIO_ReadPin(&MyGPIO_EC11_S1) == 0) {
-            // 读取 S2 电平判断方向（下降沿时S2为低→正转）
-            if (MyGPIO_ReadPin(&MyGPIO_EC11_S2) == 0) {
+        if (MyGPIO_ReadPin(&MyGPIO_EC11_S1) == 0)       // 确认仍为低
+        {
+            if (MyGPIO_ReadPin(&MyGPIO_EC11_S2))        // S2=HIGH → 正转
                 Encoder_Count++;
-            }
+            else                                         // S2=LOW  → 反转
+                Encoder_Count--;
         }
     }
 
-    // 检查 S2 (PA14) 中断标志
+    // 检查 S2 (PA14) 下降沿
     if (DL_GPIO_getEnabledInterruptStatus(MyGPIO_EC11_S2.GPIO_Port, MyGPIO_EC11_S2.GPIO_Pin)) {
         DL_GPIO_clearInterruptStatus(MyGPIO_EC11_S2.GPIO_Port, MyGPIO_EC11_S2.GPIO_Pin);
-        if (MyGPIO_ReadPin(&MyGPIO_EC11_S2) == 0) {
-            // 下降沿时S1为低→反转
-            if (MyGPIO_ReadPin(&MyGPIO_EC11_S1) == 0) {
+        if (MyGPIO_ReadPin(&MyGPIO_EC11_S2) == 0)       // 确认仍为低
+        {
+            if (MyGPIO_ReadPin(&MyGPIO_EC11_S1))        // S1=HIGH → 反转
                 Encoder_Count--;
-            }
+            else                                         // S1=LOW  → 正转
+                Encoder_Count++;
         }
     }
 }

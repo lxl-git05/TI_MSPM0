@@ -12,11 +12,11 @@ void Stepper_PWM_Limit_LED_Update(void)
     uint8_t s2 = (Stepper2.Limit_Enable &&
         (Stepper2.Pos_Now >= Stepper2.Limit_Angle_Max || Stepper2.Pos_Now <= Stepper2.Limit_Angle_Min));
 
-    if (s1 || s2)  RGB_Set_Color(0, 0, 1);
-    else           RGB_Set_Color(0, 0, 0);
+    if (s1 || s2)  RGB_Set(0, 0, 1);
+    else           RGB_Set(0, 0, 0);
 }
 
-// =================== 公共函数 ===================
+// =================== 初始化 ===================
 
 // 初始化
 void Stepper_PWM_Init(Stepper_PWM_Typedef* pStepper, MyPWM_Typedef* PWM, MyGPIO_Typedef* GPIO_Dir, float pulse_angle, int8_t Positive_Dir)
@@ -53,21 +53,17 @@ void Stepper_PWM_Init(Stepper_PWM_Typedef* pStepper, MyPWM_Typedef* PWM, MyGPIO_
     pStepper->Pos_StartAngle = 0;
     pStepper->Pos_TargetAngle = 0;
 
-    // 初始化DIR引脚（默认正转）
+    // 初始化 DIR 引脚（默认正转方向）
     MyGPIO_WritePin(pStepper->GPIO_Dir, Positive_Dir > 0 ? 1 : 0);
-    // 初始化PWM
+
+    // 初始化 PWM（由 SysConfig 统一启动，MyPWM_Init 做参数校验）
     MyPWM_Init(pStepper->PWM);
-    MyPWM_SetCompare(pStepper->PWM, 0);  // 最开始占空比为0，也就是无脉冲
-    // 配置NVIC并使能更新中断（用于脉冲计数）
-    if (pStepper->PWM->htimx->Instance == TIM9) {
-        HAL_NVIC_SetPriority(TIM1_BRK_TIM9_IRQn, 1, 0);
-        HAL_NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn);
-    } else if (pStepper->PWM->htimx->Instance == TIM12) {
-        HAL_NVIC_SetPriority(TIM8_BRK_TIM12_IRQn, 1, 0);
-        HAL_NVIC_EnableIRQ(TIM8_BRK_TIM12_IRQn);
-    }
-    __HAL_TIM_ENABLE_IT(pStepper->PWM->htimx, TIM_IT_UPDATE);
+    MyPWM_SetCompare(pStepper->PWM, 0);  // 初始无脉冲输出
+
+    // 使能定时器更新中断（用于脉冲计数，优先级=1，低于 1ms Tick 的优先级 0）
+    MyPWM_EnableIT(pStepper->PWM);
 }
+
 // =================== 内部：应用速度到硬件 ===================
 
 static void _Stepper_Apply_Speed(Stepper_PWM_Typedef* pStepper, float Speed)
@@ -92,13 +88,13 @@ static void _Stepper_Apply_Speed(Stepper_PWM_Typedef* pStepper, float Speed)
     }
 
     float freq_hz = speed_abs * (360.0f / pStepper->pulse_angle) / 60.0f;
-    uint32_t tim_base = (pStepper->PWM->htimx->Instance == TIM9) ? MySystem_Fre : MySystem_Fre / 2;
-    uint32_t tim_clock = tim_base / (pStepper->PWM->htimx->Instance->PSC + 1);
+    uint32_t tim_clock = MyPWM_GetTimClock(pStepper->PWM);
     uint32_t arr = (uint32_t)(tim_clock / freq_hz) - 1;
-    if (arr < 1) arr = 1;
+    if (arr < 1)     arr = 1;
     if (arr > 65535) arr = 65535;
 
-    __HAL_TIM_SET_AUTORELOAD(pStepper->PWM->htimx, arr);
+    // 更新周期 + 50% 占空比
+    MyPWM_SetLoadValue(pStepper->PWM, arr);
     MyPWM_SetCompare(pStepper->PWM, (arr + 1) / 2);
     pStepper->Speed_Now = Speed;
 }
@@ -347,10 +343,7 @@ static bool _Stepper_Is_Angle_Single(const Stepper_PWM_Typedef* pStepper)
     float diff = pStepper->Pos_Now - pStepper->Pos_TargetAngle;
     if (diff < 0.0f) diff = -diff;
 
-    if (diff <= tolerance)
-        return true;
-
-    return false;
+    return (diff <= tolerance);
 }
 
 // 公开 API：判断两个步进电机是否都已到达目标角度

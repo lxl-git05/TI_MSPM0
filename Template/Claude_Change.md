@@ -125,3 +125,22 @@
 | AllHeader.h | ./App/AllHeader.h | 修改 | 新增 Mode_4/5/6 和 Con_Mode_1~6 的 include |
 | Mode_G.h | ./Mode/Mode_G.h | 修改 | 枚举新增 Mode_4/5/6 |
 | Mode_G.c | ./Mode/Mode_G.c | 修改 | Switch 分发新增 Mode_4/5/6 的 Setup/Loop/Exit/Tick 分支 |
+| empty.c | ./empty.c | 修改 | main() 中 3 组 switch 分发新增 Mode_4/5/6 的 Loop/Exit/Setup 分支 |
+
+## 2026-07-22 16:30 | Stepper_PWM 步进电机驱动 STM32→MSPM0 移植
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| MyPWM.h | ./MySystem/MyPWM.h | 修改 | 结构体新增 Tim_Clock+Tim_IRQn 字段；新增 SetLoadValue/GetTimClock/EnableIT API |
+| MyPWM.c | ./MySystem/MyPWM.c | 修改 | 实现新 API；MyPWM_GetFre 改用 Tim_Clock 替代 MySystem_Fre |
+| MySystem.c | ./MySystem/MySystem.c | 修改 | 新增 MyPWM_Stepper1/2 实例定义（含时钟频率+中断号） |
+| Stepper_PWM.c | ./Hardware/Stepper_PWM.c | 修改 | 完全移植：STM32 HAL→MSPM0 DriverLib + MyPWM API（ARR/Load/IRQ 全部替换） |
+| Con_Stepper.c | ./Function/Con_Stepper.c | 修改 | 新增 EN 引脚使能（PA18/PB18 拉低）；PID+限位初始化 |
+| Orange.h | ./Hardware/Orange.h | 新增 | 香橙派视觉变量声明（x_real/y_real/x_tar/y_tar） |
+| Orange.c | ./Hardware/Orange.c | 新增 | 香橙派视觉变量默认定义 |
+| Mode_G.c | ./Mode/Mode_G.c | 修改 | 1ms Tick 新增 Speed_Tick×2+Pos_Tick×2；新增 TIMG6/TIMG7 中断服务 |
+| AllHeader.h | ./App/AllHeader.h | 修改 | 新增 Stepper_PWM.h/Orange.h/Con_Stepper.h |
+| AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All 新增 Stepper_Init() 调用 |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | 步进电机综合测试例程（6种子模式：瞬时/ramp/定位/三角形/快速/循环） |
+| Encoder_Key.c | ./Hardware/Encoder_Key.c | 修改 | EC11 方向判断修复（双向检测：另一相电平决定正反转） |
+| empty.syscfg | ./empty.syscfg | 修改 | EC11 引脚新增 interruptPriority="2"（修复中断不触发） |

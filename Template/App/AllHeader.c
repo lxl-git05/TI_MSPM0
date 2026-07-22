@@ -18,5 +18,6 @@ void Initial_All(void)
     // function
     Serial_Init();
     Encoder_Init();     // EC11 旋转编码器（GPIOA中断初始化）
+    Stepper_Init();     // 步进电机初始化（PWM + PID + 限位）
 
 }

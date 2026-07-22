@@ -12,6 +12,8 @@
 #include "Elec.h"
 #include "RGB.h"
 #include "Encoder_Key.h"
+#include "Stepper_PWM.h"
+#include "Orange.h"
 
 // Hardware层
 #include "MyPID.h"
@@ -27,12 +29,7 @@
 #include "Serial_porting.h"
 #include "Control.h"
 #include "Con_Motor.h"
-#include "Con_Mode_1.h"
-#include "Con_Mode_2.h"
-#include "Con_Mode_3.h"
-#include "Con_Mode_4.h"
-#include "Con_Mode_5.h"
-#include "Con_Mode_6.h"
+#include "Con_Stepper.h"
 
 
 // Mode层
@@ -43,6 +40,12 @@
 #include "Mode_4.h"
 #include "Mode_5.h"
 #include "Mode_6.h"
+#include "Con_Mode_1.h"
+#include "Con_Mode_2.h"
+#include "Con_Mode_3.h"
+#include "Con_Mode_4.h"
+#include "Con_Mode_5.h"
+#include "Con_Mode_6.h"
 
 // ================== 初始化函数 ==================
 void Initial_All(void) ;

@@ -157,11 +157,20 @@ float Motor_Get_Angle(Motor_Typedef *Motor)
 	return Motor->PID_Angle.realPoint_Now ;
 }
 
-// 10. 检查电机位置
-bool Motor_Is_Angle(Motor_Typedef *Motor , int Angle , int Tolerance)
+// 10. 检查电机位置（三重检查：状态+速度+角度容差，参考 Stepper_PWM 模式）
+bool Motor_Is_Angle(Motor_Typedef *Motor , float Angle , float Tolerance , float Speed_Tol)
 {
+	// 第1层：速度检查 — 真实速度未归零说明还在运动
+	float real_speed = (Motor->PID_s.realPoint_Now > 0) ? Motor->PID_s.realPoint_Now : -Motor->PID_s.realPoint_Now ;
+	if (real_speed >= Speed_Tol)
+	{
+		return false ;
+	}
+	// 第2层：角度容差检查
 	float curr = Motor_Get_Angle(Motor) ;
-	if (curr - Angle > -Tolerance && curr - Angle < Tolerance)
+	float diff = curr - Angle ;
+	if (diff < 0) diff = -diff ;
+	if (diff < Tolerance)
 	{
 		return true ;
 	}
