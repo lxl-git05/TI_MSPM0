@@ -29,66 +29,6 @@ void Mode_G_Loop(void)
     {
         Mode_To_Next() ;
     }
-
-    // ===== 模式分发 =====
-    if (curr_mode == next_mode)
-    {
-        // 运行当前模式的 Loop
-        switch (curr_mode)
-        {
-            case Mode_1: Mode_1_Loop(); break;
-            case Mode_2: Mode_2_Loop(); break;
-            case Mode_3: Mode_3_Loop(); break;
-            case Mode_4: Mode_4_Loop(); break;
-            case Mode_5: Mode_5_Loop(); break;
-            case Mode_6: Mode_6_Loop(); break;
-            case Con_Mode_1: Con_Mode_1_Loop(); break;
-            case Con_Mode_2: Con_Mode_2_Loop(); break;
-            case Con_Mode_3: Con_Mode_3_Loop(); break;
-            case Con_Mode_4: Con_Mode_4_Loop(); break;
-            case Con_Mode_5: Con_Mode_5_Loop(); break;
-            case Con_Mode_6: Con_Mode_6_Loop(); break;
-            default: break;
-        }
-    }
-    else
-    {
-        // 退出旧模式
-        switch (curr_mode)
-        {
-            case Mode_1: Mode_1_Exit(); break;
-            case Mode_2: Mode_2_Exit(); break;
-            case Mode_3: Mode_3_Exit(); break;
-            case Mode_4: Mode_4_Exit(); break;
-            case Mode_5: Mode_5_Exit(); break;
-            case Mode_6: Mode_6_Exit(); break;
-            case Con_Mode_1: Con_Mode_1_Exit(); break;
-            case Con_Mode_2: Con_Mode_2_Exit(); break;
-            case Con_Mode_3: Con_Mode_3_Exit(); break;
-            case Con_Mode_4: Con_Mode_4_Exit(); break;
-            case Con_Mode_5: Con_Mode_5_Exit(); break;
-            case Con_Mode_6: Con_Mode_6_Exit(); break;
-            default: break;
-        }
-        // 进入新模式
-        switch (next_mode)
-        {
-            case Mode_1: Mode_1_Setup(); break;
-            case Mode_2: Mode_2_Setup(); break;
-            case Mode_3: Mode_3_Setup(); break;
-            case Mode_4: Mode_4_Setup(); break;
-            case Mode_5: Mode_5_Setup(); break;
-            case Mode_6: Mode_6_Setup(); break;
-            case Con_Mode_1: Con_Mode_1_Setup(); break;
-            case Con_Mode_2: Con_Mode_2_Setup(); break;
-            case Con_Mode_3: Con_Mode_3_Setup(); break;
-            case Con_Mode_4: Con_Mode_4_Setup(); break;
-            case Con_Mode_5: Con_Mode_5_Setup(); break;
-            case Con_Mode_6: Con_Mode_6_Setup(); break;
-            default: break;
-        }
-        curr_mode = next_mode ;
-    }
 }
 
 // ========================== 系统定时器配置 ==========================

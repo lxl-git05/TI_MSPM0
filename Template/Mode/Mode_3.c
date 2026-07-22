@@ -87,7 +87,7 @@ void Mode_3_Tick(void)
         // 位置环更新（选中电机）+ 速度内环（两电机）
 				if (pMotor == &Motor_A)
 				{
-					Motorx_Angle_Update_Tick(pMotor, -1);
+					Motorx_Angle_Update_Tick(pMotor, 1);
 				}
 				else
 				{

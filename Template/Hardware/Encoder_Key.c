@@ -1,4 +1,5 @@
 #include "Encoder_Key.h"
+#include "Serial_porting.h"
 
 static int16_t Encoder_Count = 0;   // 编码器累计脉冲数
 
@@ -35,24 +36,27 @@ void EC11_Encoder_ISR(void)
     // 检查 S1 (PA12) 下降沿
     if (DL_GPIO_getEnabledInterruptStatus(MyGPIO_EC11_S1.GPIO_Port, MyGPIO_EC11_S1.GPIO_Pin)) {
         DL_GPIO_clearInterruptStatus(MyGPIO_EC11_S1.GPIO_Port, MyGPIO_EC11_S1.GPIO_Pin);
+        // Serial_printf(&Serial1 , "S1->S1=%d S2=%d\r\n", MyGPIO_ReadPin(&MyGPIO_EC11_S1), MyGPIO_ReadPin(&MyGPIO_EC11_S2));
         if (MyGPIO_ReadPin(&MyGPIO_EC11_S1) == 0)       // 确认仍为低
         {
             if (MyGPIO_ReadPin(&MyGPIO_EC11_S2))        // S2=HIGH → 正转
-                Encoder_Count++;
-            else                                         // S2=LOW  → 反转
                 Encoder_Count--;
+            else                                         // S2=LOW  → 反转
+                Encoder_Count++;
         }
     }
 
     // 检查 S2 (PA14) 下降沿
     if (DL_GPIO_getEnabledInterruptStatus(MyGPIO_EC11_S2.GPIO_Port, MyGPIO_EC11_S2.GPIO_Pin)) {
         DL_GPIO_clearInterruptStatus(MyGPIO_EC11_S2.GPIO_Port, MyGPIO_EC11_S2.GPIO_Pin);
+        // Serial_printf(&Serial1 , "S2->S1=%d S2=%d\r\n", MyGPIO_ReadPin(&MyGPIO_EC11_S1), MyGPIO_ReadPin(&MyGPIO_EC11_S2));
+
         if (MyGPIO_ReadPin(&MyGPIO_EC11_S2) == 0)       // 确认仍为低
         {
             if (MyGPIO_ReadPin(&MyGPIO_EC11_S1))        // S1=HIGH → 反转
-                Encoder_Count--;
-            else                                         // S1=LOW  → 正转
                 Encoder_Count++;
+            else                                         // S1=LOW  → 正转
+                Encoder_Count--;
         }
     }
 }

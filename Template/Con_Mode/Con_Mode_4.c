@@ -9,6 +9,7 @@ void Con_Mode_4_Setup(void)
 
 void Con_Mode_4_Loop(void)
 {
+    OLED_Printf(0, 0, OLED_6X8, "Con_Mode_4") ;
 
 }
 
