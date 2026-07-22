@@ -13,6 +13,15 @@ void Mode_G_Setup(void)
     Initial_All() ;
     // 定时器必须最后初始化!!!
     Timer_Initial() ;
+    // 参数注册
+    // PARAM_FORCE(curr_mode, Mode_1);
+    // 外存初始化会导致模式直接切换，跳过setup，所以这里进行更新处理，使得可以进入setup
+    if (curr_mode > Mode_Null && curr_mode < Mode_End)
+    {
+        next_mode = curr_mode;
+        curr_mode = Mode_Null;
+    }
+    
 }
 
 // 循环loop — 全局按键 + 模式分发
@@ -28,6 +37,11 @@ void Mode_G_Loop(void)
     if (Key_Check(KEY_0, KEY_DOUBLE))
     {
         Mode_To_Next() ;
+    }
+    // 全局模式展示
+    if (curr_mode == Mode_Null)
+    {
+        OLED_Printf(0,0,OLED_6X8,"===Mode_G===") ;
     }
 }
 
@@ -73,12 +87,13 @@ void Timer_20ms_Callback(void)
 }
 
 // ========================== 系统状态配置 ==========================
-
 // 进入下一状态
 void Mode_To_Next(void)
 {
     // Mode_End纯属标记模式尽头防止越界
-    next_mode = (next_mode + 1) == Mode_End ? Mode_Null : next_mode + 1 ;
+    uint32_t next_val = (uint32_t)next_mode + 1;
+    next_mode = (next_val >= (uint32_t)Mode_End) ? Mode_Null : (Mode_Typedef)next_val;
+    // ★ 模式记忆由 empty.c 在 curr_mode = next_mode 后统一保存
 }
 
 // 将当前状态转换为:

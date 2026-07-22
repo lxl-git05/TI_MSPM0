@@ -35,7 +35,8 @@
 
 // 脱机阈值功能
 #include "ParamEdit.h"
-
+#include "Param_AT24C02.h"
+#include "at24c02_manager.h"
 
 // Mode层
 #include "Mode_G.h"
