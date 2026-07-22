@@ -36,6 +36,7 @@ const SYSCTL = scripting.addModule("/ti/driverlib/SYSCTL");
 const TIMER  = scripting.addModule("/ti/driverlib/TIMER", {}, false);
 const TIMER1 = TIMER.addInstance();
 const TIMER2 = TIMER.addInstance();
+const TIMER3 = TIMER.addInstance();
 const UART   = scripting.addModule("/ti/driverlib/UART", {}, false);
 const UART1  = UART.addInstance();
 const UART2  = UART.addInstance();
@@ -288,6 +289,13 @@ TIMER2.timerPeriod      = "20 ms";
 TIMER2.timerStartTimer  = true;
 TIMER2.interrupts       = ["ZERO"];
 
+TIMER3.$name              = "TIMER_2";
+TIMER3.timerMode          = "PERIODIC";
+TIMER3.timerClkDiv        = 8;          // 32MHz / 8 = 4MHz → 0.25µs/tick
+TIMER3.timerStartTimer    = true;
+TIMER3.timerPeriod        = "1 ms";     // 占位，Timer_Counter_Init 中会覆盖为 PERIODIC_UP + 0xFFFFFFFF
+TIMER3.peripheral.$assign = "TIMG12";
+
 UART1.$name                                = "UART_0";
 UART1.targetBaudRate                       = 115200;
 UART1.rxFifoThreshold                      = "DL_UART_RX_FIFO_LEVEL_ONE_ENTRY";
@@ -366,6 +374,7 @@ GPIO8.associatedPins[0].pin.$suggestSolution     = "PA13";
 GPIO13.associatedPins[0].pin.$suggestSolution    = "PB23";
 SYSCTL.peripheral.$suggestSolution               = "SYSCTL";
 TIMER2.peripheral.$suggestSolution               = "TIMA0";
+TIMER3.peripheral.$suggestSolution               = "TIMG12";
 UART1.peripheral.rxPin.$suggestSolution          = "PA11";
 UART1.peripheral.txPin.$suggestSolution          = "PA10";
 UART1.DMA_CHANNEL_RX.peripheral.$suggestSolution = "DMA_CH1";

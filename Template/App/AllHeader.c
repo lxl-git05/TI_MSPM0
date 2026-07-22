@@ -9,6 +9,7 @@ void Initial_All(void)
 
     // tools
     Flash_Mode_Init() ;
+    Timer_Counter_Init() ;
 
     // function
 
