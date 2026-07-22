@@ -144,3 +144,11 @@
 | Mode_2.c | ./Mode/Mode_2.c | 修改 | 步进电机综合测试例程（6种子模式：瞬时/ramp/定位/三角形/快速/循环） |
 | Encoder_Key.c | ./Hardware/Encoder_Key.c | 修改 | EC11 方向判断修复（双向检测：另一相电平决定正反转） |
 | empty.syscfg | ./empty.syscfg | 修改 | EC11 引脚新增 interruptPriority="2"（修复中断不触发） |
+
+## 2026-07-22 17:00 | AT24C02 EEPROM STM32→MSPM0 硬件I2C移植 + Mode_2读写测试
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| bsp_at24c02.h | ./AT24/bsp_at24c02.h | 修改 | 移除STM32 SW/HW I2C全部分支，改为MSPM0硬件I2C声明（I2C_1+地址0x50） |
+| bsp_at24c02.c | ./AT24/bsp_at24c02.c | 修改 | 删除全部SW I2C位敲打和STM32 HAL代码，使用MyI2C库IIC_WriteBytes/IIC_ReadBytes实现读写 |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | 清理旧测试代码，新增AT24C02自动递增读写验证测试（OLED显示Wr/Rd/OK/FAIL） |

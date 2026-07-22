@@ -17,6 +17,8 @@
 
 // Hardware层
 #include "MyPID.h"
+#include "ICM_42688_base.h"
+
 
 // tools层
 #include "LED_Flash.h"
