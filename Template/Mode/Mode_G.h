@@ -11,13 +11,14 @@ typedef enum
     Mode_4 ,      // 模式4:保留
     Mode_5 ,      // 模式5:保留
     Mode_6 ,      // 模式6:保留
+    Mode_End ,      // 注册模式不能在这个下面!!!
     Con_Mode_1 ,  // Con模式1
     Con_Mode_2 ,  // Con模式2
     Con_Mode_3 ,  // Con模式3
     Con_Mode_4 ,  // Con模式4
     Con_Mode_5 ,  // Con模式5
     Con_Mode_6 ,  // Con模式6
-    Mode_End ,      // 注册模式不能在这个下面!!!
+    
 }Mode_Typedef;
 
 extern Mode_Typedef curr_mode ;    // 当前模式

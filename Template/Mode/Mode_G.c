@@ -65,6 +65,8 @@ void Timer_1ms_Callback(void)
 // 20ms定时器
 void Timer_20ms_Callback(void)
 {
+    // 陀螺仪更新
+    MPU6050_Angle_Update_Tick() ;   // 耗时1.45ms
     // 当前模式的 Tick
     switch (curr_mode)
     {

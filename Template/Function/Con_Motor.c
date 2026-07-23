@@ -246,8 +246,8 @@ float PID_Angle_Get_Yaw(void)
 // 20ms Tick: MPU更新→PID计算→差速输出（A反转 B正转 = 顺时针为正）
 void PID_Angle_Tick(void)
 {
-	// 1. 更新MPU数据
-	MPU6050_Angle_Update_Tick();
+	// // 1. 更新MPU数据->这个作为必做任务，所以不需要在这里再调用
+	// MPU6050_Angle_Update_Tick();
 	// 2. 获取真实yaw
 	PID_Angle.realPoint_Now = MPU_Real.yaw;
 	// 3. PID计算

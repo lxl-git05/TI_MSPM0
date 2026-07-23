@@ -1,6 +1,8 @@
 #include "Mode_5.h"
 #include "AllHeader.h"
 
+// ========================== 陀螺仪角度环 ==========================
+
 float Angle_Car ;
 
 void Mode_5_Setup(void)
@@ -21,6 +23,9 @@ void Mode_5_Loop(void)
         Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Angle_Car) ;
     }
     PID_Angle.goalPoint = Angle_Car ;
+
+    OLED_Printf(0, 20, OLED_6X8, "Angle_Car:%.2f",Angle_Car) ;
+    OLED_Printf(0, 30, OLED_6X8, "Yaw:%.2f",MPU_Real.yaw) ;
 }
 
 void Mode_5_Tick(void)
