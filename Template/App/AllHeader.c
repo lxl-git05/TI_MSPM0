@@ -8,7 +8,6 @@ void Initial_All(void)
 
     // Hardware
     OLED_Init() ;
-    MPU6050_Angle_Init() ;
     Con_Motor_Init() ;
     Buzzer_Init() ;
 

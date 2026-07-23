@@ -18,6 +18,8 @@
 // Hardware层
 #include "MyPID.h"
 #include "ICM_42688_base.h"
+#include "ICM42688_Mahony.h"
+#include "Imu_Types.h"
 
 
 // tools层
@@ -27,7 +29,6 @@
 // app层
 
 // function层
-#include "MPU6050_Angle.h"
 #include "Serial_porting.h"
 #include "Control.h"
 #include "Con_Motor.h"

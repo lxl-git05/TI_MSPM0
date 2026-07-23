@@ -180,3 +180,38 @@
 | Con_Motor.h | ./Function/Con_Motor.h | 修改 | 清理旧注释桩，新增 MPU6050角度环区段：extern PID_Angle + PID_Angle_Init/Reset/Tar_Yaw/Get_Yaw/Tick 声明 |
 | Con_Motor.c | ./Function/Con_Motor.c | 修改 | Con_Motor_Init末尾调用PID_Angle_Init()；新增MPU6050角度环实现：全局PID_Angle(PD Kp=6 Kd=20 Out±100) + Reset(yaw归零+PID复位) + Tar_Yaw(设目标) + Get_Yaw(读yaw) + Tick(MPU6050_Angle_Update_Tick→PID→差速A-/B+) |
 | Control.c | ./Function/Control.c | 修改 | 任务6精简：删除static Car_Yaw_PID/Car_Yaw_PID_Inited；Setup改为调用PID_Angle_Reset()+PID_Angle_Tar_Yaw()；Tick改为调用PID_Angle_Tick() |
+
+## 2026-07-23 18:00 | ICM42688 驱动移植 + MPU6050 API 补齐
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Imu_Types.h | ./Hardware/Imu_Types.h | 新增 | IMU通用类型定义(ImuOffset_Typedef/ImuCali_Typedef/ImuReal_Typedef)，从F407移植 |
+| ICM_42688_base.h | ./Hardware/ICM_42688_base.h | 修改 | 重写为完整驱动头文件：ICM42688_Raw_Data结构体 + 6个公有API(Init/WriteReg/ReadReg/GetData/GetID/Update_Data)，API对齐MPU6050 |
+| ICM_42688_base.c | ./Hardware/ICM_42688_base.c | 修改 | 重写为TI DriverLib版驱动：完整寄存器宏+量程/ODR/灵敏度宏+硬件I2C_1读写+12字节批量读取+Init(复位→ACCEL→GYRO→低噪声)+Update_Data(灵敏度转换) |
+| MPU6050_base.h | ./Hardware/MPU6050_base.h | 修改 | API补齐：新增WriteReg/ReadReg/GetData/GetID声明，对齐F407版本 |
+| MPU6050_base.c | ./Hardware/MPU6050_base.c | 修改 | 新增MPU6050_ReadReg(单字节)/MPU6050_GetData(原始int16批量)/MPU6050_GetID(WHO_AM_I)三个公有函数 |
+| MPU6050_Angle.h | ./Function/MPU6050_Angle.h | 修改 | 新增#include "Imu_Types.h"；原有类型定义加#ifndef __IMU_TYPES_H守卫，兼容Imu_Types.h避免重定义 |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | 改为ICM42688测试模式：Setup(Init+ID校验0x47)+Tick(Update_Data+OLED四轴显示)+Loop(传感器标识) |
+| AllHeader.h | ./App/AllHeader.h | 修改 | 新增#include "Imu_Types.h" |
+
+## 2026-07-23 18:30 | ICM42688 量程寄存器编码修正
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| ICM_42688_base.c | ./Hardware/ICM_42688_base.c | 修改 | 修正 FS_SEL 编码：ICM42688 与 MPU6050 相反（000=±16g/±2000, 011=±2g/±250）；Init 新增复位前 WHO_AM_I 校验 |
+
+## 2026-07-23 19:00 | 引入 ICM42688 Mahony AHRS 滤波 + Mode2 示例
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| ICM42688_Mahony.h | ./Hardware/ICM42688_Mahony.h | 新增 | Mahony AHRS 头文件：四元数+PI重力修正，无万向节死锁；KP=5.12 KI=0.001；extern GyroBias供AT24C02读写；API: Init/Update_Tick/Calibrate/Yaw_Abs_Get/Reset |
+| ICM42688_Mahony.c | ./Hardware/ICM42688_Mahony.c | 新增 | Mahony AHRS 实现（208行纯数学，直接可移植）：陀螺去偏→加速度归一化→四元数投影→叉积误差→PI修正→RK1积分→欧拉角提取→绝对yaw解绕 |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | 改为Mahony AHRS测试模式：Setup(Init标定)+Loop(OLED显示R/P/Y 1位小数)+Tick(Update_Tick+Serial1 CSV输出) |
+| AllHeader.h | ./App/AllHeader.h | 修改 | 新增 #include "ICM42688_Mahony.h" |
+
+## 2026-07-23 19:15 | ICM42688_Mahony 新增转向完成检查函数
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| ICM42688_Mahony.h | ./Hardware/ICM42688_Mahony.h | 修改 | 新增 ICM42688_Turn_Yaw_Is_Ok_Ex / ICM42688_Turn_Yaw_Is_Ok 声明（双阈值 角度+角速度 检查） |
+| ICM42688_Mahony.c | ./Hardware/ICM42688_Mahony.c | 修改 | 新增两函数实现：fabsf(targetYaw - ICM_Mahony_Real.yaw) + fabsf(ICM_Raw_Data.GZ - GyroBiasZ) 双条件判断 |

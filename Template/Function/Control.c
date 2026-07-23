@@ -136,7 +136,7 @@ bool Task_Car_Yaw_IsExit(float p[4])
 	float angle_tol = (p[1] > 0.0f) ? p[1] : 5.0f;
 	float gyro_tol  = (p[2] > 0.0f) ? p[2] : 7.0f;
 	// 注意：检查绝对目标值 PID_Angle.goalPoint（= startYaw + delta），而非增量 p[0]
-	if (MPU6050_Turn_Yaw_Is_Ok_Ex(PID_Angle.goalPoint, angle_tol, gyro_tol))
+	if (ICM42688_Turn_Yaw_Is_Ok_Ex(PID_Angle.goalPoint, angle_tol, gyro_tol))
 	{
 		Motor_SetSpeed(&Motor_A, 0);
 		Motor_SetSpeed(&Motor_B, 0);
@@ -144,3 +144,39 @@ bool Task_Car_Yaw_IsExit(float p[4])
 	}
 	return false;
 }
+
+// 7. 取放物资
+// Task_Elec: p[0]=等待时间(ms)
+void Task_Elec_Setup(float p[4])
+{
+	// 开始计时
+	p[1] = Timer_Get_Ms() ;	
+	// 直接开启蜂鸣器，指示正在取/放棋子
+	Buzzer_ON() ;					
+	// 开始取/放
+	if (MyGPIO_ReadPin(&MyGPIO_Elec))	// 正在吸附->那就放下
+	{
+		MyGPIO_WritePin(&MyGPIO_Elec , 0) ;
+	}
+	else	// 为0，也就是没在吸附,那就开吸
+	{
+		MyGPIO_WritePin(&MyGPIO_Elec , 1) ;
+	}
+}
+
+bool Task_Elec_IsExit(float p[4])
+{
+	if (Timer_Get_Ms() - p[1] > p[0])
+	{
+		Buzzer_OFF() ;
+		return true ;
+	}
+	return false ;
+}
+
+// 8. 
+
+
+
+
+

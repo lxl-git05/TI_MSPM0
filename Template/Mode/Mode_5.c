@@ -25,7 +25,7 @@ void Mode_5_Loop(void)
     PID_Angle.goalPoint = Angle_Car ;
 
     OLED_Printf(0, 20, OLED_6X8, "Angle_Car:%.2f",Angle_Car) ;
-    OLED_Printf(0, 30, OLED_6X8, "Yaw:%.2f",MPU_Real.yaw) ;
+    OLED_Printf(0, 30, OLED_6X8, "Yaw:%.2f",ICM_Yaw_Abs_Get()) ;
 }
 
 void Mode_5_Tick(void)
