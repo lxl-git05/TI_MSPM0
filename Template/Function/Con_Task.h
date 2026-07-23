@@ -12,11 +12,12 @@
 // ==================== 全局任务枚举（所有 Mode 共用） ====================
 typedef enum {
     TASK_NONE = 0,
-    TASK_WAIT_TIME,         // 等待指定毫秒: p[0]=ms（伴随蜂鸣器响）
-    TASK_MOTOR_A_ANGLE,     // 电机A角度控制: p[0]=目标角度°, p[1]=容差°(默认20)
-    TASK_MOTOR_B_ANGLE,     // 电机B角度控制: p[0]=目标角度°, p[1]=容差°(默认20)
+    TASK_WAIT_TIME,         // 等待指定毫秒 : p[0]=ms（伴随蜂鸣器响）
+    TASK_MOTOR_A_ANGLE,     // 电机A角度控制: p[0]=目标角度°, p[1]=容差°
+    TASK_MOTOR_B_ANGLE,     // 电机B角度控制: p[0]=目标角度°, p[1]=容差°
     TASK_STEPPER1_ANGLE,    // 步进电机1角度: p[0]=目标角度°, p[1]=max_speed(默认200), p[3]=acc(默认200)
     TASK_STEPPER2_ANGLE,    // 步进电机2角度: p[0]=目标角度°, p[1]=max_speed(默认200), p[3]=acc(默认200)
+    TASK_CAR_YAW,           // 小车MPU相对旋转: p[0]=增量角度°(+CW/-CCW), p[1]=角度容差(0=5°), p[2]=角速度容差°/s(0=7°/s)
     // 比赛逻辑
 
     // ★ 枚举总数，必须放最后

@@ -161,3 +161,22 @@
 | Control.h | ./Function/Control.h | 修改 | 声明补全：修复命名 Task_Motor_Angle→Task_Motor_A_Angle；新增 MotorB/Stepper1/Stepper2 回调声明（共5组） |
 | Control.c | ./Function/Control.c | 修改 | TASK_STEPPER_ANGLE 拆分为 TASK_STEPPER1_ANGLE + TASK_STEPPER2_ANGLE（双电机电源隔离）；Setup增加Buzzer_OFF/Stepper_PWM_Stop保护；max_speed/acc可通过p[1]/p[3]配置；IsExit改用单电机判定API |
 | Mode_4.c | ./Mode/Mode_4.c | 修改 | Con_Task 集成：任务表注册(6项)+预设演示序列(7步：Wait→MA→Wait→MB→Wait→S1→S2自动串行隔离)+按键动态入队+OLED状态显示+Tick分发 |
+
+## 2026-07-23 16:30 | 新增任务6: 小车MPU旋转固定角度
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| MyPID.h | ./Software/MyPID.h | 修改 | 新增 PID_Param_Reset 声明（PID历史参数清零，从 Car2 移植） |
+| MyPID.c | ./Software/MyPID.c | 修改 | 新增 PID_Param_Reset 实现（LastError/PreError/SumError/realPoint/pout/iout/dout/setPoint 全部清零） |
+| Con_Task.h | ./Function/Con_Task.h | 修改 | 枚举新增 TASK_CAR_YAW（小车MPU旋转: p[0]=角度°(+CW/-CCW), p[1]=角度容差, p[2]=角速度容差） |
+| Control.h | ./Function/Control.h | 修改 | 新增任务6声明：Task_Car_Yaw_Setup/Tick/IsExit |
+| Control.c | ./Function/Control.c | 修改 | 新增任务6实现：static Car_Yaw_PID(PD Kp=6 Kd=20, 参照Car2 Con_MPU) + Setup(yaw归零+PID复位+设目标) + Tick(MPU_Real.yaw→PID计算→差速A-/B+) + IsExit(MPU6050_Turn_Yaw_Is_Ok_Ex双阈值检查→停车) |
+| Mode_4.c | ./Mode/Mode_4.c | 修改 | 任务表+OLED显示 新增 TASK_CAR_YAW；演示序列加入注释示例 Con_Task_Enqueue(TASK_CAR_YAW, 180, 0, 0, 0) |
+
+## 2026-07-23 17:00 | PID_Angle 移入 Con_Motor 模块
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Con_Motor.h | ./Function/Con_Motor.h | 修改 | 清理旧注释桩，新增 MPU6050角度环区段：extern PID_Angle + PID_Angle_Init/Reset/Tar_Yaw/Get_Yaw/Tick 声明 |
+| Con_Motor.c | ./Function/Con_Motor.c | 修改 | Con_Motor_Init末尾调用PID_Angle_Init()；新增MPU6050角度环实现：全局PID_Angle(PD Kp=6 Kd=20 Out±100) + Reset(yaw归零+PID复位) + Tar_Yaw(设目标) + Get_Yaw(读yaw) + Tick(MPU6050_Angle_Update_Tick→PID→差速A-/B+) |
+| Control.c | ./Function/Control.c | 修改 | 任务6精简：删除static Car_Yaw_PID/Car_Yaw_PID_Inited；Setup改为调用PID_Angle_Reset()+PID_Angle_Tar_Yaw()；Tick改为调用PID_Angle_Tick() |

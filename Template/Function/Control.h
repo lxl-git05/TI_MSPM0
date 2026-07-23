@@ -30,4 +30,10 @@ bool Task_Stepper1_Angle_IsExit(float p[4]) ;
 void Task_Stepper2_Angle_Setup(float p[4]) ;
 bool Task_Stepper2_Angle_IsExit(float p[4]) ;
 
+// 6. 任务6：小车顺时针/逆时针旋转一定角度然后Exit（相对运动，不归零yaw）
+// TASK_CAR_YAW: p[0]=相对增量角度°(+顺时针/-逆时针), p[1]=角度容差°(0=默认5°), p[2]=角速度容差°/s(0=默认7°/s)
+void Task_Car_Yaw_Setup(float p[4]) ;
+void Task_Car_Yaw_Tick(float p[4]) ;
+bool Task_Car_Yaw_IsExit(float p[4]) ;
+
 #endif

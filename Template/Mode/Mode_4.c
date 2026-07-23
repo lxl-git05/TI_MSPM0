@@ -25,13 +25,18 @@ static const Task_Descriptor_Typedef Mode4_TaskTable[TASK_COUNT] = {
         .Setup  = Task_Stepper2_Angle_Setup,
         .IsExit = Task_Stepper2_Angle_IsExit,
     },
+    [TASK_CAR_YAW] = {
+        .Setup  = Task_Car_Yaw_Setup,
+        .Tick   = Task_Car_Yaw_Tick,       // 20ms PID 更新
+        .IsExit = Task_Car_Yaw_IsExit,
+    },
 };
 
 // ==================== 预设演示序列 ====================
 static void Mode4_Enqueue_Demo(void)
 {
     // 1. 等待 1s（蜂鸣器响）
-    Con_Task_Enqueue(TASK_WAIT_TIME, 1000, 0, 0, 0);
+    Con_Task_Enqueue(TASK_WAIT_TIME, 200, 0, 0, 0);
     // // 2. 电机A 转360°
     // Con_Task_Enqueue(TASK_MOTOR_A_ANGLE, 360, 20, 0, 0);
     // // 3. 等待 0.5s
@@ -44,6 +49,8 @@ static void Mode4_Enqueue_Demo(void)
     // Con_Task_Enqueue(TASK_STEPPER1_ANGLE, 90, 0, 0, 0);
     // // 7. 步进电机2转90°
     // Con_Task_Enqueue(TASK_STEPPER2_ANGLE, 90, 0, 0, 0);
+    // // 8. 小车顺时针旋转180°
+    // Con_Task_Enqueue(TASK_CAR_YAW, 180, 0, 0, 0);
 }
 
 // ==================== Mode 4 生命周期 ====================
@@ -76,11 +83,12 @@ void Mode_4_Loop(void)
         // 显示当前任务类型名
         switch (Con_Task_CurrType())
         {
-            case TASK_WAIT_TIME:     OLED_Printf(0, 30, OLED_6X8, ">>> Wait");      break;
-            case TASK_MOTOR_A_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> MotorA Ang"); break;
-            case TASK_MOTOR_B_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> MotorB Ang"); break;
+            case TASK_WAIT_TIME:      OLED_Printf(0, 30, OLED_6X8, ">>> Wait");      break;
+            case TASK_MOTOR_A_ANGLE:  OLED_Printf(0, 30, OLED_6X8, ">>> MotorA Ang"); break;
+            case TASK_MOTOR_B_ANGLE:  OLED_Printf(0, 30, OLED_6X8, ">>> MotorB Ang"); break;
             case TASK_STEPPER1_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> Stepper1");   break;
             case TASK_STEPPER2_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> Stepper2");   break;
+            case TASK_CAR_YAW:        OLED_Printf(0, 30, OLED_6X8, ">>> Car Yaw");    break;
             default: break;
         }
     }
@@ -93,7 +101,9 @@ void Mode_4_Loop(void)
     // Key1 单击: 重新入队演示序列
     if (Key_Check(KEY_1, KEY_SINGLE))
     {
-        
+        // 8. 小车顺时针旋转180°
+        Con_Task_Enqueue(TASK_CAR_YAW, 180, 0, 0, 0);
+        Con_Task_Enqueue(TASK_WAIT_TIME, 1000, 0, 0, 0);
     }
 }
 

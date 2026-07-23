@@ -1,4 +1,5 @@
 #include "Con_Motor.h"
+#include "MPU6050_Angle.h"
 
 Motor_Typedef Motor_A ;
 Motor_Typedef Motor_B ;
@@ -38,6 +39,9 @@ void Con_Motor_Init(void)
 	
 	Motor_SetSpeed(&Motor_A , 0) ;
 	Motor_SetSpeed(&Motor_B , 0) ;
+
+	// 初始化车身yaw角度环
+	PID_Angle_Init() ;
 }
 
 // 2. 设置电机goal速度
@@ -208,3 +212,56 @@ bool Motor_Is_Angle(Motor_Typedef *Motor , float Angle , float Tolerance , float
 //	MyEncoder_Total_Cnt_Clear(Motor_A.Motor_Encoder) ;
 //	MyEncoder_Total_Cnt_Clear(Motor_B.Motor_Encoder) ;
 //}
+
+// =================== MPU6050角度环 ===================
+
+Pid_Typedef PID_Angle ;
+static float PID_Angle_StartYaw = 0.0f;  // 任务启动时的yaw基准（相对运动）
+
+// 初始化（PD: Kp=6, Kd=20, Out±100）
+void PID_Angle_Init(void)
+{
+	PID_Init(&PID_Angle, 6.0f, 0.0f, 20.0f, 100, -100, 1000);
+}
+
+// 记录当前yaw为基准 + 清空PID历史（每次旋转任务Setup调用，不再清零MPU_Real.yaw）
+void PID_Angle_Reset(void)
+{
+	PID_Angle_StartYaw = MPU_Real.yaw;
+	PID_Param_Reset(&PID_Angle);
+}
+
+// 配置目标yaw角度（delta为相对基准的增量：+顺时针/-逆时针）
+void PID_Angle_Tar_Yaw(float delta)
+{
+	PID_Angle.goalPoint = PID_Angle_StartYaw + delta;
+}
+
+// 获取相对yaw角度（当前值 - 起始基准）
+float PID_Angle_Get_Yaw(void)
+{
+	return MPU_Real.yaw - PID_Angle_StartYaw;
+}
+
+// 20ms Tick: MPU更新→PID计算→差速输出（A反转 B正转 = 顺时针为正）
+void PID_Angle_Tick(void)
+{
+	// 1. 更新MPU数据
+	MPU6050_Angle_Update_Tick();
+	// 2. 获取真实yaw
+	PID_Angle.realPoint_Now = MPU_Real.yaw;
+	// 3. PID计算
+	PID_Update(&PID_Angle, PID_Angle.realPoint_Now);
+	// 4. 差速控制: A反转 B正转（顺时针为正）
+	Motor_SetSpeed(&Motor_A, -PID_Angle.setPoint);
+	Motor_SetSpeed(&Motor_B,  PID_Angle.setPoint);
+}
+
+
+
+
+
+
+
+
+

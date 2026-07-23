@@ -50,20 +50,15 @@ bool Motor_Is_Angle(Motor_Typedef *Motor , float Angle , float Tolerance , float
 //// 4. 清除累计位移
 //void Motor_Pos_Clear(void) ;
 
-// PID
-//extern Pid_Typedef PID_Angle ;	// 小车的角度环
+// =================== MPU6050角度环 ===================
 
-// 初始化角度环
-void PID_Angle_Init(void) ;
+extern Pid_Typedef PID_Angle ;	// 小车的yaw角度环
 
-// 角度环配置
-//void PID_Angle_Tick(int Base_Speed) ;
-
-//// 配置目标角度
-//void PID_Goal_Angle_Set(float GoalAngle) ;
-
-//// 设置当前角度为0
-//void PID_Angle_Curr_Reset(void) ;
+void PID_Angle_Init(void) ;         // 初始化角度环PID（Kp=6, Kd=20, Out±100）
+void PID_Angle_Reset(void) ;        // 记录当前yaw为基准 + 清空PID历史（不归零，纯相对运动）
+void PID_Angle_Tar_Yaw(float delta);// 配置相对增量角度（+顺时针/-逆时针，基于Reset时刻的yaw基准）
+float PID_Angle_Get_Yaw(void) ;     // 获取相对yaw角度（当前值 - 起始基准）
+void PID_Angle_Tick(void) ;         // 20ms Tick: MPU更新→PID→差速输出(A-/B+)
 
 //// 位置环
 //// ================= 电机编码器双轮外环 =================
