@@ -153,10 +153,11 @@
 | bsp_at24c02.c | ./AT24/bsp_at24c02.c | 修改 | 删除全部SW I2C位敲打和STM32 HAL代码，使用MyI2C库IIC_WriteBytes/IIC_ReadBytes实现读写 |
 | Mode_2.c | ./Mode/Mode_2.c | 修改 | 清理旧测试代码，新增AT24C02自动递增读写验证测试（OLED显示Wr/Rd/OK/FAIL） |
 
-## 2026-07-23 10:00 | Control任务审查 + Con_Task枚举补全 + Mode_4任务编排
+## 2026-07-23 10:00 | Control任务审查 + Con_Task枚举补全 + Mode_4任务编排 + Stepper拆分为双任务
 
 | 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
 |--------|----------------------|----------|------|
-| Con_Task.h | ./Function/Con_Task.h | 修改 | 枚举补全：TASK_MOTOR_A_ANGLE/TASK_MOTOR_B_ANGLE/TASK_STEPPER_ANGLE，替代注释掉的旧枚举 |
-| Control.h | ./Function/Control.h | 修改 | 声明补全：修复命名 Task_Motor_Angle→Task_Motor_A_Angle，新增 MotorB/Stepper 回调声明 |
-| Mode_4.c | ./Mode/Mode_4.c | 修改 | Con_Task 集成：任务表注册+预设演示序列+按键动态入队+OLED状态显示+Tick分发 |
+| Con_Task.h | ./Function/Con_Task.h | 修改 | 枚举补全：TASK_WAIT_TIME/TASK_MOTOR_A_ANGLE/TASK_MOTOR_B_ANGLE/TASK_STEPPER1_ANGLE/TASK_STEPPER2_ANGLE（TASK_COUNT=6） |
+| Control.h | ./Function/Control.h | 修改 | 声明补全：修复命名 Task_Motor_Angle→Task_Motor_A_Angle；新增 MotorB/Stepper1/Stepper2 回调声明（共5组） |
+| Control.c | ./Function/Control.c | 修改 | TASK_STEPPER_ANGLE 拆分为 TASK_STEPPER1_ANGLE + TASK_STEPPER2_ANGLE（双电机电源隔离）；Setup增加Buzzer_OFF/Stepper_PWM_Stop保护；max_speed/acc可通过p[1]/p[3]配置；IsExit改用单电机判定API |
+| Mode_4.c | ./Mode/Mode_4.c | 修改 | Con_Task 集成：任务表注册(6项)+预设演示序列(7步：Wait→MA→Wait→MB→Wait→S1→S2自动串行隔离)+按键动态入队+OLED状态显示+Tick分发 |

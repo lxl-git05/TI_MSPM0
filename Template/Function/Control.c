@@ -65,24 +65,50 @@ void Task_Motor_B_Angle_Tick(float p[4])
 	Motorx_Angle_Update_Tick(&Motor_B , -1) ;	// B要反一下
 } 
 
-// 4. 任务4:步进电机1、2旋转特定角度,旋转完成之后停止,Exit
-// Task_Stepper_Angle: p[0]为电机1旋转角度 p[1]为电机2旋转角度 
-void Task_Stepper_Angle_Setup(float p[4])
+// 4. 任务4:步进电机1旋转特定角度,旋转完成之后停止,Exit
+// TASK_STEPPER1_ANGLE: p[0]=目标角度°, p[1]=max_speed(0=默认200), p[3]=acc(0=默认200)
+void Task_Stepper1_Angle_Setup(float p[4])
 {
-	// 先计时
+	Buzzer_OFF();	// 减载
+	Stepper_PWM_Stop(&Stepper1);
+	// 提取参数（默认 max_speed=200, acc=200）
+	float max_spd = (p[1] > 0.0f) ? p[1] : 200.0f;
+	float acc_val = (p[3] > 0.0f) ? p[3] : 200.0f;
+	// 计时
 	p[2] = Timer_Get_Ms() ;
-	// 配置角度
-	Stepper_PWM_Pos_Set_Abs(&Stepper1 , p[0] , 400 , 200) ;
-	Stepper_PWM_Pos_Set_Abs(&Stepper2 , p[1] , 400 , 200) ;
+	// 启动
+	Stepper_PWM_Pos_Set_Abs(&Stepper1 , p[0] , max_spd , acc_val) ;
 }
 
-bool Task_Stepper_Angle_IsExit(float p[4])
+bool Task_Stepper1_Angle_IsExit(float p[4])
 {
-	// 正式代码
-	if (Stepper_PWM_Is_Angle() && Timer_Get_Ms() - p[2] > 500)
+	if (Stepper_PWM_Is_Angle_Stepper(&Stepper1) && Timer_Get_Ms() - p[2] > 500)
 	{
-		// 到达目标位置之后停止，进入下个模式
 		Stepper_PWM_Stop(&Stepper1) ;
+		return true ;
+	}
+	return false ;
+}
+
+// 5. 任务5:步进电机2旋转特定角度,旋转完成之后停止,Exit
+// TASK_STEPPER2_ANGLE: p[0]=目标角度°, p[1]=max_speed(0=默认200), p[3]=acc(0=默认200)
+void Task_Stepper2_Angle_Setup(float p[4])
+{
+	Buzzer_OFF();	// 减载
+	Stepper_PWM_Stop(&Stepper2);
+	// 提取参数（默认 max_speed=200, acc=200）
+	float max_spd = (p[1] > 0.0f) ? p[1] : 200.0f;
+	float acc_val = (p[3] > 0.0f) ? p[3] : 200.0f;
+	// 计时
+	p[2] = Timer_Get_Ms() ;
+	// 启动
+	Stepper_PWM_Pos_Set_Abs(&Stepper2 , p[0] , max_spd , acc_val) ;
+}
+
+bool Task_Stepper2_Angle_IsExit(float p[4])
+{
+	if (Stepper_PWM_Is_Angle_Stepper(&Stepper2) && Timer_Get_Ms() - p[2] > 500)
+	{
 		Stepper_PWM_Stop(&Stepper2) ;
 		return true ;
 	}

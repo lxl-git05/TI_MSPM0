@@ -17,9 +17,13 @@ static const Task_Descriptor_Typedef Mode4_TaskTable[TASK_COUNT] = {
         .Tick   = Task_Motor_B_Angle_Tick,     // 20ms PID 更新
         .IsExit = Task_Motor_B_Angle_IsExit,
     },
-    [TASK_STEPPER_ANGLE] = {
-        .Setup  = Task_Stepper_Angle_Setup,
-        .IsExit = Task_Stepper_Angle_IsExit,
+    [TASK_STEPPER1_ANGLE] = {
+        .Setup  = Task_Stepper1_Angle_Setup,
+        .IsExit = Task_Stepper1_Angle_IsExit,
+    },
+    [TASK_STEPPER2_ANGLE] = {
+        .Setup  = Task_Stepper2_Angle_Setup,
+        .IsExit = Task_Stepper2_Angle_IsExit,
     },
 };
 
@@ -28,16 +32,18 @@ static void Mode4_Enqueue_Demo(void)
 {
     // 1. 等待 1s（蜂鸣器响）
     Con_Task_Enqueue(TASK_WAIT_TIME, 1000, 0, 0, 0);
-    // 2. 电机A 转360°
-    Con_Task_Enqueue(TASK_MOTOR_A_ANGLE, 360, 20, 0, 0);
-    // 3. 等待 0.5s
-    Con_Task_Enqueue(TASK_WAIT_TIME, 500, 0, 0, 0);
-    // 4. 电机B 转-180°（反向半圈）
-    Con_Task_Enqueue(TASK_MOTOR_B_ANGLE, -180, 20, 0, 0);
-    // 5. 等待 0.5s
-    Con_Task_Enqueue(TASK_WAIT_TIME, 500, 0, 0, 0);
-    // 6. 步进电机1转90°, 步进电机2转90°
-    Con_Task_Enqueue(TASK_STEPPER_ANGLE, 90, 90, 0, 0);
+    // // 2. 电机A 转360°
+    // Con_Task_Enqueue(TASK_MOTOR_A_ANGLE, 360, 20, 0, 0);
+    // // 3. 等待 0.5s
+    // Con_Task_Enqueue(TASK_WAIT_TIME, 500, 0, 0, 0);
+    // // 4. 电机B 转-180°（反向半圈）
+    // Con_Task_Enqueue(TASK_MOTOR_B_ANGLE, -180, 20, 0, 0);
+    // // 5. 等待 0.5s
+    // Con_Task_Enqueue(TASK_WAIT_TIME, 500, 0, 0, 0);
+    // // 6. 步进电机1转90°（自动完成后再执行下一个）
+    // Con_Task_Enqueue(TASK_STEPPER1_ANGLE, 90, 0, 0, 0);
+    // // 7. 步进电机2转90°
+    // Con_Task_Enqueue(TASK_STEPPER2_ANGLE, 90, 0, 0, 0);
 }
 
 // ==================== Mode 4 生命周期 ====================
@@ -73,7 +79,8 @@ void Mode_4_Loop(void)
             case TASK_WAIT_TIME:     OLED_Printf(0, 30, OLED_6X8, ">>> Wait");      break;
             case TASK_MOTOR_A_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> MotorA Ang"); break;
             case TASK_MOTOR_B_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> MotorB Ang"); break;
-            case TASK_STEPPER_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> Stepper");    break;
+            case TASK_STEPPER1_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> Stepper1");   break;
+            case TASK_STEPPER2_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> Stepper2");   break;
             default: break;
         }
     }
@@ -83,29 +90,15 @@ void Mode_4_Loop(void)
     }
 
     // ===== 按键控制 =====
-    // // Key1 单击: 重新入队演示序列
-    // if (Key_Check(KEY_1, KEY_SINGLE))
-    // {
-    //     Con_Task_Clear();
-    //     Motor_Stop(&Motor_A);
-    //     Motor_Stop(&Motor_B);
-    //     Stepper_PWM_Stop(&Stepper1);
-    //     Stepper_PWM_Stop(&Stepper2);
-    //     Mode4_Enqueue_Demo();
-    // }
-
-    // // Key2 单击: 动态追加 MotorA 角度任务（180°，容差20°）
-    // if (Key_Check(KEY_2, KEY_SINGLE))
-    //     Con_Task_Enqueue(TASK_MOTOR_A_ANGLE, 180, 20, 0, 0);
-
-    // // Key3 单击: 动态追加 Stepper 任务（两个步进各转45°）
-    // if (Key_Check(KEY_3, KEY_SINGLE))
-    //     Con_Task_Enqueue(TASK_STEPPER_ANGLE, 45, 45, 0, 0);
+    // Key1 单击: 重新入队演示序列
+    if (Key_Check(KEY_1, KEY_SINGLE))
+    {
+        
+    }
 }
 
 void Mode_4_Tick(void)
 {
-    // ★ 分发 20ms Tick 到当前活跃任务（角度 PID 需要）
     Con_Task_Tick();
 }
 

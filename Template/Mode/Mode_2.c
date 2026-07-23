@@ -16,8 +16,8 @@ void Mode_2_Loop(void)
 
     if (Key_Check(KEY_1, KEY_SINGLE))
     {
-        Stepper_PWM_Pos_Set_Abs(&Stepper1, (int)Angle, 400, 200) ;
-        Stepper_PWM_Pos_Set_Abs(&Stepper2, -90, 400, 200) ;
+        Stepper_PWM_Pos_Set_Abs(&Stepper1,  20,  50, 0) ;
+        Stepper_PWM_Pos_Set_Abs(&Stepper2, -20,  50, 0) ;
     }
     if (Key_Check(KEY_1, KEY_LONG))
     {

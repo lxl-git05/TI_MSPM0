@@ -20,9 +20,14 @@ void Task_Motor_B_Angle_Setup(float p[4]) ;
 bool Task_Motor_B_Angle_IsExit(float p[4]) ;
 void Task_Motor_B_Angle_Tick(float p[4]) ;
 
-// 4. 任务4：步进电机1、2旋转特定角度，旋转完成之后停止，Exit
-// TASK_STEPPER_ANGLE: p[0]=Stepper1角度°, p[1]=Stepper2角度°
-void Task_Stepper_Angle_Setup(float p[4]) ;
-bool Task_Stepper_Angle_IsExit(float p[4]) ;
+// 4. 任务4：步进电机1旋转特定角度，旋转完成之后停止，Exit
+// TASK_STEPPER1_ANGLE: p[0]=目标角度°, p[1]=max_speed(0=默认200), p[3]=acc(0=默认200)
+void Task_Stepper1_Angle_Setup(float p[4]) ;
+bool Task_Stepper1_Angle_IsExit(float p[4]) ;
+
+// 5. 任务5：步进电机2旋转特定角度，旋转完成之后停止，Exit
+// TASK_STEPPER2_ANGLE: p[0]=目标角度°, p[1]=max_speed(0=默认200), p[3]=acc(0=默认200)
+void Task_Stepper2_Angle_Setup(float p[4]) ;
+bool Task_Stepper2_Angle_IsExit(float p[4]) ;
 
 #endif
