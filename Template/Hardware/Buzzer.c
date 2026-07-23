@@ -1,5 +1,6 @@
 #include "Buzzer.h"
 
+// 低有效蜂鸣器
 #define BUZZER_ON  MyGPIO_WritePin(&MyGPIO_Buzzer, 0) ;
 #define BUZZER_OFF MyGPIO_WritePin(&MyGPIO_Buzzer, 1) ;
 

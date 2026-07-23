@@ -12,13 +12,14 @@
 // ==================== 全局任务枚举（所有 Mode 共用） ====================
 typedef enum {
     TASK_NONE = 0,
-    TASK_WAIT_TIME,       // 等待指定毫秒: p[0]=ms
-		// TASK_Motor_Speed,			// 电机速度控制: p[0]=速度rpm, p[1]=持续时间ms
-		// TASK_Motor_Angle,			// 电机角度控制: p[0]=目标角度°, p[1]=容差°(默认20)
-		// 比赛逻辑
-		
-		// ★ 枚举总数，必须放最后
-    TASK_COUNT             
+    TASK_WAIT_TIME,         // 等待指定毫秒: p[0]=ms（伴随蜂鸣器响）
+    TASK_MOTOR_A_ANGLE,     // 电机A角度控制: p[0]=目标角度°, p[1]=容差°(默认20)
+    TASK_MOTOR_B_ANGLE,     // 电机B角度控制: p[0]=目标角度°, p[1]=容差°(默认20)
+    TASK_STEPPER_ANGLE,     // 步进电机角度: p[0]=Stepper1角度°, p[1]=Stepper2角度°
+    // 比赛逻辑
+
+    // ★ 枚举总数，必须放最后
+    TASK_COUNT
 } Task_Type;
 
 // ==================== 任务回调函数类型 ====================
