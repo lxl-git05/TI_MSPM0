@@ -91,3 +91,13 @@ uint32_t Timer_Get_Ticks(void)
 {
     return TICKS_Get();
 }
+
+// ========== 阻塞延迟 ==========
+// 4MHz → 1 tick = 0.25µs → 1ms = 4000 ticks
+// uint32 减法自动处理计数器溢出（最大约1074秒，远超实际需求）
+void Timer_Delay_Ms(uint32_t ms)
+{
+    uint32_t start = TICKS_Get();
+    uint32_t target_ticks = ms * 4000U;
+    while ((uint32_t)(TICKS_Get() - start) < target_ticks);
+}

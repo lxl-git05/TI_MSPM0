@@ -1,6 +1,11 @@
 #include "IMU.h"
 #include "math.h"
 
+// ==================== 【陀螺零偏 (deg/s) —— 两大陀螺仪共用】 ====================
+// 标定时自动更新，也可由 AT24C02 恢复 / 用户手动赋值
+float IMU_Mahony_GyroBiasX = -9.26840305f;
+float IMU_Mahony_GyroBiasY = 0.428176761f;
+float IMU_Mahony_GyroBiasZ = -1.27142811f;
 // ==================== 偏航角到位检测 ====================
 
 // target: 目标 yaw_abs 角度 (°)

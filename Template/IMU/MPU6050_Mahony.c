@@ -14,18 +14,13 @@ static float exInt = 0.0f, eyInt = 0.0f, ezInt = 0.0f;
 static float yaw_abs  = 0.0f;       // 顺时针持续增大，无跳变
 static float yaw_prev = 0.0f;       // 上一帧 yaw，用于跳变检测
 
-// ==================== 【陀螺零偏 (deg/s) —— extern，供 AT24C02 读写 和手动编写】 ====================
-float MPU_Mahony_GyroBiasX = -9.26840305f;
-float MPU_Mahony_GyroBiasY = 0.428176761f;
-float MPU_Mahony_GyroBiasZ = -1.27142811f;
-
 // ==================== 角度转换常量 ====================
 static const float DEG2RAD = 0.01745329252f;   // PI / 180
 static const float RAD2DEG = 57.2957795131f;   // 180 / PI
 
 // ==================== 初始化 ====================
 // doCalib=1: 自动标定零偏（原地静止采样）
-// doCalib=0: 跳过标定，使用 MPU_Mahony_GyroBiasX/Y/Z 当前值
+// doCalib=0: 跳过标定，使用 IMU_Mahony_GyroBiasX/Y/Z 当前值
 void MPU6050_Mahony_Init(uint8_t doCalib)
 {
     MPU6050_Init();
@@ -43,11 +38,11 @@ void MPU6050_Mahony_Init(uint8_t doCalib)
             sum_gz += MPU_Raw_Data.GZ;
         }
 
-        MPU_Mahony_GyroBiasX = sum_gx / MPU_MAHONY_CALIB_SAMPLES;
-        MPU_Mahony_GyroBiasY = sum_gy / MPU_MAHONY_CALIB_SAMPLES;
-        MPU_Mahony_GyroBiasZ = sum_gz / MPU_MAHONY_CALIB_SAMPLES;
+        IMU_Mahony_GyroBiasX = sum_gx / MPU_MAHONY_CALIB_SAMPLES;
+        IMU_Mahony_GyroBiasY = sum_gy / MPU_MAHONY_CALIB_SAMPLES;
+        IMU_Mahony_GyroBiasZ = sum_gz / MPU_MAHONY_CALIB_SAMPLES;
     }
-    // doCalib=0 时直接使用 MPU_Mahony_GyroBiasX/Y/Z 现有值
+    // doCalib=0 时直接使用 IMU_Mahony_GyroBiasX/Y/Z 现有值
     //   → 来自 #define 默认值 或 AT24C02 恢复值（用户自行在 Init 前写入）
 
     // --- 四元数复位 ---
@@ -85,9 +80,9 @@ void MPU6050_Mahony_Calibrate(int samples)
         sum_gz += MPU_Raw_Data.GZ;
     }
 
-    MPU_Mahony_GyroBiasX = sum_gx / samples;
-    MPU_Mahony_GyroBiasY = sum_gy / samples;
-    MPU_Mahony_GyroBiasZ = sum_gz / samples;
+    IMU_Mahony_GyroBiasX = sum_gx / samples;
+    IMU_Mahony_GyroBiasY = sum_gy / samples;
+    IMU_Mahony_GyroBiasZ = sum_gz / samples;
 
     // 标定后重置角度
     q0 = 1.0f;  q1 = 0.0f;  q2 = 0.0f;  q3 = 0.0f;
@@ -107,9 +102,9 @@ static void MPU6050_Mahony_Update(float dt)
     float halfT = dt * 0.5f;
 
     // ---- 1. 陀螺仪去零偏 + 转为 rad/s ----
-    float gx = (MPU_Raw_Data.GX - MPU_Mahony_GyroBiasX) * DEG2RAD;
-    float gy = (MPU_Raw_Data.GY - MPU_Mahony_GyroBiasY) * DEG2RAD;
-    float gz = (MPU_Raw_Data.GZ - MPU_Mahony_GyroBiasZ) * DEG2RAD;
+    float gx = (MPU_Raw_Data.GX - IMU_Mahony_GyroBiasX) * DEG2RAD;
+    float gy = (MPU_Raw_Data.GY - IMU_Mahony_GyroBiasY) * DEG2RAD;
+    float gz = (MPU_Raw_Data.GZ - IMU_Mahony_GyroBiasZ) * DEG2RAD;
 
     // ---- 2. 加速度归一化 ----
     float ax = MPU_Raw_Data.AX;

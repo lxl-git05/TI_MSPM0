@@ -48,6 +48,13 @@ typedef struct
 // ==================== 默认参数 ====================
 #define IMU_TURN_YAW_DEFAULT_DEADBAND  3.0f   // 默认偏航到位死区 (°)
 
+// ==================== 【陀螺零偏（统一参数，两大陀螺仪共用）】 ====================
+// 同一时刻只使用一个陀螺仪，因此只需一套零偏参数
+// extern 供 AT24C02 读写、传感器 Mahony 模块直接使用
+extern float IMU_Mahony_GyroBiasX;	// 陀螺X零偏 (°/s)
+extern float IMU_Mahony_GyroBiasY;	// 陀螺Y零偏 (°/s)
+extern float IMU_Mahony_GyroBiasZ;	// 陀螺Z零偏 (°/s)
+
 // ==================== 统一 API 映射宏 ====================
 #ifdef IMU_USE_MPU6050
 
@@ -60,9 +67,6 @@ typedef struct
     #define IMU_Yaw_Abs_Reset()          MPU_Yaw_Abs_Reset()
 
     #define IMU_Mahony_Real              MPU_Mahony_Real
-    #define IMU_Mahony_GyroBiasX         MPU_Mahony_GyroBiasX
-    #define IMU_Mahony_GyroBiasY         MPU_Mahony_GyroBiasY
-    #define IMU_Mahony_GyroBiasZ         MPU_Mahony_GyroBiasZ
 
 #else   // 默认: ICM42688
 
@@ -75,9 +79,6 @@ typedef struct
     #define IMU_Yaw_Abs_Reset()          ICM_Yaw_Abs_Reset()
 
     #define IMU_Mahony_Real              ICM_Mahony_Real
-    #define IMU_Mahony_GyroBiasX         ICM_Mahony_GyroBiasX
-    #define IMU_Mahony_GyroBiasY         ICM_Mahony_GyroBiasY
-    #define IMU_Mahony_GyroBiasZ         ICM_Mahony_GyroBiasZ
 
 #endif
 

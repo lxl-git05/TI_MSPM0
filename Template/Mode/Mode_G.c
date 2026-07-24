@@ -13,8 +13,12 @@ void Mode_G_Setup(void)
     Initial_All() ;
     // 定时器必须最后初始化!!!
     Timer_Initial() ;
-    // 参数注册
+    // 参数注册:只需要第一次注册即可
     // PARAM_FORCE(curr_mode, Mode_1);
+    // PARAM_FORCE(IMU_Mahony_GyroBiasX, -9.26840305f);
+    // PARAM_FORCE(IMU_Mahony_GyroBiasY, 0.428176761f);
+    // PARAM_FORCE(IMU_Mahony_GyroBiasZ, -1.27142811f);
+    
     // 外存初始化会导致模式直接切换，跳过setup，所以这里进行更新处理，使得可以进入setup
     if (curr_mode > Mode_Null && curr_mode < Mode_End)
     {

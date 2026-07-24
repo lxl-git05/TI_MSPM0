@@ -47,4 +47,7 @@ uint32_t Timer_Get_Ms(void);
 // 得到原始tick值（4MHz，用于ISR中超时判断，避免64位运算）
 uint32_t Timer_Get_Ticks(void);
 
+// 阻塞延迟ms（基于TIMG12硬件计数器，不受中断影响）
+void Timer_Delay_Ms(uint32_t ms);
+
 #endif

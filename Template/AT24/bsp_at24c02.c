@@ -23,7 +23,7 @@ static void AT24C02_DelayMs(uint32_t ms)
 
 /**
  * @brief AT24C02 初始化
- * @note  I2C_1 已在 SYSCFG_DL_init() → SYSCFG_DL_I2C_1_init() 中初始化
+ * @note  I2C_0 已在 SYSCFG_DL_init() → SYSCFG_DL_I2C_0_init() 中初始化
  */
 void AT24C02_Init(void)
 {

@@ -36,6 +36,18 @@ void TIMER_0_INST_IRQHandler(void)
     }
 }
 
+// ========== 全局中断开关 ==========
+// 标定/Flash写入等场景需要独占I2C等资源，防止ISR抢占
+void Timer_DisableIRQ(void)
+{
+    __disable_irq();
+}
+
+void Timer_EnableIRQ(void)
+{
+    __enable_irq();
+}
+
 // TIMER_1: 20ms 定时中断
 void TIMER_1_INST_IRQHandler(void)
 {

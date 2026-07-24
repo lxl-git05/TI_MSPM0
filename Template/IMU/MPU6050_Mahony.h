@@ -16,14 +16,9 @@
 // ==================== 全局输出 ====================
 extern ImuReal_Typedef MPU_Mahony_Real;
 
-// ==================== 【陀螺零偏（extern，可供 AT24C02 读写）】 ====================
-extern float MPU_Mahony_GyroBiasX;	// 陀螺X零偏 (°/s)
-extern float MPU_Mahony_GyroBiasY;	// 陀螺Y零偏 (°/s)
-extern float MPU_Mahony_GyroBiasZ;	// 陀螺Z零偏 (°/s)
-
 // ==================== API ====================
 // doCalib=1: 自动标定零偏（原地采样 MPU_MAHONY_CALIB_SAMPLES 次）
-// doCalib=0: 跳过标定，使用 MPU_Mahony_GyroBiasX/Y/Z 当前值（直接填的 0.0f 或 AT24C02 恢复值）
+// doCalib=0: 跳过标定，使用 IMU_Mahony_GyroBiasX/Y/Z 当前值（直接填的 0.0f 或 AT24C02 恢复值）
 void MPU6050_Mahony_Init(uint8_t doCalib);
 
 // 20ms Tick 入口
