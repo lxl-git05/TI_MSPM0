@@ -251,3 +251,20 @@
 | Con_Motor.h | ./Function/Con_Motor.h | 修改 | 注释"MPU6050角度环" → "IMU角度环" |
 
 > **核心成果**：业务代码全部改用 `IMU_*` 统一 API，不再直接依赖 ICM42688 符号。切换传感器只需修改 `IMU.h` 中一行宏（`#define IMU_USE_MPU6050`），上层零改动。
+
+## 2026-07-24 15:00 | 参考Car1重构Serial_porting：错误中断处理 + 状态机改进
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Serial_porting.h | ./Function/Serial_porting.h | 修改 | 新增Serial_RX_FLAG_Typedef枚举(RX_OK/RX_BUSY/RX_WAIT/RX_Error)；Struct新增rx_temp+Status字段替换旧rxState；新增Serial_Rx_State_Check()声明 |
+| Serial_porting.c | ./Function/Serial_porting.c | 修改 | ★借鉴Car1重构：Status 0/1/2状态机(Serial_Rx_State_Check)；Serial_Data_Check_HEX/ABC分离(借鉴Car1)；ISR改为rx_temp→State_Check→Data_Check模式；★新增DL_UART_MAIN_IIDX_RX_ERROR处理(防止噪声FIFO锁死)；保留所有原有API(Serial_Check_Str/CheckCmd/超时机制) |
+
+> **核心改进**：参考Car1项目的`System/Serial.c`，引入rx_temp字节暂存+Status状态机+错误中断处理三重保护，解决噪声环境下的潜在FIFO锁死问题。原有API完全兼容。
+
+## 2026-07-24 15:10 | 新增Serial3 (UART_2, PB15/PB16)
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Serial_porting.h | ./Function/Serial_porting.h | 修改 | 新增 #define Serial3_Enable 1 + extern Serial_Typedef Serial3 |
+| Serial_porting.c | ./Function/Serial_porting.c | 修改 | 新增Serial3实例+初始化+UART_2_INST_IRQHandler(UART2 PB15/PB16,115200) |
+| Mode_4.c | ./Mode/Mode_4.c | 修改 | Serial2→Serial3全替换；OLED标签S1/S3；修复%len的%sd%d格式符

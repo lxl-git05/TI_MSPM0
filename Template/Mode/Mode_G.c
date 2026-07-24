@@ -66,7 +66,7 @@ void Timer_1ms_Callback(void)
 void Timer_20ms_Callback(void)
 {
     // 陀螺仪更新
-    IMU_Mahony_Update_Tick();
+    // IMU_Mahony_Update_Tick();
     // 当前模式的 Tick
     switch (curr_mode)
     {
@@ -85,7 +85,7 @@ void Timer_20ms_Callback(void)
         default: break;
     }
     // 电机速度内环最后驱动
-    Motor_Speed_Update_Tick(20);    
+    // Motor_Speed_Update_Tick(20);    
 }
 
 // ========================== 系统状态配置 ==========================

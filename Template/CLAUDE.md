@@ -81,7 +81,7 @@ ti_msp_dl_config.h (SysConfig 生成, 60+ 厂商头文件)
 |------|------|------|
 | MyPWM | `MySystem/MyPWM.h/c` | ✅ 结构体对齐 F407（Compare_Max/Min），SetCompare 双限幅 |
 | MyEncoder | `MySystem/MyEncoder.h/c` | ✅ MyEncoder_Pins 引脚对封装，双路编码器 ISR |
-| Serial | `Function/Serial_porting.h/c` | ✅ 显式状态机（Idle/HEX/ABC），HEX校验和+超时+帧尾验证，阻塞发送 |
+| Serial | `Function/Serial_porting.h/c` | ✅ ★Status 0/1/2状态机(借鉴Car1)+错误中断处理(防FIFO锁死)+rx_temp暂存模式，阻塞发送 |
 | Serial_base | `Hardware/Serial_base.h/c` | ✅ 协议层不改动（纯逻辑） |
 | Encoder_Key | `Hardware/Encoder_Key.h/c` | ✅ EC11 旋转编码器，GPIOA 下降沿中断+方向判断，NVIC 参照 MyEncoder 模式 |
 | ICM42688 Driver | `IMU/ICM_42688_base.h/c` | ✅ MSPM0 DriverLib I2C 适配，±4g/±500°/s，重试+总线恢复 |
@@ -104,6 +104,13 @@ Idle ──(收到 0xFF)──→ HEX ──(帧完成/错误/超时)──→ I
 - `Serial_SendBytes()` — 原始字节发送
 - `Serial_Send_HEX_Package()` — 构造并发送 HEX 帧（含 XOR 校验）
 - `Serial_CheckCmd()` — strcmp 精确匹配（补充 Serial_Check_Str 的 strstr 子串匹配）
+
+**2026-07-24 重构（借鉴Car1）：**
+- `Serial_Rx_State_Check()` — 统一字节处理入口，Status 0/1/2 状态机
+- `Serial_Data_Check_HEX/ABC()` — 分离的数据检测+处理函数
+- 所有 UART ISR 新增 `DL_UART_MAIN_IIDX_OVERRUN/BREAK/PARITY/FRAMING/NOISE_ERROR` 处理
+- `Serial_Init()` 中使能 `OVERRUN|FRAMING|BREAK` 错误中断（防 FIFO 锁死）
+- 新增 `Serial3` (UART_2, PB15/PB16, 115200)，实例编号：1=USB, 2=树莓派, 3=蓝牙, 4=串口屏
 
 ### EC11 旋转编码器架构
 
@@ -190,7 +197,7 @@ IMU_Turn_Yaw_Is_Ok_Ex(180.0f, 5.0f)    // 转到 180°±5° 了？(自定义死�
 - `IMU/ICM_42688_base.h/c` — ICM42688 I2C驱动（MSPM0适配）
 - `IMU/ICM42688_Mahony.h/c` — Mahony AHRS 四元数滤波（纯数学，零移植成本）
 - `Mode/Mode_2.c` — 综合测试模式（Encoder+Serial1/2）+ IMU OLED显示
-- `Function/Serial_porting.c` — 串口状态机 ISR + HEX/ABC 协议解析
+- `Function/Serial_porting.c` — ★串口状态机 ISR(Status 0/1/2) + 错误中断处理 + HEX/ABC 协议解析
 - `Hardware/Encoder_Key.c` — EC11 旋转编码器驱动（GPIOA 中断）
 - `README.md` — 引脚配置、UART/编码器/电机引脚表
 - `empty.syscfg` — SysConfig 配置文件
