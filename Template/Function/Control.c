@@ -36,6 +36,11 @@ Task_Descriptor_Typedef Control_TaskTable[TASK_COUNT] = {
         .Tick   = Task_Oran_Track_Tick,    // 20ms 寻迹PID更新
         .IsExit = Task_Oran_Track_IsExit,
     },
+    [TASK_CAR_STRAIGHT] = {
+        .Setup  = Task_Car_Straight_Setup,
+        .Tick   = Task_Car_Straight_Tick,     // 20ms 位置PID+偏航修正
+        .IsExit = Task_Car_Straight_IsExit,
+    },
 };
 
 // 实现各大逻辑的动作存储
@@ -266,4 +271,35 @@ bool Task_Oran_Track_IsExit(float p[4])
     return false;
 }
 
+// ==================== 整车直行（IMU辅助走直线） ====================
 
+// 8. 任务8: 小车向前直行 x cm(双编码器平均值 + IMU偏航修正), 到达后停下, Exit
+// TASK_CAR_STRAIGHT: p[0]=目标距离cm(≤0=一直走), p[1]=容差cm(默认1.0), p[2]=max_speed(0=默认200)
+void Task_Car_Straight_Setup(float p[4])
+{
+    PID_Car_Straight_Reset();           // 清零编码器 + 记录起始yaw + 清PID历史
+    PID_Car_Straight.goalPoint = p[0];  // 目标距离(cm)
+    PID_Car_Straight_SetSpeedParams(p[2]); // 最高巡航速度(rpm), 0=默认200
+}
+
+void Task_Car_Straight_Tick(float p[4])
+{
+    PID_Car_Straight_Tick();  // 读双编码器→位置PID→偏航修正→差速输出
+	Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%.2f\n",IMU_Yaw_Abs_Get() , PID_Car_Straight.realPoint_Now , Motor_A.PID_Pos.realPoint_Now , Motor_B.PID_Pos.realPoint_Now ) ;
+}
+
+bool Task_Car_Straight_IsExit(float p[4])
+{
+    // p[0] ≤ 0 → 一直直走，不退出（外部 Con_Task_Skip 强制结束）
+    if (p[0] <= 0.0f) return false;
+
+    // 检查是否到达目标距离（参考A轮 + 速度归零）
+    float tol = (p[1] > 0.0f) ? p[1] : 1.0f;
+    if (Motor_Is_Pos(&Motor_A, p[0], tol, 5.0f))
+    {
+        Motor_SetSpeed(&Motor_A, 0);
+        Motor_SetSpeed(&Motor_B, 0);
+        return true;
+    }
+    return false;
+}

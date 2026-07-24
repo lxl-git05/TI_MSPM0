@@ -7,7 +7,7 @@
 #include "Queue.h"
 
 // ==================== 日志开关 ====================
-//  #define CON_TASK_LOG  // ★ 取消注释以开启任务日志（Serial1 输出）
+ #define CON_TASK_LOG  // ★ 取消注释以开启任务日志（Serial1 输出）
 
 // ==================== 全局任务枚举（所有 Mode 共用） ====================
 typedef enum {
@@ -19,6 +19,7 @@ typedef enum {
     TASK_STEPPER2_ANGLE,    // 步进电机2角度: p[0]=目标角度°, p[1]=max_speed(默认200), p[3]=acc(默认200)
     TASK_CAR_YAW,           // 小车MPU相对旋转: p[0]=增量角度°(+CW/-CCW), p[1]=角度容差(0=5°), p[2]=角速度容差°/s(0=7°/s)
     TASK_ORAN_TRACK,        // 香橙派寻迹追踪: p[0]=goal_x, p[1]=goal_y, p[2]=容差(默认10), p[3]=超时ms(0=不限)
+    TASK_CAR_STRAIGHT,      // 小车直行: p[0]=目标距离cm(≤0=永不停), p[1]=容差cm(默认1.0), p[2]=max_speed(0=默认200)
     // 比赛逻辑
 
     // ★ 枚举总数，必须放最后
@@ -59,6 +60,10 @@ void Con_Task_Enqueue(int task_type, float p0, float p1, float p2, float p3);
 
 // 清空队列 + 终止当前任务（紧急停止）
 void Con_Task_Clear(void);
+
+// 强制完成当前任务（跳过IsExit判断，记录耗时后自动进入下一个任务）
+// 注意：不会自动停止电机/PWM，调用方需自行处理硬件停止
+void Con_Task_Skip(void);
 
 // 主循环调度（State Machine: Setup → Run → IsExit → 自动出队）
 void Con_Task_Loop(void);

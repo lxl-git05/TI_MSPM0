@@ -47,4 +47,10 @@ void Task_Oran_Track_Setup(float p[4]) ;
 void Task_Oran_Track_Tick(float p[4]) ;
 bool Task_Oran_Track_IsExit(float p[4]) ;
 
+// 8. 任务8：整车直行（IMU辅助走直线）
+// TASK_CAR_STRAIGHT: p[0]=目标距离cm(≤0=一直走), p[1]=容差cm(默认1.0), p[2]=max_speed(0=默认200)
+void Task_Car_Straight_Setup(float p[4]) ;
+void Task_Car_Straight_Tick(float p[4]) ;
+bool Task_Car_Straight_IsExit(float p[4]) ;
+
 #endif

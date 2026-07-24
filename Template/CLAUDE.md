@@ -15,7 +15,8 @@ TI MSPM0G3507 (Cortex-M0+) 智能小车竞赛项目。支持巡线、路口识�
 | IMU | `IMU/` | 陀螺仪驱动+滤波+统一API层（ICM_42688_base/Mahony + IMU.h/c 解耦宏切换） |
 | Function | `Function/` | 控制算法（Con_Task/Con_Motor/Control）+ 串口移植层（Serial_porting） |
 | Software | `Software/` | 通用中间件（MyPID/Queue） |
-| Mode | `Mode/` | 应用模式（Manager/Mode_1/Mode_2/Mode_3） |
+| Con_Motor | `Function/` | 电机控制（速度环+角度环+位置环+整车直行） |
+| Mode | `Mode/` | 应用模式（Manager/Mode_1/Mode_2/Mode_3/Mode_4） |
 | App | `App/` | 状态机/菜单/统一初始化 |
 | Tools | `Tools/` | 工具（LED闪烁/LED_Flash/Timer_Counter） |
 
@@ -50,8 +51,8 @@ ti_msp_dl_config.h (SysConfig 生成, 60+ 厂商头文件)
 | RGB | MyGPIO_RGB_R/G/B | PB6/PB7/PB8 | 输出 |
 | Buzzer | MyGPIO_Buzzer | PB23 | 输出（+5V有源） |
 | Elec | MyGPIO_Elec | PB24 | 输出（电磁铁） |
-| TCRT | MyGPIO_TCRT | PA13 | 输入上拉 |
-| EC11 | MyGPIO_EC11_S1 | PA12 | 输入上拉 下降沿中断 |
+| TCRT | MyGPIO_TCRT | PA13 | 输入 上拉 |
+| EC11 | MyGPIO_EC11_S1 | PA12 | 输入 上拉 下降沿中断 |
 | EC11 | MyGPIO_EC11_S2 | PA14 | 输入上拉 下降沿中断 |
 | EC11 | MyGPIO_EC11_Key | PA16 | 输入上拉 |
 | Stepper1 | MyGPIO_Stepper_En/Dir | PA18/PB17 | 输出 |
@@ -73,9 +74,9 @@ ti_msp_dl_config.h (SysConfig 生成, 60+ 厂商头文件)
 | UART_1 | 异步 | `UART_1_INST_IRQHandler` | Serial2 RX 中断（状态机） | `Function/Serial_porting.c` |
 | UART_4 | 异步 | `UART_4_INST_IRQHandler` | Serial4 RX 中断（状态机） | `Function/Serial_porting.c` |
 
-## 当前状态：F407 核心模块移植阶段
+## 当前状态：整车控制算法开发阶段
 
-### 已完成移植
+### 已完成模块
 
 | 模块 | 文件 | 状态 |
 |------|------|------|
@@ -88,6 +89,11 @@ ti_msp_dl_config.h (SysConfig 生成, 60+ 厂商头文件)
 | ICM42688 Mahony | `IMU/ICM42688_Mahony.h/c` | ✅ 四元数+PI重力修正(Mahony)，绝对yaw解绕，零偏标定 |
 | **IMU 统一API** | `IMU/IMU.h/c` | ✅ ★ 传感器解耦宏切换(ICM/MPU)，Types内置，Turn_Yaw到位检测 |
 | GPIO 引脚 | `MySystem/MyGPIO.h` + `MySystem/MySystem.c` | ✅ 全部 25 个引脚声明完成，对照 syscfg+README |
+| Con_Motor Pos API | `Function/Con_Motor.h/c` | ✅ ★ Motor_SetPos/Get_Pos/Is_Pos/Clear + Motorx_Pos_Update_Tick，Wheel_Cm=20cm |
+| PID_Car_Straight | `Function/Con_Motor.c` | ✅ ★ 整车直行：双编码器平均+IMU偏航修正(Kp=5.0)+梯形变速(加速15cm/减速25cm) |
+| TASK_CAR_STRAIGHT | `Function/Control.c` + `Con_Task.h` | ✅ ★ Con_Task直行任务：p[0]=目标cm(≤0=永远直行), p[1]=容差, p[2]=max_speed |
+| Con_Task_Skip | `Function/Con_Task.h/c` | ✅ 强制跳过当前任务保留队列，记录标记"Skip" |
+| Mode_3 PID调参 | `Mode/Mode_3.c` | ✅ MODE3_SELECT==1：4模式循环(Speed→Angle→Pos→Straight) |
 
 ### Serial 状态机架构（借鉴待移植库 Status 0/1/2 模式）
 
@@ -173,6 +179,23 @@ IMU_Turn_Yaw_Is_Ok(90.0f)              // 转到 90°±3° 了？(默认死区)
 IMU_Turn_Yaw_Is_Ok_Ex(180.0f, 5.0f)    // 转到 180°±5° 了？(自定义死区)
 
 // 切换传感器：IMU.h 中取消/注释 #define IMU_USE_MPU6050（一行改全局生效）
+
+// ===== 位置环（单电机，cm） =====
+Motor_SetPos(&Motor_A, 50.0f);          // 设置目标距离(cm)
+float pos = Motor_Get_Pos(&Motor_A);     // 获取当前距离(cm)
+Motor_Is_Pos(&Motor_A, 50, 2, 5.0f);    // 是否到达目标(容差2cm, 速度<5rpm)
+Motorx_Pos_Update_Tick(&Motor_A, 1);     // 20ms Tick: 读编码器→PID→输出速度
+
+// ===== 整车直行位置环（双电机+IMU偏航修正+梯形变速） =====
+PID_Car_Straight_Init();                // 初始化（Kp=20, Kd=3, Out±100）
+PID_Car_Straight_Reset();               // 清零编码器+记录起始yaw+清PID
+PID_Car_Straight_SetSpeedParams(150);   // 巡航最高速度(rpm), 0=默认200
+PID_Car_Straight_Tick();                // 20ms: 平均距离→PID→梯形限速→IMU修正→差速
+
+// ===== Con_Task 直行任务 =====
+Con_Task_Enqueue(TASK_CAR_STRAIGHT, 100, 2, 0, 0);  // 直行100cm, 容差2cm
+Con_Task_Enqueue(TASK_CAR_STRAIGHT, 0, 0, 0, 0);    // 永远直行, Con_Task_Skip停止
+Con_Task_Skip();                        // 强制跳过当前任务（保留队列后续任务）
 ```
 
 ### 文件修改规范
@@ -197,7 +220,13 @@ IMU_Turn_Yaw_Is_Ok_Ex(180.0f, 5.0f)    // 转到 180°±5° 了？(自定义死�
 - `IMU/ICM_42688_base.h/c` — ICM42688 I2C驱动（MSPM0适配）
 - `IMU/ICM42688_Mahony.h/c` — Mahony AHRS 四元数滤波（纯数学，零移植成本）
 - `Mode/Mode_2.c` — 综合测试模式（Encoder+Serial1/2）+ IMU OLED显示
+- `Mode/Mode_3.c` — PID调参模式（MODE3_SELECT=1: Speed/Angle/Pos/Straight 4循环切换）
+- `Mode/Mode_4.c` — Con_Task 演示模式（任务序列+OLED+按键入队）
+- `Function/Con_Motor.c` — ★电机控制三环（速度/角度/位置）+ PID_Car_Straight 整车直行（梯形变速+偏航修正）
+- `Function/Control.c` — ★全局任务表 Control_TaskTable + 全部任务回调（含 TASK_CAR_STRAIGHT）
+- `Function/Con_Task.h/c` — 任务队列调度器（含 Con_Task_Skip 强制跳过）
 - `Function/Serial_porting.c` — ★串口状态机 ISR(Status 0/1/2) + 错误中断处理 + HEX/ABC 协议解析
+- `Hardware/Motor.h` — Motor_Typedef 三环 PID + Motor_Param_Typedef（含 Wheel_Cm=20cm）
 - `Hardware/Encoder_Key.c` — EC11 旋转编码器驱动（GPIOA 中断）
 - `README.md` — 引脚配置、UART/编码器/电机引脚表
 - `empty.syscfg` — SysConfig 配置文件

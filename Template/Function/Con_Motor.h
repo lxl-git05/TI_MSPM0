@@ -37,18 +37,21 @@ float Motor_Get_Angle(Motor_Typedef *Motor) ;
 // 10. 检查电机位置（三重检查：状态+速度+角度容差，Speed_Tol 单位 rpm）
 bool Motor_Is_Angle(Motor_Typedef *Motor , float Angle , float Tolerance , float Speed_Tol) ;
 
-//// Pos函数
-//// 1. 设置电机目标位移
-//void Motor_SetPos(Motor_Typedef *Motor , float Pos) ;
+// Pos函数
+// 1. 设置电机目标位移(cm)
+void Motor_SetPos(Motor_Typedef *Motor , float Pos) ;
 
-//// 2. 得到电机当前位移
-//float Motor_Get_Pos(Motor_Typedef *Motor) ;
+// 2. 得到电机当前位移(cm)
+float Motor_Get_Pos(Motor_Typedef *Motor) ;
 
-//// 3. 检查电机位置
-//bool Motor_Is_Pos(Motor_Typedef *Motor , int Pos , int Tolerance) ;
+// 3. 检查电机位置（三重检查：状态+速度+位置容差，Speed_Tol 单位 rpm）
+bool Motor_Is_Pos(Motor_Typedef *Motor , float Pos , float Tolerance , float Speed_Tol) ;
 
-//// 4. 清除累计位移
-//void Motor_Pos_Clear(void) ;
+// 4. 清除累计位移
+void Motor_Pos_Clear(void) ;
+
+// 6.3 电机位置环PID（单电机，不含IMU偏航修正）
+void Motorx_Pos_Update_Tick(Motor_Typedef *Motor , int Dir);	// Dir: 纠正PID控制方向
 
 // =================== IMU角度环 ===================
 
@@ -71,5 +74,14 @@ void PID_Angle_Tick(void) ;         // 20ms Tick: MPU更新→PID→差速输出
 //float PID_ALL_Pos_Tick(void) ;
 
 //void PID_ALL_Pos_Reset(void) ;
+
+// =================== 整车直行位置环（双电机+IMU偏航修正） ===================
+
+extern Pid_Typedef PID_Car_Straight ;	// 整车位置PID
+
+void PID_Car_Straight_Init(void) ;		// 初始化（PD参数）
+void PID_Car_Straight_Reset(void) ;		// 清零编码器 + 记录起始yaw + 清PID历史
+void PID_Car_Straight_Tick(void) ;		// 20ms: 读平均距离→PID→差速+偏航修正输出
+void PID_Car_Straight_SetSpeedParams(float max_speed); // 配置最高巡航速度(rpm)，0=默认200
 
 #endif

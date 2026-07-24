@@ -294,3 +294,28 @@
 | AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All() 新增 Oran_XY_Init()（在 Param_AT24C02_Init 之前调用，确保默认PID初始化后被EEPROM覆盖） |
 
 > **架构改进**：任务表从 Mode_4 本地提取为 Control.c 全局共享，后续所有 Con_Mode 统一调用 `Con_Task_Init(Control_TaskTable, TASK_COUNT)`。新增任务只需在 Con_Task.h 枚举 + Control.h 声明 + Control.c 表注册 + Control.c 实现。Orange寻迹任务支持：p[0]=goal_x, p[1]=goal_y, p[2]=容差(默认10), p[3]=超时ms(0=不限)，200ms稳态防抖退出。
+
+## 2026-07-24 14:15 | 新增Con_Task_Skip强制跳过当前任务
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Con_Task.h | ./Function/Con_Task.h | 修改 | 新增 Con_Task_Skip() 声明（强制完成当前任务，跳过IsExit判断，自动进入下一个任务） |
+| Con_Task.c | ./Function/Con_Task.c | 修改 | 提取 Con_Task_RecordComplete() 静态辅助函数（消除Loop/Skip重复代码）；新增 Con_Task_Skip() 实现（无任务时直接返回，有任务时记录耗时+重置状态机） |
+
+> **新增API**: `Con_Task_Skip(void)` — 当IsExit条件无法覆盖所有硬件异常场景（电机堵转、传感器故障、通信超时等）时，调用方可在按键/串口/超时检测中调用此函数跳过当前卡死的任务。与 Con_Task_Clear() 的区别：Clear 清空队列+终止当前任务（全部放弃），Skip 仅跳过当前任务、保留队列后续任务继续执行。任务记录中标记为 "Skip" 以便调试区分。
+
+## 2026-07-24 15:00 | 实现整车直行位置环 TASK_CAR_STRAIGHT（双电机+IMU偏航修正）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Motor.h | ./Hardware/Motor.h | 修改 | Motor_Param_Typedef 新增 Wheel_Cm 字段；取消注释 Motor_Pos_Update 声明 |
+| Motor.c | ./Hardware/Motor.c | 修改 | 实现 Motor_Pos_Update()：编码器 total_cnt→距离(cm)，公式 total_cnt×Wheel_Cm/(time_Fre×PPR×ReductionRatio) |
+| Con_Motor.h | ./Function/Con_Motor.h | 修改 | 取消注释 Pos API（Motor_SetPos/Get_Pos/Is_Pos/Clear）；新增 Motorx_Pos_Update_Tick 声明；新增 Car Straight 控制器声明（PID_Car_Straight + Init/Reset/Tick） |
+| Con_Motor.c | ./Function/Con_Motor.c | 修改 | ★核心实现：①Motor_Param 增加 Wheel_Cm=20.0；②PID_Pos 初始化（Kp=4,Kd=3,Out±200）；③实现全部 Pos API + Motorx_Pos_Update_Tick；④新增 PID_Car_Straight 整车直行控制器（双编码器平均距离→位置PID→IMU偏航P修正→差速输出）；⑤Con_Motor_Init 中调用 PID_Car_Straight_Init |
+| Con_Task.h | ./Function/Con_Task.h | 修改 | 枚举新增 TASK_CAR_STRAIGHT（p[0]=目标cm≤0=永不停, p[1]=容差cm, p[2]=max_speed） |
+| Control.h | ./Function/Control.h | 修改 | 新增 Task_Car_Straight_Setup/Tick/IsExit 声明 |
+| Control.c | ./Function/Control.c | 修改 | Control_TaskTable 新增 TASK_CAR_STRAIGHT 注册；实现3个回调（Setup清零编码器+yaw基准、Tick调 PID_Car_Straight_Tick、IsExit: p[0]≤0永假/双电机到位检查） |
+| Mode_3.c | ./Mode/Mode_3.c | 修改 | MODE3_SELECT==1 改造：Motor_Pos_Enable(bool)→Motor_Loop_Mode(uint8_t, 0=Speed/1=Angle/2=Pos)；KEY_2 循环3态切换；Pos模式调PID_Pos+Motor_SetPos；Tick调用Motorx_Pos_Update_Tick；OLED/Telemetry 适配3模式 |
+| Mode_4.c | ./Mode/Mode_4.c | 修改 | OLED switch 新增 TASK_CAR_STRAIGHT 标签 ">>> Car Straight" |
+
+> **架构**: 位置环分两层——①单电机层 Motorx_Pos_Update_Tick（同Angle模式，供Mode_3调参）；②整车层 PID_Car_Straight_Tick（双编码器平均+IMU yaw P修正，Kp=5.0）。TASK_CAR_STRAIGHT 的特殊语义：p[0]≤0 时 IsExit 永远返回 false，需外部 Con_Task_Skip() 强制退出（用于"一直直走"场景）。

@@ -62,6 +62,7 @@ void Mode_4_Loop(void)
             case TASK_STEPPER2_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> Stepper2");   break;
             case TASK_CAR_YAW:        OLED_Printf(0, 30, OLED_6X8, ">>> Car Yaw");    break;
             case TASK_ORAN_TRACK:     OLED_Printf(0, 30, OLED_6X8, ">>> Oran Track");  break;
+            case TASK_CAR_STRAIGHT:  OLED_Printf(0, 30, OLED_6X8, ">>> Car Straight");break;
             default: break;
         }
     }
@@ -74,14 +75,19 @@ void Mode_4_Loop(void)
     // Key1 单击: 重新入队演示序列
     if (Key_Check(KEY_1, KEY_SINGLE))
     {
-        // 8. 小车顺时针旋转180°
-        Con_Task_Enqueue(TASK_CAR_YAW, 180, 0, 0, 0);
-        Con_Task_Enqueue(TASK_WAIT_TIME, 1000, 0, 0, 0);
+        Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
     }
     if (Key_Check(KEY_2, KEY_SINGLE))
     {
-        Serial_printf(&Serial1, "Hello:666\r\n") ;
-        Serial_printf(&Serial3, "Hello:666\r\n") ;
+        // 小车向前走1m(100cm)
+        Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 0, 0, 0);            // 顺时针旋转90度
+        Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 0, 0, 0);            // 顺时针旋转90度
+        Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 0, 0, 0);            // 顺时针旋转90度
+        Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 0, 0, 0);            // 顺时针旋转90度
     }
 
     OLED_Printf(0, 30, OLED_6X8, "S1:%s",Serial1.ABC_Data.Serial_New_Package_ABC) ;
@@ -89,12 +95,12 @@ void Mode_4_Loop(void)
 
     OLED_Printf(0 , 50, OLED_6X8, "S1:%x",Serial1.rxLen) ;
     OLED_Printf(40 , 50, OLED_6X8, "S2:%x",Serial2.rxLen) ;
-    OLED_Printf(70, 50, OLED_6X8, "Time:%f",time_Func_ms) ;
+    OLED_Printf(70, 50, OLED_6X8, "Yaw:%.3f",IMU_Yaw_Abs_Get()) ;
 }
 
 void Mode_4_Tick(void)
 {
-    Con_Task_Tick();
+    
 }
 
 void Mode_4_Exit(void)

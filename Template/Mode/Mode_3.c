@@ -11,16 +11,16 @@
 //   1 = 电机PID调参    (原Mode_3)
 //   2 = 陀螺仪角度环    (原Mode_5)
 //   3 = 步进电机驱动    (原Mode_6)
-#define MODE3_SELECT 2
+#define MODE3_SELECT 1
 
 // ==================== 功能1: 电机PID调参 ====================
 #if MODE3_SELECT == 1
 
 // 当前选择的电机：0 = Motor A, 1 = Motor B
 static uint8_t Motor_Select = 0;
-static uint8_t Motor_Pos_Enable = 0;  // 0=速度环, 1=位置环(角度)
+static uint8_t Motor_Loop_Mode = 3;   // 0=速度环, 1=角度环, 2=位置环, 3=整车直行环
 
-// 串口通用目标值（速度环=目标速度, 位置环=目标角度）
+// 串口通用目标值（速度环=目标速度, 位置环=目标角度/距离）
 float Motor_PID_Goal_Check = 0;
 
 // 获取当前选中电机的指针
@@ -35,6 +35,19 @@ static const char* Get_Motor_Label(void)
     return (Motor_Select == 0) ? "A" : "B";
 }
 
+// 获取当前环类型名称
+static const char* Get_Loop_Label(void)
+{
+    switch (Motor_Loop_Mode)
+    {
+        case 0: return "Speed  ";
+        case 1: return "Angle  ";
+        case 2: return "Pos    ";
+        case 3: return "Straight";
+        default: return "?";
+    }
+}
+
 static void Mode_3_Setup_Impl(void)
 {
     OLED_Clear();
@@ -46,7 +59,7 @@ static void Mode_3_Loop_Impl(void)
     Motor_Typedef *pMotor = Get_Selected_Motor();
 
     // ---- 标题 + 电机 + 环类型 ----
-    OLED_Printf(0, 0, OLED_6X8, "Motor_%s [%s]", Get_Motor_Label(), Motor_Pos_Enable ? "Angle" : "Speed");
+    OLED_Printf(0, 0, OLED_6X8, "Motor_%s [%s]", Get_Motor_Label(), Get_Loop_Label());
 
     // ---- KEY_1 单击：切换电机 ----
     if (Key_Check(KEY_1, KEY_SINGLE))
@@ -54,18 +67,39 @@ static void Mode_3_Loop_Impl(void)
         Motor_Select = !Motor_Select;
     }
 
-    // ---- KEY_2 单击：切换速度环/位置环 ----
+    // ---- KEY_2 单击：循环切换 速度环→角度环→位置环→直行环 ----
     if (Key_Check(KEY_2, KEY_SINGLE))
     {
-        Motor_Pos_Enable = !Motor_Pos_Enable;
+        Motor_Loop_Mode = (Motor_Loop_Mode + 1) % 4;
     }
 
     // ---- 串口参数更改 ----
     if (Serial_GetNewPackageFlag_ABC(&Serial1))
     {
-        if (Motor_Pos_Enable)
+        if (Motor_Loop_Mode == 3)
         {
-            // 位置环：调 PID_Angle
+            // 整车直行环：调 PID_Car_Straight
+            Serial_SetFloatData(&Serial1, "Kp",    "Kp=%f",    &PID_Car_Straight.Kp);
+            Serial_SetFloatData(&Serial1, "Ki",    "Ki=%f",    &PID_Car_Straight.Ki);
+            Serial_SetFloatData(&Serial1, "Kd",    "Kd=%f",    &PID_Car_Straight.Kd);
+            Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Motor_PID_Goal_Check);
+
+            PID_Car_Straight_Reset();                       // 清零编码器 + 记录起始yaw
+            PID_Car_Straight.goalPoint = Motor_PID_Goal_Check;
+        }
+        else if (Motor_Loop_Mode == 2)
+        {
+            // 位置环：调 PID_Pos
+            Serial_SetFloatData(&Serial1, "Kp",    "Kp=%f",    &pMotor->PID_Pos.Kp);
+            Serial_SetFloatData(&Serial1, "Ki",    "Ki=%f",    &pMotor->PID_Pos.Ki);
+            Serial_SetFloatData(&Serial1, "Kd",    "Kd=%f",    &pMotor->PID_Pos.Kd);
+            Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Motor_PID_Goal_Check);
+
+            Motor_SetPos(pMotor, Motor_PID_Goal_Check);
+        }
+        else if (Motor_Loop_Mode == 1)
+        {
+            // 角度环：调 PID_Angle
             Serial_SetFloatData(&Serial1, "Kp",    "Kp=%f",    &pMotor->PID_Angle.Kp);
             Serial_SetFloatData(&Serial1, "Ki",    "Ki=%f",    &pMotor->PID_Angle.Ki);
             Serial_SetFloatData(&Serial1, "Kd",    "Kd=%f",    &pMotor->PID_Angle.Kd);
@@ -83,12 +117,22 @@ static void Mode_3_Loop_Impl(void)
 
             Motor_SetSpeed(pMotor, Motor_PID_Goal_Check);
         }
-
-        // OLED 展示当前 PID 参数
-        if (Motor_Pos_Enable)
-            OLED_Printf(0, 10, OLED_6X8, "K:%.2f,%.2f,%.2f", pMotor->PID_Angle.Kp, pMotor->PID_Angle.Ki, pMotor->PID_Angle.Kd);
-        else
-            OLED_Printf(0, 10, OLED_6X8, "K:%.2f,%.2f,%.2f", pMotor->PID_s.Kp, pMotor->PID_s.Ki, pMotor->PID_s.Kd);
+    }
+    // OLED 展示当前 PID 参数
+    switch (Motor_Loop_Mode)
+    {
+        case 3:
+            OLED_Printf(0, 20, OLED_6X8, "K:%.2f,%.2f,%.2f", PID_Car_Straight.Kp, PID_Car_Straight.Ki, PID_Car_Straight.Kd);
+            break;
+        case 2:
+            OLED_Printf(0, 20, OLED_6X8, "K:%.2f,%.2f,%.2f", pMotor->PID_Pos.Kp, pMotor->PID_Pos.Ki, pMotor->PID_Pos.Kd);
+            break;
+        case 1:
+            OLED_Printf(0, 20, OLED_6X8, "K:%.2f,%.2f,%.2f", pMotor->PID_Angle.Kp, pMotor->PID_Angle.Ki, pMotor->PID_Angle.Kd);
+            break;
+        default:
+            OLED_Printf(0, 20, OLED_6X8, "K:%.2f,%.2f,%.2f", pMotor->PID_s.Kp, pMotor->PID_s.Ki, pMotor->PID_s.Kd);
+            break;
     }
 }
 
@@ -96,21 +140,40 @@ static void Mode_3_Tick_Impl(void)
 {
     Motor_Typedef *pMotor = Get_Selected_Motor();
 
-    if (Motor_Pos_Enable)
+    if (Motor_Loop_Mode == 3)
+    {
+        // 整车直行环：双电机+IMU偏航修正
+        PID_Car_Straight_Tick();
+    }
+    else if (Motor_Loop_Mode == 2)
     {
         // 位置环更新（选中电机）+ 速度内环（两电机）
-				if (pMotor == &Motor_A)
-				{
-					Motorx_Angle_Update_Tick(pMotor, 1);
-				}
-				else
-				{
-					Motorx_Angle_Update_Tick(pMotor, -1);
-				}
+        if (pMotor == &Motor_A)
+            Motorx_Pos_Update_Tick(pMotor, 1);
+        else
+            Motorx_Pos_Update_Tick(pMotor, -1);
+    }
+    else if (Motor_Loop_Mode == 1)
+    {
+        // 角度环更新（选中电机）+ 速度内环（两电机）
+        if (pMotor == &Motor_A)
+            Motorx_Angle_Update_Tick(pMotor, 1);
+        else
+            Motorx_Angle_Update_Tick(pMotor, -1);
     }
 
     // 每20ms通过串口打印：目标, 当前值, PID输出
-    if (Motor_Pos_Enable)
+    if (Motor_Loop_Mode == 3)
+        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",
+                      PID_Car_Straight.goalPoint,
+                      PID_Car_Straight.realPoint_Now,
+                      PID_Car_Straight.setPoint);
+    else if (Motor_Loop_Mode == 2)
+        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",
+                      pMotor->PID_Pos.goalPoint,
+                      pMotor->PID_Pos.realPoint_Now,
+                      pMotor->PID_Pos.setPoint);
+    else if (Motor_Loop_Mode == 1)
         Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",
                       pMotor->PID_Angle.goalPoint,
                       pMotor->PID_Angle.realPoint_Now,
@@ -124,7 +187,15 @@ static void Mode_3_Tick_Impl(void)
 
 static void Mode_3_Exit_Impl(void)
 {
-    Motor_Stop(Get_Selected_Motor());
+    if (Motor_Loop_Mode == 3)
+    {
+        Motor_Stop(&Motor_A);       // 整车直行模式：双电机都停
+        Motor_Stop(&Motor_B);
+    }
+    else
+    {
+        Motor_Stop(Get_Selected_Motor());
+    }
     OLED_Clear();
 }
 

@@ -65,6 +65,8 @@ void Timer_1ms_Callback(void)
 // 20ms定时器
 void Timer_20ms_Callback(void)
 {
+    // 0. 任务系统
+    Con_Task_Tick();
     // 1. 陀螺仪更新
     IMU_Mahony_Update_Tick();
     // 2. 香橙派数据更新
