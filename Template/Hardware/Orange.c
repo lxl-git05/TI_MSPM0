@@ -41,15 +41,31 @@ void Oran_Update(void)
 // (外环: X: 小车的左右速度+-,保持中心 Y: 小车的主速度,去往目标位置  内环: 速度环)
 Pid_Typedef PID_Oran_X ;
 Pid_Typedef PID_Oran_Y ;
-#define Oran_XY_X_Check ( 1)	// X纠正方向
+#define Oran_XY_X_Check ( -1)	// X纠正方向
 #define Oran_XY_Y_Check ( 1)	// Y纠正方向
+
+
+void Oran_PID_Func_X(void)
+{
+	if (PID_Oran_X.realPoint_Now < 40 && PID_Oran_X.realPoint_Now > -40)
+	{
+		PID_Oran_X.Kp = 0.3f; 
+	}
+	else 
+	{
+		PID_Oran_X.Kp = 0.649f ;
+	}
+}
 
 void Oran_XY_Init(void)
 {
 	// 最大内环速度为 200 rpm/min
 	// 目标都是偏差为0
-	PID_Init(&PID_Oran_X, 0.0f, 0.0f, 0.0f, 200, -200, 1000) ;
-	PID_Init(&PID_Oran_Y, 0.0f, 0.0f, 0.0f, 200, -200, 1000) ;
+	PID_Init(&PID_Oran_X, 0.649f, 0.0f, 5.635f, 40, -40, 400) ;
+	PID_Init(&PID_Oran_Y, 1.0f, 0.0f, 7.2f, 40, -40, 140) ;
+	PID_Oran_X.d_filter = 0.3f ;	// 不完全微分
+	PID_Oran_X.PID_Func = Oran_PID_Func_X ;
+	
 }
 
 void Oran_XY_PID_Update(void)
@@ -66,3 +82,4 @@ void Oran_XY_PID_Update(void)
 	Motor_SetSpeed(&Motor_A, PID_Oran_Y.setPoint * Oran_XY_Y_Check + PID_Oran_X.setPoint * Oran_XY_X_Check) ;
 	Motor_SetSpeed(&Motor_B, PID_Oran_Y.setPoint * Oran_XY_Y_Check - PID_Oran_X.setPoint * Oran_XY_X_Check) ;
 }
+

@@ -76,6 +76,8 @@ void Timer_20ms_Callback(void)
         case Mode_2: Mode_2_Tick(); break;
         case Mode_3: Mode_3_Tick(); break;
         case Mode_4: Mode_4_Tick(); break;
+        case Mode_5: Mode_5_Tick(); break;
+        case Mode_6: Mode_6_Tick(); break;
         case Con_Mode_1: Con_Mode_1_Tick(); break;
         case Con_Mode_2: Con_Mode_2_Tick(); break;
         case Con_Mode_3: Con_Mode_3_Tick(); break;

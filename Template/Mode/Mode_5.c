@@ -3,7 +3,7 @@
 
 // ==================== 寻迹测试 ====================
 
-bool Is_X = true ;
+bool Is_X = false ;
 float Goal_XY ;
 
 void Mode_5_Setup(void)
@@ -44,13 +44,17 @@ void Mode_5_Loop(void)
             PID_Oran_Y.goalPoint = Goal_XY ;
         }
     }
-    
+    OLED_Printf(0, 20, OLED_6X8, "Yaw:%.4f",IMU_Yaw_Abs_Get()) ;
+    OLED_Printf(0, 30, OLED_6X8, "Tar%s , Goal:%.2f",Is_X ? "X" : "Y" , Goal_XY) ;
+    OLED_Printf(0, 40, OLED_6X8, "Time:%.2f",time_ms) ;
 }
 
 void Mode_5_Tick(void)
 {
+    Timer_Counter_Begin() ;
     // PID 计算
     Oran_XY_PID_Update() ;
+    Timer_Counter_End() ;
     // 打印
     if (Is_X)
     {
