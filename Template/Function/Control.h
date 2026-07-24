@@ -3,6 +3,10 @@
 
 #include "AllHeader.h"
 
+// ==================== 全局共享任务表 ====================
+// ★ 所有 Con_Mode 统一引用此表，Con_Task_Init(Control_TaskTable, TASK_COUNT)
+extern const Task_Descriptor_Typedef Control_TaskTable[TASK_COUNT];
+
 // 1. 任务1：等待xs，然后Exit（伴随蜂鸣器）
 // TASK_WAIT_TIME: p[0]=等待时间(ms)
 void Task_Wait_Time_Setup(float p[4]) ;
@@ -35,5 +39,11 @@ bool Task_Stepper2_Angle_IsExit(float p[4]) ;
 void Task_Car_Yaw_Setup(float p[4]) ;
 void Task_Car_Yaw_Tick(float p[4]) ;
 bool Task_Car_Yaw_IsExit(float p[4]) ;
+
+// 7. 任务7：香橙派视觉寻迹追踪
+// TASK_ORAN_TRACK: p[0]=goal_x, p[1]=goal_y, p[2]=容差(默认10), p[3]=超时ms(0=不限)
+void Task_Oran_Track_Setup(float p[4]) ;
+void Task_Oran_Track_Tick(float p[4]) ;
+bool Task_Oran_Track_IsExit(float p[4]) ;
 
 #endif

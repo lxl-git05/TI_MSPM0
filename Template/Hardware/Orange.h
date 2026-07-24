@@ -2,11 +2,19 @@
 #define __ORANGE_H
 
 #include "MySystem.h"
+#include "MyPID.h"
 
 // 香橙派/OpenMV 视觉数据（外部定义，通信模块写入）
-extern float x_real;    // 目标 X 坐标实际值（视觉测量）
-extern float y_real;    // 目标 Y 坐标实际值（视觉测量）
-extern float x_tar;     // 目标 X 坐标期望值
-extern float y_tar;     // 目标 Y 坐标期望值
+extern float x_real;    // 目标 X 坐标实际值(偏差)
+extern float y_real;    // 目标 Y 坐标实际值(偏差)
+
+// 香橙派数据更新,在Mode_G实现20ms固定更新
+void Oran_Update(void) ;
+
+// 香橙派寻迹PID
+extern Pid_Typedef PID_Oran_X ;
+extern Pid_Typedef PID_Oran_Y ;
+void Oran_XY_Init(void) ;
+void Oran_XY_PID_Update(void) ;
 
 #endif

@@ -1,6 +1,13 @@
-// ========================== 电机PID调参模式 ==========================
+// ==================== Mode_3 多功能合并 ====================
+// 通过 Mode_3.h 中的 MODE3_SELECT 宏选择当前功能:
+//   1 = 电机PID调参    (原Mode_3)
+//   2 = 陀螺仪角度环    (原Mode_5)
+//   3 = 步进电机驱动    (原Mode_6)
 #include "Mode_3.h"
 #include "AllHeader.h"
+
+// ==================== 功能1: 电机PID调参 ====================
+#if MODE3_SELECT == 1
 
 // 当前选择的电机：0 = Motor A, 1 = Motor B
 static uint8_t Motor_Select = 0;
@@ -21,13 +28,13 @@ static const char* Get_Motor_Label(void)
     return (Motor_Select == 0) ? "A" : "B";
 }
 
-void Mode_3_Setup(void)
+static void Mode_3_Setup_Impl(void)
 {
     OLED_Clear();
     OLED_Printf(0, 0, OLED_6X8, "=====Mode_PID=====");
 }
 
-void Mode_3_Loop(void)
+static void Mode_3_Loop_Impl(void)
 {
     Motor_Typedef *pMotor = Get_Selected_Motor();
 
@@ -78,7 +85,7 @@ void Mode_3_Loop(void)
     }
 }
 
-void Mode_3_Tick(void)
+static void Mode_3_Tick_Impl(void)
 {
     Motor_Typedef *pMotor = Get_Selected_Motor();
 
@@ -108,8 +115,140 @@ void Mode_3_Tick(void)
                       pMotor->PID_s.setPoint);
 }
 
-void Mode_3_Exit(void)
+static void Mode_3_Exit_Impl(void)
 {
     Motor_Stop(Get_Selected_Motor());
     OLED_Clear();
+}
+
+// ==================== 功能2: 陀螺仪角度环 ====================
+#elif MODE3_SELECT == 2
+
+extern uint32_t IIC_Reset_Count ;
+
+float Angle_Car ;
+
+static int cnt ;
+
+static void Mode_3_Setup_Impl(void)
+{
+    OLED_Clear();
+    PID_Angle_Reset();
+}
+
+static void Mode_3_Loop_Impl(void)
+{
+    OLED_Printf(0, 0, OLED_8X16, "===Mode_3_Gyro===") ;
+    if (Serial_GetNewPackageFlag_ABC(&Serial1))
+    {
+        // 得到数据
+        Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Angle.Kp) ;
+        Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Angle.Ki) ;
+        Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Angle.Kd) ;
+        Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Angle_Car) ;
+    }
+    PID_Angle.goalPoint = Angle_Car ;
+
+    OLED_Printf(0, 20, OLED_6X8, "Angle_Car:%.2f",Angle_Car) ;
+    OLED_Printf(0, 50, OLED_6X8, "cnt:%d",cnt++) ;
+    OLED_Printf(0, 40, OLED_6X8, "IIC_Reset_Count:%d",IIC_Reset_Count) ;
+    OLED_Printf(0, 30, OLED_6X8, "Yaw:%.2f",IMU_Yaw_Abs_Get()) ;
+}
+
+static void Mode_3_Tick_Impl(void)
+{
+    PID_Angle_Tick();
+    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",PID_Angle.goalPoint ,PID_Angle.realPoint_Now ,PID_Angle.setPoint );
+}
+
+static void Mode_3_Exit_Impl(void)
+{
+    OLED_Clear();
+}
+
+// ==================== 功能3: 步进电机驱动 ====================
+#elif MODE3_SELECT == 3
+
+float Angle_S ;
+bool Ste1_Choice = 1 ;
+
+static void Mode_3_Setup_Impl(void)
+{
+    OLED_Clear();
+}
+
+static void Mode_3_Loop_Impl(void)
+{
+    OLED_Printf(0, 0, OLED_6X8, "===Mode3_Stepper===") ;
+
+    Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Angle_S);
+
+    if (Key_Check(KEY_1, KEY_SINGLE))
+    {
+        if (Ste1_Choice)
+        {
+            Stepper_PWM_Pos_Set_Abs(&Stepper1, (int)Angle_S, 400, 200) ;
+        }
+        else
+        {
+            Stepper_PWM_Pos_Set_Abs(&Stepper2, (int)Angle_S, 400, 200) ;
+        }
+    }
+    if (Key_Check(KEY_1, KEY_LONG))
+    {
+        if (Ste1_Choice)
+        {
+            Stepper_PWM_Pos_Set_Abs(&Stepper1, 0, 400, 200) ;
+        }
+        else
+        {
+            Stepper_PWM_Pos_Set_Abs(&Stepper2, 0, 400, 200) ;
+        }
+    }
+    if (Key_Check(KEY_2, KEY_SINGLE))
+    {
+        Ste1_Choice = !Ste1_Choice ;
+        Stepper_PWM_Stop(&Stepper1) ;
+        Stepper_PWM_Stop(&Stepper2) ;
+    }
+    OLED_Printf(0, 20, OLED_6X8, "S1:%f",Stepper1.Pos_Now) ;
+    OLED_Printf(0, 30, OLED_6X8, "S2:%f",Stepper2.Pos_Now) ;
+    OLED_Printf(0, 40, OLED_6X8, "Angle_S%d:%.2f",Ste1_Choice == 1? 1 : 2,Angle_S ) ;
+    Angle_S += Encoder_Get() ;
+}
+
+static void Mode_3_Tick_Impl(void)
+{
+    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",Stepper1.Pos_Tar, Stepper1.Pos_Now , Stepper1.Speed_Now);
+}
+
+static void Mode_3_Exit_Impl(void)
+{
+    OLED_Clear();
+}
+
+#else
+#error "MODE3_SELECT 值无效! 请设置为 1(电机PID) / 2(陀螺仪角度环) / 3(步进电机)"
+#endif
+
+// ==================== 公共接口（委托到选中的功能） ====================
+
+void Mode_3_Setup(void)
+{
+    Mode_3_Setup_Impl();
+}
+
+void Mode_3_Loop(void)
+{
+    Mode_3_Loop_Impl();
+}
+
+void Mode_3_Tick(void)
+{
+    Mode_3_Tick_Impl();
+}
+
+void Mode_3_Exit(void)
+{
+    Mode_3_Exit_Impl();
 }

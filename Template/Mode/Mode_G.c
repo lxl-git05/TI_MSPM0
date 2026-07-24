@@ -2,7 +2,7 @@
 #include "AllHeader.h"
 
 Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
-Mode_Typedef next_mode = Mode_5      ;        // 下一个模式
+Mode_Typedef next_mode = Mode_3      ;        // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -65,8 +65,10 @@ void Timer_1ms_Callback(void)
 // 20ms定时器
 void Timer_20ms_Callback(void)
 {
-    // 陀螺仪更新
-    // IMU_Mahony_Update_Tick();
+    // 1. 陀螺仪更新
+    IMU_Mahony_Update_Tick();
+    // 2. 香橙派数据更新
+    Oran_Update() ;
     // 当前模式的 Tick
     switch (curr_mode)
     {
@@ -74,8 +76,6 @@ void Timer_20ms_Callback(void)
         case Mode_2: Mode_2_Tick(); break;
         case Mode_3: Mode_3_Tick(); break;
         case Mode_4: Mode_4_Tick(); break;
-        case Mode_5: Mode_5_Tick(); break;
-        case Mode_6: Mode_6_Tick(); break;
         case Con_Mode_1: Con_Mode_1_Tick(); break;
         case Con_Mode_2: Con_Mode_2_Tick(); break;
         case Con_Mode_3: Con_Mode_3_Tick(); break;
@@ -85,7 +85,7 @@ void Timer_20ms_Callback(void)
         default: break;
     }
     // 电机速度内环最后驱动
-    // Motor_Speed_Update_Tick(20);    
+    Motor_Speed_Update_Tick(20);    
 }
 
 // ========================== 系统状态配置 ==========================

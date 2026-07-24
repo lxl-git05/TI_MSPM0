@@ -1,36 +1,8 @@
 #include "Mode_4.h"
 #include "AllHeader.h"
 
-// ==================== 任务表（按 Con_Task.h 枚举顺序） ====================
-static const Task_Descriptor_Typedef Mode4_TaskTable[TASK_COUNT] = {
-    [TASK_WAIT_TIME] = {
-        .Setup  = Task_Wait_Time_Setup,
-        .IsExit = Task_Wait_Time_IsExit,
-    },
-    [TASK_MOTOR_A_ANGLE] = {
-        .Setup  = Task_Motor_A_Angle_Setup,
-        .Tick   = Task_Motor_A_Angle_Tick,     // 20ms PID 更新
-        .IsExit = Task_Motor_A_Angle_IsExit,
-    },
-    [TASK_MOTOR_B_ANGLE] = {
-        .Setup  = Task_Motor_B_Angle_Setup,
-        .Tick   = Task_Motor_B_Angle_Tick,     // 20ms PID 更新
-        .IsExit = Task_Motor_B_Angle_IsExit,
-    },
-    [TASK_STEPPER1_ANGLE] = {
-        .Setup  = Task_Stepper1_Angle_Setup,
-        .IsExit = Task_Stepper1_Angle_IsExit,
-    },
-    [TASK_STEPPER2_ANGLE] = {
-        .Setup  = Task_Stepper2_Angle_Setup,
-        .IsExit = Task_Stepper2_Angle_IsExit,
-    },
-    [TASK_CAR_YAW] = {
-        .Setup  = Task_Car_Yaw_Setup,
-        .Tick   = Task_Car_Yaw_Tick,       // 20ms PID 更新
-        .IsExit = Task_Car_Yaw_IsExit,
-    },
-};
+// ★ 任务表已迁移到 Control.c 作为全局共享表，直接引用即可
+// 新任务只需在 Control.c 的 Control_TaskTable 中注册
 
 // ==================== 预设演示序列 ====================
 static void Mode4_Enqueue_Demo(void)
@@ -59,8 +31,8 @@ void Mode_4_Setup(void)
 {
     OLED_Clear();
 
-    // 注册任务表
-    Con_Task_Init(Mode4_TaskTable, TASK_COUNT);
+    // 注册全局共享任务表
+    Con_Task_Init(Control_TaskTable, TASK_COUNT);
     Serial_printf(&Serial1, "Mode4\r\n") ;
 
     // 预设演示序列
@@ -89,6 +61,7 @@ void Mode_4_Loop(void)
             case TASK_STEPPER1_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> Stepper1");   break;
             case TASK_STEPPER2_ANGLE: OLED_Printf(0, 30, OLED_6X8, ">>> Stepper2");   break;
             case TASK_CAR_YAW:        OLED_Printf(0, 30, OLED_6X8, ">>> Car Yaw");    break;
+            case TASK_ORAN_TRACK:     OLED_Printf(0, 30, OLED_6X8, ">>> Oran Track");  break;
             default: break;
         }
     }

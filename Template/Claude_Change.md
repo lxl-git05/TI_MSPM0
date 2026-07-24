@@ -268,3 +268,29 @@
 | Serial_porting.h | ./Function/Serial_porting.h | 修改 | 新增 #define Serial3_Enable 1 + extern Serial_Typedef Serial3 |
 | Serial_porting.c | ./Function/Serial_porting.c | 修改 | 新增Serial3实例+初始化+UART_2_INST_IRQHandler(UART2 PB15/PB16,115200) |
 | Mode_4.c | ./Mode/Mode_4.c | 修改 | Serial2→Serial3全替换；OLED标签S1/S3；修复%len的%sd%d格式符
+
+## 2026-07-24 13:42 | Mode_3/5/6 合并到 Mode_3，用 MODE3_SELECT 宏切换功能
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Mode_3.h | ./Mode/Mode_3.h | 修改 | 新增 #define MODE3_SELECT 功能选择宏(1=电机PID/2=陀螺仪角度环/3=步进电机) |
+| Mode_3.c | ./Mode/Mode_3.c | 修改 | ★合并Mode_3/5/6：三个子功能用 #if MODE3_SELECT 隔离(各自独立_Impl函数)，公共接口委托分发；#else 触发 #error 编译报错 |
+| Mode_G.h | ./Mode/Mode_G.h | 修改 | 枚举移除 Mode_5/Mode_6(已合并到Mode_3)；Mode_3注释更新为多功能模式 |
+| Mode_G.c | ./Mode/Mode_G.c | 修改 | Timer_20ms移除 Mode_5_Tick/Mode_6_Tick；默认next_mode改为Mode_3 |
+| empty.c | ./empty.c | 修改 | 三个switch(Loop/Exit/Setup)移除所有 Mode_5/Mode_6 case |
+| AllHeader.h | ./App/AllHeader.h | 修改 | 移除 #include "Mode_5.h" 和 "Mode_6.h" |
+
+> **使用方式**：修改 `Mode_3.h` 中 `MODE3_SELECT` 值为 1/2/3 切换功能，重新编译即可。旧 Mode_5.h/c、Mode_6.h/c 文件保留（不再参与编译），可手动删除。
+
+## 2026-07-24 13:42 | Mode_4任务表迁移到Control.c + Orange寻迹任务化
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Orange.c | ./Hardware/Orange.c | 修改 | ★Bug修复: PID_Update(&PID_Oran_Y, ...) 第二个参数从 PID_Oran_X.realPoint_Now 改为 PID_Oran_Y.realPoint_Now |
+| Con_Task.h | ./Function/Con_Task.h | 修改 | 枚举新增 TASK_ORAN_TRACK（香橙派寻迹追踪） |
+| Control.h | ./Function/Control.h | 修改 | 新增 extern Control_TaskTable[TASK_COUNT] 全局共享任务表声明；新增 Task_Oran_Track_Setup/Tick/IsExit 声明 |
+| Control.c | ./Function/Control.c | 修改 | ★新增全局共享任务表 Control_TaskTable（含全部7个任务注册）；新增 TASK_ORAN_TRACK 实现（Setup设置PID目标+Tick调用Oran_XY_PID_Update+IsExit容差200ms稳态/超时检测） |
+| Mode_4.c | ./Mode/Mode_4.c | 修改 | 删除本地 Mode4_TaskTable；改为引用全局 Control_TaskTable；OLED新增 TASK_ORAN_TRACK 标签 |
+| AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All() 新增 Oran_XY_Init()（在 Param_AT24C02_Init 之前调用，确保默认PID初始化后被EEPROM覆盖） |
+
+> **架构改进**：任务表从 Mode_4 本地提取为 Control.c 全局共享，后续所有 Con_Mode 统一调用 `Con_Task_Init(Control_TaskTable, TASK_COUNT)`。新增任务只需在 Con_Task.h 枚举 + Control.h 声明 + Control.c 表注册 + Control.c 实现。Orange寻迹任务支持：p[0]=goal_x, p[1]=goal_y, p[2]=容差(默认10), p[3]=超时ms(0=不限)，200ms稳态防抖退出。

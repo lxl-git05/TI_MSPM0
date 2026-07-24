@@ -1,41 +1,65 @@
 #include "Mode_2.h"
 #include "AllHeader.h"
 
-// ==================== ICM42688 Mahony AHRS 测试 ====================
-// 算法: 四元数 + PI 重力修正，无万向节死锁，yaw 相对准确
-// OLED:  Roll / Pitch / Yaw  实时显示
-// 串口:  roll,pitch,yaw CSV 输出 (Serial1)
-//
-// 测试流程:
-//   1. 上电后进入 Mode_2 → Init 自动标定零偏（保持设备静置！）
-//   2. 水平旋转 90° → Yaw 应显示 ~90°（不再减半）
-//   3. 倾斜 30° 绕世界Z轴旋转 → Yaw 准确跟踪，回正后归零
-//   4. 随意抖动后静置 → Roll/Pitch <0.5s 收敛到正确值
+// ==================== 寻迹测试 ====================
+
+bool Is_X = true ;
+float Goal_XY ;
 
 void Mode_2_Setup(void)
 {
-    OLED_Clear();
-    OLED_Printf(0, 20,  OLED_6X8, "IMU");
-    OLED_Update();
-    
-    IMU_Mahony_Init(1) ;
+    Oran_XY_Init() ;
 }
 
 void Mode_2_Loop(void)
 {
-    OLED_Printf(0, 0,  OLED_6X8, "R:%.1f", IMU_Mahony_Real.roll);
-    OLED_Printf(0, 12, OLED_6X8, "P:%.1f", IMU_Mahony_Real.pitch);
-    OLED_Printf(0, 24, OLED_6X8, "Y:%.1f", IMU_Mahony_Real.yaw);
-#ifdef I2C_DEBUG_RESET_COUNT
-    OLED_Printf(0, 1,  OLED_6X8, "I2C_Rst:%lu", IIC_Reset_Count);
-#endif
+    // 切换
+    if (Key_Check(KEY_1, KEY_LONG))
+    {
+        Is_X = !Is_X ;
+    }
+    // OLED展示
+    OLED_Printf(0, 0, OLED_8X16, "===Mode_2===") ;
+    if (Is_X)
+    {
+        if (Serial_GetNewPackageFlag_ABC(&Serial1))
+        {
+            // 得到数据
+            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Oran_X.Kp) ;
+            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Oran_X.Ki) ;
+            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Oran_X.Kd) ;
+            Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Goal_XY) ;
+            PID_Oran_X.goalPoint = Goal_XY ;
+        }
+    }
+    else 
+    {
+        if (Serial_GetNewPackageFlag_ABC(&Serial1))
+        {
+            // 得到数据
+            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Oran_Y.Kp) ;
+            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Oran_Y.Ki) ;
+            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Oran_Y.Kd) ;
+            Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Goal_XY) ;
+            PID_Oran_Y.goalPoint = Goal_XY ;
+        }
+    }
+    
 }
 
 void Mode_2_Tick(void)
 {
-    // 串口CSV输出（调试用，可注释掉）
-    Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%.2f\r\n",
-                  IMU_Mahony_Real.roll, IMU_Mahony_Real.pitch, IMU_Mahony_Real.yaw,IMU_Yaw_Abs_Get());
+    // PID 计算
+    Oran_XY_PID_Update() ;
+    // 打印
+    if (Is_X)
+    {
+        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n" , PID_Oran_X.goalPoint , PID_Oran_X.realPoint_Now , PID_Oran_X.setPoint) ;
+    }
+    else 
+    {
+        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n" , PID_Oran_Y.goalPoint , PID_Oran_Y.realPoint_Now , PID_Oran_Y.setPoint) ;
+    }
 }
 
 void Mode_2_Exit(void)

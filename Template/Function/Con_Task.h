@@ -18,6 +18,7 @@ typedef enum {
     TASK_STEPPER1_ANGLE,    // 步进电机1角度: p[0]=目标角度°, p[1]=max_speed(默认200), p[3]=acc(默认200)
     TASK_STEPPER2_ANGLE,    // 步进电机2角度: p[0]=目标角度°, p[1]=max_speed(默认200), p[3]=acc(默认200)
     TASK_CAR_YAW,           // 小车MPU相对旋转: p[0]=增量角度°(+CW/-CCW), p[1]=角度容差(0=5°), p[2]=角速度容差°/s(0=7°/s)
+    TASK_ORAN_TRACK,        // 香橙派寻迹追踪: p[0]=goal_x, p[1]=goal_y, p[2]=容差(默认10), p[3]=超时ms(0=不限)
     // 比赛逻辑
 
     // ★ 枚举总数，必须放最后

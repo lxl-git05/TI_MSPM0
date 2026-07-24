@@ -1,5 +1,43 @@
 #include "Control.h"
 
+// ==================== 全局共享任务表 ====================
+// ★ 所有 Con_Mode 统一引用此表: Con_Task_Init(Control_TaskTable, TASK_COUNT)
+// ★ 新任务只需在此表中注册即可被所有模式使用
+const Task_Descriptor_Typedef Control_TaskTable[TASK_COUNT] = {
+    [TASK_WAIT_TIME] = {
+        .Setup  = Task_Wait_Time_Setup,
+        .IsExit = Task_Wait_Time_IsExit,
+    },
+    [TASK_MOTOR_A_ANGLE] = {
+        .Setup  = Task_Motor_A_Angle_Setup,
+        .Tick   = Task_Motor_A_Angle_Tick,     // 20ms PID 更新
+        .IsExit = Task_Motor_A_Angle_IsExit,
+    },
+    [TASK_MOTOR_B_ANGLE] = {
+        .Setup  = Task_Motor_B_Angle_Setup,
+        .Tick   = Task_Motor_B_Angle_Tick,     // 20ms PID 更新
+        .IsExit = Task_Motor_B_Angle_IsExit,
+    },
+    [TASK_STEPPER1_ANGLE] = {
+        .Setup  = Task_Stepper1_Angle_Setup,
+        .IsExit = Task_Stepper1_Angle_IsExit,
+    },
+    [TASK_STEPPER2_ANGLE] = {
+        .Setup  = Task_Stepper2_Angle_Setup,
+        .IsExit = Task_Stepper2_Angle_IsExit,
+    },
+    [TASK_CAR_YAW] = {
+        .Setup  = Task_Car_Yaw_Setup,
+        .Tick   = Task_Car_Yaw_Tick,       // 20ms PID 更新
+        .IsExit = Task_Car_Yaw_IsExit,
+    },
+    [TASK_ORAN_TRACK] = {
+        .Setup  = Task_Oran_Track_Setup,
+        .Tick   = Task_Oran_Track_Tick,    // 20ms 寻迹PID更新
+        .IsExit = Task_Oran_Track_IsExit,
+    },
+};
+
 // 实现各大逻辑的动作存储
 // 1. 任务1: 等待(x)ms，然后Exit
 // TASK_WAIT_TIME: p[0]=等待时间(ms)
@@ -173,9 +211,59 @@ bool Task_Elec_IsExit(float p[4])
 	return false ;
 }
 
-// 8. 
+// 7. 任务7: 香橙派视觉寻迹追踪
+// TASK_ORAN_TRACK: p[0]=goal_x, p[1]=goal_y, p[2]=容差(默认10), p[3]=超时ms(0=不限)
+static uint32_t OranTrack_StartMs  = 0;
+static uint32_t OranTrack_ArriveMs = 0;
 
+void Task_Oran_Track_Setup(float p[4])
+{
+    // 设置寻迹目标
+    PID_Oran_X.goalPoint = p[0];
+    PID_Oran_Y.goalPoint = p[1];
 
+    // 记录开始时刻
+    OranTrack_StartMs  = Timer_Get_Ms();
+    OranTrack_ArriveMs = 0;
+}
 
+void Task_Oran_Track_Tick(float p[4])
+{
+    // 20ms: 读取视觉数据 → PID计算 → 电机差速驱动
+    Oran_XY_PID_Update();
+}
+
+bool Task_Oran_Track_IsExit(float p[4])
+{
+    float tol = (p[2] > 0.0f) ? p[2] : 10.0f;
+
+    // 超时检测
+    if (p[3] > 0.0f && Timer_Get_Ms() - OranTrack_StartMs > (uint32_t)p[3])
+    {
+        Motor_SetSpeed(&Motor_A, 0);
+        Motor_SetSpeed(&Motor_B, 0);
+        return true;
+    }
+
+    // 位置到达检测（需持续200ms稳定在容差内）
+    if (x_real > p[0] - tol && x_real < p[0] + tol &&
+        y_real > p[1] - tol && y_real < p[1] + tol)
+    {
+        if (OranTrack_ArriveMs == 0)
+            OranTrack_ArriveMs = Timer_Get_Ms();
+        if (Timer_Get_Ms() - OranTrack_ArriveMs > 200)
+        {
+            Motor_SetSpeed(&Motor_A, 0);
+            Motor_SetSpeed(&Motor_B, 0);
+            return true;
+        }
+    }
+    else
+    {
+        OranTrack_ArriveMs = 0;  // 离开容差区则重置计时
+    }
+
+    return false;
+}
 
 
