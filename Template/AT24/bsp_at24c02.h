@@ -11,7 +11,7 @@
 
 /* ==================== AT24C02 硬件配置 ==================== */
 /* I2C总线: 与MPU6050共用I2C_1 (PB2=SCL, PB3=SDA)，地址不冲突 */
-#define AT24C02_I2C_BUS       (I2C_1_INST)
+#define AT24C02_I2C_BUS       (I2C_1_INST)  // I2C_0_INST是新PCB的
 
 /* AT24C02 7-bit设备地址 = 0x50 (A2=A1=A0=GND) */
 #define AT24C02_ADDR_7BIT     0x50

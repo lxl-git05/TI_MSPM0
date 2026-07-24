@@ -5,7 +5,8 @@
 
 // ==================== 全局共享任务表 ====================
 // ★ 所有 Con_Mode 统一引用此表，Con_Task_Init(Control_TaskTable, TASK_COUNT)
-extern const Task_Descriptor_Typedef Control_TaskTable[TASK_COUNT];
+#include "Con_Task.h"
+extern Task_Descriptor_Typedef Control_TaskTable[TASK_COUNT];
 
 // 1. 任务1：等待xs，然后Exit（伴随蜂鸣器）
 // TASK_WAIT_TIME: p[0]=等待时间(ms)

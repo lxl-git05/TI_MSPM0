@@ -43,7 +43,7 @@ typedef struct
 // ==================== 传感器选择 ====================
 // 两个 IMU 均挂同一 I2C 总线，地址均为 0x68，物理上只能二选一
 // 注释掉 → ICM42688，取消注释 → MPU6050
-// #define IMU_USE_MPU6050
+#define IMU_USE_MPU6050
 
 // ==================== 默认参数 ====================
 #define IMU_TURN_YAW_DEFAULT_DEADBAND  3.0f   // 默认偏航到位死区 (°)
@@ -54,7 +54,7 @@ typedef struct
     #include "MPU6050_Mahony.h"
 
     #define IMU_Mahony_Init(doCalib)     MPU6050_Mahony_Init(doCalib)
-    #define IMU_Mahony_Update_Tick()     MPU6050_Mahony_Update_Tick()
+    #define IMU_Mahony_Update_Tick()     MPU6050_Mahony_Update_Tick()   // 1.35ms
     #define IMU_Mahony_Calibrate(n)      MPU6050_Mahony_Calibrate(n)
     #define IMU_Yaw_Abs_Get()            MPU_Yaw_Abs_Get()
     #define IMU_Yaw_Abs_Reset()          MPU_Yaw_Abs_Reset()

@@ -1,43 +1,65 @@
 #include "Mode_5.h"
 #include "AllHeader.h"
 
-// ========================== 陀螺仪角度环 ==========================
+// ==================== 寻迹测试 ====================
 
-extern uint32_t IIC_Reset_Count ;
-
-float Angle_Car ;
+bool Is_X = true ;
+float Goal_XY ;
 
 void Mode_5_Setup(void)
 {
-    OLED_Clear();
-    PID_Angle_Reset();
+    Oran_XY_Init() ;
 }
-
-int cnt ;
 
 void Mode_5_Loop(void)
 {
-    OLED_Printf(0, 0, OLED_8X16, "===Mode_5===") ;
-    if (Serial_GetNewPackageFlag_ABC(&Serial1))
+    // 切换
+    if (Key_Check(KEY_1, KEY_LONG))
     {
-        // 得到数据
-        Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Angle.Kp) ;
-        Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Angle.Ki) ;
-        Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Angle.Kd) ;
-        Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Angle_Car) ;
+        Is_X = !Is_X ;
     }
-    PID_Angle.goalPoint = Angle_Car ;
-
-    OLED_Printf(0, 20, OLED_6X8, "Angle_Car:%.2f",Angle_Car) ;
-    OLED_Printf(0, 50, OLED_6X8, "cnt:%d",cnt++) ;
-    OLED_Printf(0, 40, OLED_6X8, "IIC_Reset_Count:%d",IIC_Reset_Count) ;
-    OLED_Printf(0, 30, OLED_6X8, "Yaw:%.2f",IMU_Yaw_Abs_Get()) ;
+    // OLED展示
+    OLED_Printf(0, 0, OLED_8X16, "===Mode_5===") ;
+    if (Is_X)
+    {
+        if (Serial_GetNewPackageFlag_ABC(&Serial1))
+        {
+            // 得到数据
+            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Oran_X.Kp) ;
+            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Oran_X.Ki) ;
+            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Oran_X.Kd) ;
+            Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Goal_XY) ;
+            PID_Oran_X.goalPoint = Goal_XY ;
+        }
+    }
+    else 
+    {
+        if (Serial_GetNewPackageFlag_ABC(&Serial1))
+        {
+            // 得到数据
+            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Oran_Y.Kp) ;
+            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Oran_Y.Ki) ;
+            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Oran_Y.Kd) ;
+            Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Goal_XY) ;
+            PID_Oran_Y.goalPoint = Goal_XY ;
+        }
+    }
+    
 }
 
 void Mode_5_Tick(void)
 {
-    PID_Angle_Tick();
-    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",PID_Angle.goalPoint ,PID_Angle.realPoint_Now ,PID_Angle.setPoint );
+    // PID 计算
+    Oran_XY_PID_Update() ;
+    // 打印
+    if (Is_X)
+    {
+        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n" , PID_Oran_X.goalPoint , PID_Oran_X.realPoint_Now , PID_Oran_X.setPoint) ;
+    }
+    else 
+    {
+        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n" , PID_Oran_Y.goalPoint , PID_Oran_Y.realPoint_Now , PID_Oran_Y.setPoint) ;
+    }
 }
 
 void Mode_5_Exit(void)

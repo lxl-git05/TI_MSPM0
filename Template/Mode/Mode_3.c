@@ -6,6 +6,13 @@
 #include "Mode_3.h"
 #include "AllHeader.h"
 
+// ==================== Mode_3 功能选择 ====================
+// 修改 MODE3_SELECT 值切换当前功能:
+//   1 = 电机PID调参    (原Mode_3)
+//   2 = 陀螺仪角度环    (原Mode_5)
+//   3 = 步进电机驱动    (原Mode_6)
+#define MODE3_SELECT 2
+
 // ==================== 功能1: 电机PID调参 ====================
 #if MODE3_SELECT == 1
 
@@ -123,8 +130,7 @@ static void Mode_3_Exit_Impl(void)
 
 // ==================== 功能2: 陀螺仪角度环 ====================
 #elif MODE3_SELECT == 2
-
-extern uint32_t IIC_Reset_Count ;
+#include "MyI2C.h"
 
 float Angle_Car ;
 

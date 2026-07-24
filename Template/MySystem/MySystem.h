@@ -31,5 +31,6 @@
 #include "MyPWM.h"
 #include "MyEncoder.h"
 #include "MyTimer.h"
+#include "MyI2C.h"
 
 #endif // !__MYSYSTEM_H

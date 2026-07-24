@@ -3,7 +3,7 @@
 // ==================== 全局共享任务表 ====================
 // ★ 所有 Con_Mode 统一引用此表: Con_Task_Init(Control_TaskTable, TASK_COUNT)
 // ★ 新任务只需在此表中注册即可被所有模式使用
-const Task_Descriptor_Typedef Control_TaskTable[TASK_COUNT] = {
+Task_Descriptor_Typedef Control_TaskTable[TASK_COUNT] = {
     [TASK_WAIT_TIME] = {
         .Setup  = Task_Wait_Time_Setup,
         .IsExit = Task_Wait_Time_IsExit,

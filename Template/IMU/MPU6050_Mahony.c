@@ -15,9 +15,9 @@ static float yaw_abs  = 0.0f;       // 顺时针持续增大，无跳变
 static float yaw_prev = 0.0f;       // 上一帧 yaw，用于跳变检测
 
 // ==================== 【陀螺零偏 (deg/s) —— extern，供 AT24C02 读写 和手动编写】 ====================
-float MPU_Mahony_GyroBiasX = 0.0f;
-float MPU_Mahony_GyroBiasY = 0.0f;
-float MPU_Mahony_GyroBiasZ = 0.0f;
+float MPU_Mahony_GyroBiasX = -9.26840305f;
+float MPU_Mahony_GyroBiasY = 0.428176761f;
+float MPU_Mahony_GyroBiasZ = -1.27142811f;
 
 // ==================== 角度转换常量 ====================
 static const float DEG2RAD = 0.01745329252f;   // PI / 180

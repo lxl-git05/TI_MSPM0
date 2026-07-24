@@ -4,6 +4,8 @@
 Motor_Typedef Motor_A ;
 Motor_Typedef Motor_B ;
 
+#define Wheel_C (20.0f)	// 小车的轮子周长(cm)
+
 Motor_Param_Typedef Motor_Param = {13.0f , 28.0f , 300} ;	// MG513 * 2
 
 // 1. 电机初始化
@@ -221,7 +223,7 @@ static float PID_Angle_StartYaw = 0.0f;  // 任务启动时的yaw基准（相对
 // 初始化（PD: Kp=6, Kd=20, Out±100）
 void PID_Angle_Init(void)
 {
-	PID_Init(&PID_Angle, 6.0f, 0.0f, 20.0f, 100, -100, 1000);
+	PID_Init(&PID_Angle, 7.29f, 0.0f, 32.16f, 100, -100, 1000);
 }
 
 // 记录当前yaw为基准 + 清空PID历史（每次旋转任务Setup调用，不再清零MPU_Real.yaw）
@@ -252,8 +254,8 @@ void PID_Angle_Tick(void)
 	// 3. PID计算
 	PID_Update(&PID_Angle, PID_Angle.realPoint_Now);
 	// 4. 差速控制: A反转 B正转（顺时针为正）
-	Motor_SetSpeed(&Motor_A, -PID_Angle.setPoint);
-	Motor_SetSpeed(&Motor_B,  PID_Angle.setPoint);
+	Motor_SetSpeed(&Motor_A,  PID_Angle.setPoint);
+	Motor_SetSpeed(&Motor_B, -PID_Angle.setPoint);
 }
 
 
