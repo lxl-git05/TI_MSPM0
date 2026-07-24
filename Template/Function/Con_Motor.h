@@ -75,13 +75,14 @@ void PID_Angle_Tick(void) ;         // 20ms Tick: MPU更新→PID→差速输出
 
 //void PID_ALL_Pos_Reset(void) ;
 
-// =================== 整车直行位置环（双电机+IMU偏航修正） ===================
+// =================== 整车直行位置环（A轮距离 + IMU偏航PD闭环） ===================
 
-extern Pid_Typedef PID_Car_Straight ;	// 整车位置PID
+extern Pid_Typedef PID_Car_Straight ;	// 整车位置PID (参考A轮)
+extern Pid_Typedef PID_Straight_Yaw ;	// 直行偏航角度PD (参考startYaw=0°)
 
-void PID_Car_Straight_Init(void) ;		// 初始化（PD参数）
-void PID_Car_Straight_Reset(void) ;		// 清零编码器 + 记录起始yaw + 清PID历史
-void PID_Car_Straight_Tick(void) ;		// 20ms: 读平均距离→PID→差速+偏航修正输出
+void PID_Car_Straight_Init(void) ;		// 初始化（位置PD + 偏航PD参数）
+void PID_Car_Straight_Reset(void) ;		// 清零编码器 + 记录起始yaw + 清两个PID历史
+void PID_Car_Straight_Tick(void) ;		// 20ms: A轮距离→位置PID→梯形限速 + yaw PD→差速修正
 void PID_Car_Straight_SetSpeedParams(float max_speed); // 配置最高巡航速度(rpm)，0=默认200
 
 #endif

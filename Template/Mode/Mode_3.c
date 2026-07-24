@@ -11,7 +11,7 @@
 //   1 = 电机PID调参    (原Mode_3)
 //   2 = 陀螺仪角度环    (原Mode_5)
 //   3 = 步进电机驱动    (原Mode_6)
-#define MODE3_SELECT 1
+#define MODE3_SELECT 2
 
 // ==================== 功能1: 电机PID调参 ====================
 #if MODE3_SELECT == 1

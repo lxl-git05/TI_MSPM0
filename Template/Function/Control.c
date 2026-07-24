@@ -160,29 +160,46 @@ bool Task_Stepper2_Angle_IsExit(float p[4])
 
 // 6. 任务6: 小车顺时针/逆时针旋转一定角度然后Exit（相对运动，不归零yaw）
 // TASK_CAR_YAW: p[0]=相对旋转角度°(+顺时针/-逆时针), p[1]=角度容差°(0=默认5°), p[2]=角速度容差°/s(0=默认7°/s)
+static uint32_t Car_Yaw_SettleMs = 0;  // 稳定开始时刻(ms)，0=未进入稳定状态
+
 void Task_Car_Yaw_Setup(float p[4])
 {
 	// 记录当前yaw为基准 + 清空PID历史（不归零MPU_Real.yaw）
 	PID_Angle_Reset();
 	// 设置相对增量目标（goalPoint = startYaw + delta）
 	PID_Angle_Tar_Yaw(p[0]);
+	// 重置稳定计时
+	Car_Yaw_SettleMs = 0;
 }
 
 void Task_Car_Yaw_Tick(float p[4])
 {
 	// MPU更新→PID计算→差速输出
 	PID_Angle_Tick();
+	// Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",PID_Angle.goalPoint , PID_Angle.realPoint_Now , PID_Angle.setPoint) ;
 }
 
 bool Task_Car_Yaw_IsExit(float p[4])
 {
 	float angle_tol = (p[1] > 0.0f) ? p[1] : 5.0f;
-	// 注意：检查绝对目标值 PID_Angle.goalPoint（= startYaw + delta），而非增量 p[0]
-	if (IMU_Turn_Yaw_Is_Ok_Ex(PID_Angle.goalPoint, angle_tol))
+	float gyro_tol  = (p[2] > 0.0f) ? p[2] : 7.0f;
+
+	// 双重检查：角度在容差内 + 角速度低于阈值（防止机械回弹导致误判）
+	if (IMU_Turn_Yaw_Is_Ok_Ex(PID_Angle.goalPoint, angle_tol)
+	    && IMU_Yaw_Gyro_Get() <= gyro_tol)
 	{
-		Motor_SetSpeed(&Motor_A, 0);
-		Motor_SetSpeed(&Motor_B, 0);
-		return true;
+		if (Car_Yaw_SettleMs == 0)
+			Car_Yaw_SettleMs = Timer_Get_Ms();
+		else if (Timer_Get_Ms() - Car_Yaw_SettleMs >= 100)  // 稳定100ms后退出
+		{
+			Motor_SetSpeed(&Motor_A, 0);
+			Motor_SetSpeed(&Motor_B, 0);
+			return true;
+		}
+	}
+	else
+	{
+		Car_Yaw_SettleMs = 0;  // 任一条件不满足就重置计时
 	}
 	return false;
 }

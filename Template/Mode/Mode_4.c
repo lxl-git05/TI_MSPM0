@@ -75,19 +75,19 @@ void Mode_4_Loop(void)
     // Key1 单击: 重新入队演示序列
     if (Key_Check(KEY_1, KEY_SINGLE))
     {
-        Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 2, 2, 0);            // 顺时针旋转90度
     }
     if (Key_Check(KEY_2, KEY_SINGLE))
     {
         // 小车向前走1m(100cm)
         Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
-        Con_Task_Enqueue(TASK_CAR_YAW, 90, 0, 0, 0);            // 顺时针旋转90度
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 2, 2, 0);            // 顺时针旋转90度
         Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
-        Con_Task_Enqueue(TASK_CAR_YAW, 90, 0, 0, 0);            // 顺时针旋转90度
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 2, 2, 0);            // 顺时针旋转90度
         Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
-        Con_Task_Enqueue(TASK_CAR_YAW, 90, 0, 0, 0);            // 顺时针旋转90度
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 2, 2, 0);            // 顺时针旋转90度
         Con_Task_Enqueue(TASK_CAR_STRAIGHT, 50, 10, 0, 0);
-        Con_Task_Enqueue(TASK_CAR_YAW, 90, 0, 0, 0);            // 顺时针旋转90度
+        Con_Task_Enqueue(TASK_CAR_YAW, 90, 2, 2, 0);            // 顺时针旋转90度
     }
 
     OLED_Printf(0, 30, OLED_6X8, "S1:%s",Serial1.ABC_Data.Serial_New_Package_ABC) ;
@@ -100,7 +100,7 @@ void Mode_4_Loop(void)
 
 void Mode_4_Tick(void)
 {
-    
+	Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%.2f\n",PID_Angle.goalPoint , PID_Angle.realPoint_Now , PID_Angle.setPoint,MPU_Yaw_Abs_Get()) ;
 }
 
 void Mode_4_Exit(void)

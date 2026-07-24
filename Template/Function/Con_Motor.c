@@ -237,7 +237,7 @@ static float PID_Angle_StartYaw = 0.0f;  // 任务启动时的yaw基准（相对
 // 初始化（PD: Kp=6, Kd=20, Out±100）
 void PID_Angle_Init(void)
 {
-	PID_Init(&PID_Angle, 7.29f, 0.0f, 32.16f, 100, -100, 1000);
+	PID_Init(&PID_Angle, 2.47f, 0.0f, 7.16f, 100, -100, 1000);
 }
 
 // 记录当前yaw为基准 + 清空PID历史（每次旋转任务Setup调用，不再清零MPU_Real.yaw）
@@ -272,28 +272,33 @@ void PID_Angle_Tick(void)
 	Motor_SetSpeed(&Motor_B, -PID_Angle.setPoint);
 }
 
-// =================== 整车直行位置环（双电机+IMU偏航修正） ===================
+// =================== 整车直行位置环（A轮距离 + IMU偏航PD闭环） ===================
 
 Pid_Typedef PID_Car_Straight ;
 static float Straight_StartYaw = 0.0f;	// 起始yaw基准
-#define STRAIGHT_YAW_KP  5.0f			// 偏航修正P系数
 #define STRAIGHT_MIN_SPEED   20.0f		// 最低速度(rpm)，克服静摩擦
 #define STRAIGHT_ACCEL_DIST  15.0f		// 加速距离(cm)
 #define STRAIGHT_DECEL_DIST  25.0f		// 减速距离(cm)
 static float Straight_MaxSpeed = 200.0f;	// 最高巡航速度(rpm)
 
-// 初始化整车直行控制器（PD: Kp=25, Kd=3, Out±200）
+// 直行偏航角度PD（闭环修正小角度偏差，Kp=5.0 Kd=12.0 Out±80）
+Pid_Typedef PID_Straight_Yaw;
+
+// 初始化整车直行控制器（位置PD + 偏航PD）
 void PID_Car_Straight_Init(void)
 {
 	PID_Init(&PID_Car_Straight, 20.0f, 0.0f, 3.0f, 100, -100, 350);
+	PID_Init(&PID_Straight_Yaw,   5.0f, 0.0f, 12.0f, 80, -80, 350);
 }
 
-// 清零编码器 + 记录起始yaw + 清PID历史（每次直行任务Setup调用）
+// 清零编码器 + 记录起始yaw + 清两个PID历史（每次直行任务Setup调用）
 void PID_Car_Straight_Reset(void)
 {
 	Motor_Pos_Clear();						// 清零两电机编码器 total_cnt
 	Straight_StartYaw = IMU_Yaw_Abs_Get();	// 记录起始yaw
-	PID_Param_Reset(&PID_Car_Straight);		// 清PID历史
+	PID_Param_Reset(&PID_Car_Straight);		// 清位置PID历史
+	PID_Param_Reset(&PID_Straight_Yaw);		// 清偏航PID历史
+	PID_Straight_Yaw.goalPoint = 0.0f;		// 目标: 偏航偏差=0°
 }
 
 // 配置最高巡航速度(rpm)，0=使用默认200
@@ -303,17 +308,16 @@ void PID_Car_Straight_SetSpeedParams(float max_speed)
 		Straight_MaxSpeed = max_speed;
 }
 
-// 20ms Tick: 读双电机距离→位置PID→偏航修正→差速输出
+// 20ms Tick: A轮距离→位置PID→梯形限速 + yaw PD闭环→差速修正
 void PID_Car_Straight_Tick(void)
 {
 	// 1. 更新双电机位置(cm)
 	Motor_Pos_Update(&Motor_A) ;
 	Motor_Pos_Update(&Motor_B) ;
 
-	// 2. 取双电机平均距离作为前进距离
+	// 2. 以A轮距离为前进距离参考
 	float dist_A = Motor_Get_Pos(&Motor_A) * ( 1);
-	float dist_B = Motor_Get_Pos(&Motor_B) * (-1);
-	PID_Car_Straight.realPoint_Now = (dist_A + dist_A) / 2.0f ;
+	PID_Car_Straight.realPoint_Now = dist_A ;
 
 	// 3. 位置PID → 基础速度(rpm)
 	PID_Update(&PID_Car_Straight, PID_Car_Straight.realPoint_Now) ;
@@ -341,9 +345,10 @@ void PID_Car_Straight_Tick(void)
 	if (base_speed >  speed_limit) base_speed =  speed_limit;
 	if (base_speed < -speed_limit) base_speed = -speed_limit;
 
-	// 4. IMU偏航修正(顺时针偏航→左轮减速/右轮加速拉回)
+	// 4. IMU偏航PD闭环（目标=0°, PID_Update: Error=goal-actual, 需取反匹配差速方向）
 	float yaw_error = IMU_Yaw_Abs_Get() - Straight_StartYaw ;
-	float yaw_correction = yaw_error * STRAIGHT_YAW_KP ;
+	PID_Update(&PID_Straight_Yaw, -yaw_error) ;      // 取反：使setPoint符号 = yaw_error符号
+	float yaw_correction = PID_Straight_Yaw.setPoint ;
 
 	// 5. 差速输出（A/B同向基础速度 + 反向偏航修正）
 	Motor_SetSpeed(&Motor_A, base_speed - yaw_correction) ;
