@@ -2,7 +2,7 @@
 #include "AllHeader.h"
 
 Mode_Typedef curr_mode = Mode_Null   ;       // 当前模式
-Mode_Typedef next_mode = Mode_2      ;        // 下一个模式
+Mode_Typedef next_mode = Mode_5      ;        // 下一个模式
 
 // ========================== 系统setup loop ==========================
 
@@ -66,7 +66,7 @@ void Timer_1ms_Callback(void)
 void Timer_20ms_Callback(void)
 {
     // 陀螺仪更新
-    
+    IMU_Mahony_Update_Tick();
     // 当前模式的 Tick
     switch (curr_mode)
     {

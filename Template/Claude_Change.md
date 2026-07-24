@@ -215,3 +215,39 @@
 |--------|----------------------|----------|------|
 | ICM42688_Mahony.h | ./Hardware/ICM42688_Mahony.h | 修改 | 新增 ICM42688_Turn_Yaw_Is_Ok_Ex / ICM42688_Turn_Yaw_Is_Ok 声明（双阈值 角度+角速度 检查） |
 | ICM42688_Mahony.c | ./Hardware/ICM42688_Mahony.c | 修改 | 新增两函数实现：fabsf(targetYaw - ICM_Mahony_Real.yaw) + fabsf(ICM_Raw_Data.GZ - GyroBiasZ) 双条件判断 |
+
+## 2026-07-23 20:00 | I2C 超时保护 + ICM42688 重试机制
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| MyI2C.h | ./MySystem/MyI2C.h | 修改 | 新增 IIC_WriteBytes_Ex/IIC_ReadBytes_Ex (bool返回)+ IIC_Reset 声明 |
+| MyI2C.c | ./MySystem/MyI2C.c | 修改 | 重写硬件I2C封装：_Ex超时版(I2C_TIMEOUT=10ms计数器, 每个while循环带tick递减, 数据流自动续时)+IIC_Reset(DL_I2C_resetControllerTransfer+SYSCFG_DL_init全恢复)+旧接口兼容(失败自动调用Reset) |
+| ICM_42688_base.c | ./Hardware/ICM_42688_base.c | 修改 | ICM42688_Update_Data改用_Ex版本+3次重试+每次失败IIC_Reset恢复总线 |
+
+## 2026-07-23 20:15 | I2C 复位次数监控（宏开关）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| MyI2C.h | ./MySystem/MyI2C.h | 修改 | 新增 I2C_DEBUG_RESET_COUNT 宏开关（注释即关）+ extern volatile uint32_t IIC_Reset_Count |
+| MyI2C.c | ./MySystem/MyI2C.c | 修改 | IIC_Reset 内 IIC_Reset_Count++ (ifdef 守卫)；新增全局变量定义 |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | Loop 中 OLED 第2行显示 I2C_Rst 计数 (ifdef 守卫，开宏自动显示) |
+
+## 2026-07-24 10:00 | IMU 统一 API 层：陀螺仪底层解耦（IMU.h/c 新建 + 全项目引用替换）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| IMU.h | ./IMU/IMU.h | 新增 | 统一 API 层头文件：内置3种类型定义(ImuOffset/ImuCali/ImuReal)+宏传感器切换(ICM/MPU)+宏映射(IMU_*→ICM*/MPU*)+Turn_Yaw声明 |
+| IMU.c | ./IMU/IMU.c | 新增 | 统一 API 层实现：IMU_Turn_Yaw_Is_Ok_Ex/Is_Ok（基于 IMU_Yaw_Abs_Get 绝对累计yaw，纯角度死区判断） |
+| Imu_Types.h | ./IMU/Imu_Types.h | 删除 | 类型定义已合并至 IMU.h，不再需要独立 Types 文件 |
+| ICM42688_Mahony.h | ./IMU/ICM42688_Mahony.h | 修改 | #include Imu_Types.h → IMU.h；移除 ICM42688_Turn_Yaw_Is_Ok_Ex/Is_Ok 声明（移至 IMU.h） |
+| ICM42688_Mahony.c | ./IMU/ICM42688_Mahony.c | 修改 | 移除 ICM42688_Turn_Yaw_Is_Ok_Ex/Is_Ok 实现（移至 IMU.c） |
+| AllHeader.h | ./App/AllHeader.h | 修改 | 3行ICM/#include → 1行 #include "IMU.h" |
+| AllHeader.c | ./App/AllHeader.c | 修改 | ICM42688_Mahony_Init(0) → IMU_Mahony_Init(0) |
+| Mode_G.c | ./Mode/Mode_G.c | 修改 | ICM42688_Mahony_Update_Tick() → IMU_Mahony_Update_Tick() |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | ICM_Mahony_Real.* → IMU_Mahony_Real.*; ICM_Yaw_Abs_Get() → IMU_Yaw_Abs_Get() |
+| Mode_5.c | ./Mode/Mode_5.c | 修改 | ICM_Yaw_Abs_Get() → IMU_Yaw_Abs_Get() |
+| Control.c | ./Function/Control.c | 修改 | ICM42688_Turn_Yaw_Is_Ok_Ex(3参) → IMU_Turn_Yaw_Is_Ok_Ex(2参，移除gyro_tol)；删除未使用的gyro_tol变量 |
+| Con_Motor.c | ./Function/Con_Motor.c | 修改 | #include ICM42688_Mahony.h → IMU.h; ICM_Yaw_Abs_Get() → IMU_Yaw_Abs_Get() |
+| Con_Motor.h | ./Function/Con_Motor.h | 修改 | 注释"MPU6050角度环" → "IMU角度环" |
+
+> **核心成果**：业务代码全部改用 `IMU_*` 统一 API，不再直接依赖 ICM42688 符号。切换传感器只需修改 `IMU.h` 中一行宏（`#define IMU_USE_MPU6050`），上层零改动。

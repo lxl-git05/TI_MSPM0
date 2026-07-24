@@ -4,15 +4,16 @@
 
 ## 项目概述
 
-TI MSPM0G3507 (Cortex-M0+) 智能小车竞赛项目。支持巡线、路口识别、MPU6050 姿态控制、双车蓝牙通信。
+TI MSPM0G3507 (Cortex-M0+) 智能小车竞赛项目。支持巡线、路口识别、IMU 姿态控制（ICM42688/Mahony + 统一API解耦）、双车蓝牙通信。
 
 ## 分层架构
 
 | 层 | 目录 | 职责 |
 |---|------|------|
 | HAL | `MySystem/` | 硬件抽象层（GPIO/PWM/Encoder/Timer） |
-| Hardware | `Hardware/` | 设备驱动（OLED/Key/RGB/MPU6050/Buzzer/Encoder_Key）+ 协议（Serial_base） |
-| Function | `Function/` | 控制算法（MPU6050_Angle/Con_Task/Con_Motor/Control）+ 串口移植层（Serial_porting） |
+| Hardware | `Hardware/` | 设备驱动（OLED/Key/RGB/Buzzer/Encoder_Key/Stepper_PWM）+ 协议（Serial_base） |
+| IMU | `IMU/` | 陀螺仪驱动+滤波+统一API层（ICM_42688_base/Mahony + IMU.h/c 解耦宏切换） |
+| Function | `Function/` | 控制算法（Con_Task/Con_Motor/Control）+ 串口移植层（Serial_porting） |
 | Software | `Software/` | 通用中间件（MyPID/Queue） |
 | Mode | `Mode/` | 应用模式（Manager/Mode_1/Mode_2/Mode_3） |
 | App | `App/` | 状态机/菜单/统一初始化 |
@@ -83,6 +84,9 @@ ti_msp_dl_config.h (SysConfig 生成, 60+ 厂商头文件)
 | Serial | `Function/Serial_porting.h/c` | ✅ 显式状态机（Idle/HEX/ABC），HEX校验和+超时+帧尾验证，阻塞发送 |
 | Serial_base | `Hardware/Serial_base.h/c` | ✅ 协议层不改动（纯逻辑） |
 | Encoder_Key | `Hardware/Encoder_Key.h/c` | ✅ EC11 旋转编码器，GPIOA 下降沿中断+方向判断，NVIC 参照 MyEncoder 模式 |
+| ICM42688 Driver | `IMU/ICM_42688_base.h/c` | ✅ MSPM0 DriverLib I2C 适配，±4g/±500°/s，重试+总线恢复 |
+| ICM42688 Mahony | `IMU/ICM42688_Mahony.h/c` | ✅ 四元数+PI重力修正(Mahony)，绝对yaw解绕，零偏标定 |
+| **IMU 统一API** | `IMU/IMU.h/c` | ✅ ★ 传感器解耦宏切换(ICM/MPU)，Types内置，Turn_Yaw到位检测 |
 | GPIO 引脚 | `MySystem/MyGPIO.h` + `MySystem/MySystem.c` | ✅ 全部 25 个引脚声明完成，对照 syscfg+README |
 
 ### Serial 状态机架构（借鉴待移植库 Status 0/1/2 模式）
@@ -149,6 +153,19 @@ int16_t delta = Encoder_Get();   // 读后自动清零
 
 // EC11 按键（通过 Key 模块）
 if (Key_Check(KEY_3, KEY_SINGLE)) { /* EC11按键单击 */ }
+
+// ===== IMU 统一 API（底层解耦，不关心传感器型号） =====
+IMU_Mahony_Init(1);                     // 初始化+自动零偏标定（需静止！）
+IMU_Mahony_Update_Tick();               // 20ms Tick: 读传感器→Mahony解算
+IMU_Mahony_Real.roll                    // 横滚角 (±180°)
+IMU_Mahony_Real.pitch                   // 俯仰角 (±90°)
+IMU_Mahony_Real.yaw                     // 偏航角 (±180°)
+float abs_yaw = IMU_Yaw_Abs_Get();      // 绝对累计yaw（顺时针增大，无跳变）
+IMU_Yaw_Abs_Reset();                    // 归零累计yaw
+IMU_Turn_Yaw_Is_Ok(90.0f)              // 转到 90°±3° 了？(默认死区)
+IMU_Turn_Yaw_Is_Ok_Ex(180.0f, 5.0f)    // 转到 180°±5° 了？(自定义死区)
+
+// 切换传感器：IMU.h 中取消/注释 #define IMU_USE_MPU6050（一行改全局生效）
 ```
 
 ### 文件修改规范
@@ -168,7 +185,11 @@ if (Key_Check(KEY_3, KEY_SINGLE)) { /* EC11按键单击 */ }
 - `App/AllHeader.h` — 项目统一头文件，include 所有模块
 - `App/AllHeader.c` — `Initial_All()` 全局初始化
 - `Mode/Mode_G.c` — 模式管理器 + GROUP1_IRQHandler 总入口（GPIOA+GPIOB）
-- `Mode/Mode_2.c` — 综合测试模式（Encoder+Serial1/2）
+- `IMU/IMU.h` — ★ 统一API层：类型定义+宏切换传感器(ICM/MPU)+宏映射+Turn_Yaw声明
+- `IMU/IMU.c` — Turn_Yaw到位检测实函数（基于IMU_Yaw_Abs_Get）
+- `IMU/ICM_42688_base.h/c` — ICM42688 I2C驱动（MSPM0适配）
+- `IMU/ICM42688_Mahony.h/c` — Mahony AHRS 四元数滤波（纯数学，零移植成本）
+- `Mode/Mode_2.c` — 综合测试模式（Encoder+Serial1/2）+ IMU OLED显示
 - `Function/Serial_porting.c` — 串口状态机 ISR + HEX/ABC 协议解析
 - `Hardware/Encoder_Key.c` — EC11 旋转编码器驱动（GPIOA 中断）
 - `README.md` — 引脚配置、UART/编码器/电机引脚表

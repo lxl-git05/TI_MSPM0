@@ -3,6 +3,8 @@
 
 // ========================== 陀螺仪角度环 ==========================
 
+extern uint32_t IIC_Reset_Count ;
+
 float Angle_Car ;
 
 void Mode_5_Setup(void)
@@ -10,6 +12,8 @@ void Mode_5_Setup(void)
     OLED_Clear();
     PID_Angle_Reset();
 }
+
+int cnt ;
 
 void Mode_5_Loop(void)
 {
@@ -25,7 +29,9 @@ void Mode_5_Loop(void)
     PID_Angle.goalPoint = Angle_Car ;
 
     OLED_Printf(0, 20, OLED_6X8, "Angle_Car:%.2f",Angle_Car) ;
-    OLED_Printf(0, 30, OLED_6X8, "Yaw:%.2f",ICM_Yaw_Abs_Get()) ;
+    OLED_Printf(0, 50, OLED_6X8, "cnt:%d",cnt++) ;
+    OLED_Printf(0, 40, OLED_6X8, "IIC_Reset_Count:%d",IIC_Reset_Count) ;
+    OLED_Printf(0, 30, OLED_6X8, "Yaw:%.2f",IMU_Yaw_Abs_Get()) ;
 }
 
 void Mode_5_Tick(void)

@@ -1,8 +1,8 @@
-#include "ICM42688_Mahony.h"
+#include "MPU6050_Mahony.h"
 #include "math.h"
 
 // ==================== 全局输出 ====================
-ImuReal_Typedef ICM_Mahony_Real;
+ImuReal_Typedef MPU_Mahony_Real;
 
 // ==================== 四元数 (w + xi + yj + zk Hamilton 约定) ====================
 static float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;
@@ -15,9 +15,9 @@ static float yaw_abs  = 0.0f;       // 顺时针持续增大，无跳变
 static float yaw_prev = 0.0f;       // 上一帧 yaw，用于跳变检测
 
 // ==================== 【陀螺零偏 (deg/s) —— extern，供 AT24C02 读写 和手动编写】 ====================
-float ICM_Mahony_GyroBiasX = -0.113496579f;
-float ICM_Mahony_GyroBiasY = 0.261480719f;
-float ICM_Mahony_GyroBiasZ = 0.137603074f;
+float MPU_Mahony_GyroBiasX = 0.0f;
+float MPU_Mahony_GyroBiasY = 0.0f;
+float MPU_Mahony_GyroBiasZ = 0.0f;
 
 // ==================== 角度转换常量 ====================
 static const float DEG2RAD = 0.01745329252f;   // PI / 180
@@ -25,29 +25,29 @@ static const float RAD2DEG = 57.2957795131f;   // 180 / PI
 
 // ==================== 初始化 ====================
 // doCalib=1: 自动标定零偏（原地静止采样）
-// doCalib=0: 跳过标定，使用 ICM_Mahony_GyroBiasX/Y/Z 当前值
-void ICM42688_Mahony_Init(uint8_t doCalib)
+// doCalib=0: 跳过标定，使用 MPU_Mahony_GyroBiasX/Y/Z 当前值
+void MPU6050_Mahony_Init(uint8_t doCalib)
 {
-    ICM42688_Init();
+    MPU6050_Init();
 
     // --- 条件标定陀螺零偏 ---
     if (doCalib)
     {
         float sum_gx = 0.0f, sum_gy = 0.0f, sum_gz = 0.0f;
 
-        for (int i = 0; i < MAHONY_CALIB_SAMPLES; i++)
+        for (int i = 0; i < MPU_MAHONY_CALIB_SAMPLES; i++)
         {
-            ICM42688_Update_Data();
-            sum_gx += ICM_Raw_Data.GX;
-            sum_gy += ICM_Raw_Data.GY;
-            sum_gz += ICM_Raw_Data.GZ;
+            MPU6050_Update_Data();
+            sum_gx += MPU_Raw_Data.GX;
+            sum_gy += MPU_Raw_Data.GY;
+            sum_gz += MPU_Raw_Data.GZ;
         }
 
-        ICM_Mahony_GyroBiasX = sum_gx / MAHONY_CALIB_SAMPLES;
-        ICM_Mahony_GyroBiasY = sum_gy / MAHONY_CALIB_SAMPLES;
-        ICM_Mahony_GyroBiasZ = sum_gz / MAHONY_CALIB_SAMPLES;
+        MPU_Mahony_GyroBiasX = sum_gx / MPU_MAHONY_CALIB_SAMPLES;
+        MPU_Mahony_GyroBiasY = sum_gy / MPU_MAHONY_CALIB_SAMPLES;
+        MPU_Mahony_GyroBiasZ = sum_gz / MPU_MAHONY_CALIB_SAMPLES;
     }
-    // doCalib=0 时直接使用 ICM_Mahony_GyroBiasX/Y/Z 现有值
+    // doCalib=0 时直接使用 MPU_Mahony_GyroBiasX/Y/Z 现有值
     //   → 来自 #define 默认值 或 AT24C02 恢复值（用户自行在 Init 前写入）
 
     // --- 四元数复位 ---
@@ -61,60 +61,60 @@ void ICM42688_Mahony_Init(uint8_t doCalib)
     yaw_prev = 0.0f;
 
     // --- 输出清零 ---
-    ICM_Mahony_Real.roll  = 0.0f;
-    ICM_Mahony_Real.pitch = 0.0f;
-    ICM_Mahony_Real.yaw   = 0.0f;
-    ICM_Mahony_Real.AccX  = 0.0f;
-    ICM_Mahony_Real.AccY  = 0.0f;
-    ICM_Mahony_Real.AccZ  = 1.0f;
+    MPU_Mahony_Real.roll  = 0.0f;
+    MPU_Mahony_Real.pitch = 0.0f;
+    MPU_Mahony_Real.yaw   = 0.0f;
+    MPU_Mahony_Real.AccX  = 0.0f;
+    MPU_Mahony_Real.AccY  = 0.0f;
+    MPU_Mahony_Real.AccZ  = 1.0f;
 }
 
 // ==================== 手动重新标定零偏 ====================
-void ICM42688_Mahony_Calibrate(int samples)
+void MPU6050_Mahony_Calibrate(int samples)
 {
     if (samples < 100 || samples > 2000)
-        samples = MAHONY_CALIB_SAMPLES;
+        samples = MPU_MAHONY_CALIB_SAMPLES;
 
     float sum_gx = 0.0f, sum_gy = 0.0f, sum_gz = 0.0f;
 
     for (int i = 0; i < samples; i++)
     {
-        ICM42688_Update_Data();
-        sum_gx += ICM_Raw_Data.GX;
-        sum_gy += ICM_Raw_Data.GY;
-        sum_gz += ICM_Raw_Data.GZ;
+        MPU6050_Update_Data();
+        sum_gx += MPU_Raw_Data.GX;
+        sum_gy += MPU_Raw_Data.GY;
+        sum_gz += MPU_Raw_Data.GZ;
     }
 
-    ICM_Mahony_GyroBiasX = sum_gx / samples;
-    ICM_Mahony_GyroBiasY = sum_gy / samples;
-    ICM_Mahony_GyroBiasZ = sum_gz / samples;
+    MPU_Mahony_GyroBiasX = sum_gx / samples;
+    MPU_Mahony_GyroBiasY = sum_gy / samples;
+    MPU_Mahony_GyroBiasZ = sum_gz / samples;
 
     // 标定后重置角度
     q0 = 1.0f;  q1 = 0.0f;  q2 = 0.0f;  q3 = 0.0f;
     exInt = 0.0f;  eyInt = 0.0f;  ezInt = 0.0f;
     yaw_abs  = 0.0f;
     yaw_prev = 0.0f;
-    ICM_Mahony_Real.roll  = 0.0f;
-    ICM_Mahony_Real.pitch = 0.0f;
-    ICM_Mahony_Real.yaw   = 0.0f;
+    MPU_Mahony_Real.roll  = 0.0f;
+    MPU_Mahony_Real.pitch = 0.0f;
+    MPU_Mahony_Real.yaw   = 0.0f;
 }
 
 // ==================== Mahony AHRS 单步更新 ====================
 // dt: 采样间隔，单位秒 (20ms → 0.020f)
-static void ICM42688_Mahony_Update(float dt)
+static void MPU6050_Mahony_Update(float dt)
 {
     float recipNorm;
     float halfT = dt * 0.5f;
 
     // ---- 1. 陀螺仪去零偏 + 转为 rad/s ----
-    float gx = (ICM_Raw_Data.GX - ICM_Mahony_GyroBiasX) * DEG2RAD;
-    float gy = (ICM_Raw_Data.GY - ICM_Mahony_GyroBiasY) * DEG2RAD;
-    float gz = (ICM_Raw_Data.GZ - ICM_Mahony_GyroBiasZ) * DEG2RAD;
+    float gx = (MPU_Raw_Data.GX - MPU_Mahony_GyroBiasX) * DEG2RAD;
+    float gy = (MPU_Raw_Data.GY - MPU_Mahony_GyroBiasY) * DEG2RAD;
+    float gz = (MPU_Raw_Data.GZ - MPU_Mahony_GyroBiasZ) * DEG2RAD;
 
     // ---- 2. 加速度归一化 ----
-    float ax = ICM_Raw_Data.AX;
-    float ay = ICM_Raw_Data.AY;
-    float az = ICM_Raw_Data.AZ;
+    float ax = MPU_Raw_Data.AX;
+    float ay = MPU_Raw_Data.AY;
+    float az = MPU_Raw_Data.AZ;
     recipNorm = ax * ax + ay * ay + az * az;
     if (recipNorm < 1e-12f) return;
     recipNorm = 1.0f / sqrtf(recipNorm);
@@ -132,20 +132,20 @@ static void ICM42688_Mahony_Update(float dt)
     float ez = ax * vy - ay * vx;
 
     // ---- 5. PI 修正 ----
-    if (MAHONY_KI > 0.0f)
+    if (MPU_MAHONY_KI > 0.0f)
     {
-        exInt += ex * MAHONY_KI * halfT;
-        eyInt += ey * MAHONY_KI * halfT;
-        ezInt += ez * MAHONY_KI * halfT;
+        exInt += ex * MPU_MAHONY_KI * halfT;
+        eyInt += ey * MPU_MAHONY_KI * halfT;
+        ezInt += ez * MPU_MAHONY_KI * halfT;
     }
     else
     {
         exInt = 0.0f;  eyInt = 0.0f;  ezInt = 0.0f;
     }
 
-    gx += MAHONY_KP * ex + exInt;
-    gy += MAHONY_KP * ey + eyInt;
-    gz += MAHONY_KP * ez + ezInt;
+    gx += MPU_MAHONY_KP * ex + exInt;
+    gy += MPU_MAHONY_KP * ey + eyInt;
+    gz += MPU_MAHONY_KP * ez + ezInt;
 
     // ---- 6. 四元数积分（一阶 Runge-Kutta） ----
     q0 += (-q1 * gx - q2 * gy - q3 * gz) * halfT;
@@ -162,65 +162,46 @@ static void ICM42688_Mahony_Update(float dt)
 
     // ---- 8. 欧拉角提取 (degrees) ----
     // Roll:  ±180° via atan2
-    ICM_Mahony_Real.roll  = atan2f(2.0f * (q0 * q1 + q2 * q3),
+    MPU_Mahony_Real.roll  = atan2f(2.0f * (q0 * q1 + q2 * q3),
                                     1.0f - 2.0f * (q1 * q1 + q2 * q2)) * RAD2DEG;
     // Pitch: ±90° via asinf
-    ICM_Mahony_Real.pitch = asinf(2.0f * (q0 * q2 - q3 * q1)) * RAD2DEG;
+    MPU_Mahony_Real.pitch = asinf(2.0f * (q0 * q2 - q3 * q1)) * RAD2DEG;
     // Yaw:   ±180° via atan2
-    ICM_Mahony_Real.yaw   = atan2f(2.0f * (q0 * q3 + q1 * q2),
+    MPU_Mahony_Real.yaw   = atan2f(2.0f * (q0 * q3 + q1 * q2),
                                     1.0f - 2.0f * (q2 * q2 + q3 * q3)) * RAD2DEG;
 
     // ---- 8.5 绝对累计 yaw（解绕，顺时针持续增大无跳变） ----
     {
-        float delta = ICM_Mahony_Real.yaw - yaw_prev;
+        float delta = MPU_Mahony_Real.yaw - yaw_prev;
         if (delta >  180.0f) delta -= 360.0f;
         if (delta < -180.0f) delta += 360.0f;
         yaw_abs  -= delta;      // 取反：使顺时针 = 增大
-        yaw_prev  = ICM_Mahony_Real.yaw;
+        yaw_prev  = MPU_Mahony_Real.yaw;
     }
 
     // ---- 9. 归一化加速度输出 ----
-    ICM_Mahony_Real.AccX = ax;
-    ICM_Mahony_Real.AccY = ay;
-    ICM_Mahony_Real.AccZ = az;
+    MPU_Mahony_Real.AccX = ax;
+    MPU_Mahony_Real.AccY = ay;
+    MPU_Mahony_Real.AccZ = az;
 }
 
 // ==================== 外部 Tick 入口 ====================
-void ICM42688_Mahony_Update_Tick(void)
+void MPU6050_Mahony_Update_Tick(void)
 {
-    ICM42688_Update_Data();
-    ICM42688_Mahony_Update(0.020f);
+    MPU6050_Update_Data();
+    MPU6050_Mahony_Update(0.020f);
 }
 
 // ==================== 绝对累计偏航角 ====================
 // 顺时针持续增大，无 ±180° 跳变，可超过 360°
-float ICM_Yaw_Abs_Get(void)
+float MPU_Yaw_Abs_Get(void)
 {
     return yaw_abs;
 }
 
 // 归零 yaw_abs（不影响当前 yaw 和四元数解算）
-void ICM_Yaw_Abs_Reset(void)
+void MPU_Yaw_Abs_Reset(void)
 {
     yaw_abs  = 0.0f;
-    yaw_prev = ICM_Mahony_Real.yaw;   // 避免下一帧产生伪跳变
-}
-
-// ==================== 转向完成检查 ====================
-// 检查转向到目标角度是否完成（可自定义双阈值版本）
-bool ICM42688_Turn_Yaw_Is_Ok_Ex(float targetYaw, float angle_tol, float gyro_tol)
-{
-    float err  = fabsf(targetYaw - ICM_Mahony_Real.yaw);
-    float gyro = fabsf(ICM_Raw_Data.GZ - ICM_Mahony_GyroBiasZ);   // 去零偏后的角速度
-    if (err < angle_tol && gyro < gyro_tol)
-    {
-        return true;
-    }
-    return false;
-}
-
-// 默认阈值版本（5.0° 角度容差, 7.0°/s 角速度容差）
-bool ICM42688_Turn_Yaw_Is_Ok(float targetYaw)
-{
-    return ICM42688_Turn_Yaw_Is_Ok_Ex(targetYaw, 5.0f, 7.0f);
+    yaw_prev = MPU_Mahony_Real.yaw;   // 避免下一帧产生伪跳变
 }

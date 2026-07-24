@@ -178,17 +178,36 @@ void ICM42688_Init(void)
     for (volatile uint32_t _i = 0; _i < 32000; _i++) { __NOP(); }
 }
 
-// ==================== 原始数据更新（含灵敏度转换） ====================
+// ==================== 原始数据更新（含灵敏度转换，带超时+重试+恢复） ====================
 void ICM42688_Update_Data(void)
 {
     uint8_t buf[12] = {0};
-
-    // 写寄存器地址
     uint8_t RegAddress = ICM42688_ACCEL_DATA_X1;
-    IIC_WriteBytes(ICM_I2C_Bus, ICM42688_ADDRESS >> 1, &RegAddress, 1);
+    bool ok = false;
 
-    // 连续读取12字节
-    IIC_ReadBytes(ICM_I2C_Bus, ICM42688_ADDRESS >> 1, buf, 12);
+    // 读取带重试（最多3次）
+    for (uint8_t retry = 3; retry > 0; retry--)
+    {
+        // 写寄存器地址
+        if (!IIC_WriteBytes_Ex(ICM_I2C_Bus, ICM42688_ADDRESS >> 1, &RegAddress, 1))
+        {
+            IIC_Reset(ICM_I2C_Bus);
+            continue;
+        }
+
+        // 连续读取12字节
+        if (!IIC_ReadBytes_Ex(ICM_I2C_Bus, ICM42688_ADDRESS >> 1, buf, 12))
+        {
+            IIC_Reset(ICM_I2C_Bus);
+            continue;
+        }
+
+        ok = true;
+        break;
+    }
+
+    if (!ok)
+        return;  // I2C通信失败，跳过本次更新
 
     // 数据处理 — 灵敏度转换
     // 加速度（大端序 → 物理量）

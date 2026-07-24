@@ -50,6 +50,7 @@
                                     <listOptionValue value="E:/TI/TI_MSPM0/Template/Software"/>
                                     <listOptionValue value="E:/TI/TI_MSPM0/Template/AT24"/>
                                     <listOptionValue value="E:/TI/TI_MSPM0/Template/Con_Mode"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/Template/IMU"/>
                                 </option>
                                 <option id="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.DEFINE.1117539790" superClass="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.DEFINE" valueType="definedSymbols">
                                     <listOptionValue value="${COM_TI_MSPM0_SDK_SYMBOLS}"/>

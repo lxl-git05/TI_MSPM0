@@ -121,46 +121,128 @@ uint8_t MyI2C_ReceiveAck(void)
 
 // ================ 硬件IIC封装 ================
 
-void IIC_WriteBytes(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len)
-{
-    uint32_t index = 0 ;
-    // 等待总线空闲
-    while (!(DL_I2C_getControllerStatus(i2c_inst) &DL_I2C_CONTROLLER_STATUS_IDLE)) ;
-    
-    // 启动接收传输,准备读取len字节
-    DL_I2C_startControllerTransfer(i2c_inst, devAddr, DL_I2C_CONTROLLER_DIRECTION_TX, len) ;
+#define I2C_TIMEOUT  100000UL   // 超时计数值（~10ms @32MHz）
 
-    // 不断读取FIFO中的数据
-    while (index < len) 
+#ifdef I2C_DEBUG_RESET_COUNT
+volatile uint32_t IIC_Reset_Count = 0;   // I2C 总线复位次数
+#endif
+
+// ---- 超时版写入 ----
+bool IIC_WriteBytes_Ex(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len)
+{
+    uint32_t index  = 0;
+    uint32_t tick   = 0;
+
+    // 等待总线空闲（带超时）
+    tick = I2C_TIMEOUT;
+    while (!(DL_I2C_getControllerStatus(i2c_inst) & DL_I2C_CONTROLLER_STATUS_IDLE))
+    {
+        if (--tick == 0) return false;
+    }
+
+    // 启动发送传输
+    DL_I2C_startControllerTransfer(i2c_inst, devAddr, DL_I2C_CONTROLLER_DIRECTION_TX, len);
+
+    // 填充 TX FIFO
+    tick = I2C_TIMEOUT;
+    while (index < len)
     {
         if (!DL_I2C_isControllerTXFIFOFull(i2c_inst))
         {
             DL_I2C_transmitControllerData(i2c_inst, data[index++]);
+            tick = I2C_TIMEOUT;          // 有数据流动，重置超时
+        }
+        else if (--tick == 0)
+        {
+            // TX FIFO 始终满——总线卡死
+            return false;
         }
     }
 
-    // 等待完成
-    while (DL_I2C_getControllerStatus(i2c_inst) & DL_I2C_CONTROLLER_STATUS_BUSY);
+    // 等待完成（带超时）
+    tick = I2C_TIMEOUT;
+    while (DL_I2C_getControllerStatus(i2c_inst) & DL_I2C_CONTROLLER_STATUS_BUSY)
+    {
+        if (--tick == 0) return false;
+    }
+
+    return true;
+}
+
+// ---- 超时版读取 ----
+bool IIC_ReadBytes_Ex(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len)
+{
+    uint32_t index = 0;
+    uint32_t tick  = 0;
+
+    // 等待总线空闲（带超时）
+    tick = I2C_TIMEOUT;
+    while (!(DL_I2C_getControllerStatus(i2c_inst) & DL_I2C_CONTROLLER_STATUS_IDLE))
+    {
+        if (--tick == 0) return false;
+    }
+
+    // 启动接收传输
+    DL_I2C_startControllerTransfer(i2c_inst, devAddr, DL_I2C_CONTROLLER_DIRECTION_RX, len);
+
+    // 读取 RX FIFO
+    tick = I2C_TIMEOUT;
+    while (index < len)
+    {
+        if (!DL_I2C_isControllerRXFIFOEmpty(i2c_inst))
+        {
+            data[index++] = DL_I2C_receiveControllerData(i2c_inst);
+            tick = I2C_TIMEOUT;          // 有数据流入，重置超时
+        }
+        else if (--tick == 0)
+        {
+            // RX FIFO 始终空——从机未应答
+            return false;
+        }
+    }
+
+    // 等待完成（带超时）
+    tick = I2C_TIMEOUT;
+    while (DL_I2C_getControllerStatus(i2c_inst) & DL_I2C_CONTROLLER_STATUS_BUSY)
+    {
+        if (--tick == 0) return false;
+    }
+
+    return true;
+}
+
+// ---- 总线复位 ----
+void IIC_Reset(I2C_Regs *i2c_inst)
+{
+#ifdef I2C_DEBUG_RESET_COUNT
+    IIC_Reset_Count++;
+#endif
+    // 先中止当前传输，再调用 SysConfig 的完整初始化恢复
+    if (i2c_inst == I2C_0_INST)
+    {
+        DL_I2C_resetControllerTransfer(I2C_0_INST);
+        SYSCFG_DL_I2C_0_init();
+    }
+    else if (i2c_inst == I2C_1_INST)
+    {
+        DL_I2C_resetControllerTransfer(I2C_1_INST);
+        SYSCFG_DL_I2C_1_init();
+    }
+}
+
+// ---- 旧接口兼容（内部调用超时版，忽略返回值） ----
+void IIC_WriteBytes(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len)
+{
+    if (!IIC_WriteBytes_Ex(i2c_inst, devAddr, data, len))
+    {
+        IIC_Reset(i2c_inst);       // 失败后复位总线
+    }
 }
 
 void IIC_ReadBytes(I2C_Regs *i2c_inst , uint8_t devAddr , uint8_t* data , uint32_t len)
 {
-    uint32_t index = 0 ;
-    // 等待总线空闲
-    while (!(DL_I2C_getControllerStatus(i2c_inst) &DL_I2C_CONTROLLER_STATUS_IDLE)) ;
-    
-    // 启动接收传输,准备读取len字节
-    DL_I2C_startControllerTransfer(i2c_inst, devAddr, DL_I2C_CONTROLLER_DIRECTION_RX, len) ;
-
-    // 不断读取FIFO中的数据
-    while (index < len) 
+    if (!IIC_ReadBytes_Ex(i2c_inst, devAddr, data, len))
     {
-        if (!DL_I2C_isControllerRXFIFOEmpty(i2c_inst))
-        {
-            data[index++] = DL_I2C_receiveControllerData(i2c_inst) ;
-        }
+        IIC_Reset(i2c_inst);       // 失败后复位总线
     }
-
-    // 等待完成
-    while (DL_I2C_getControllerStatus(i2c_inst) & DL_I2C_CONTROLLER_STATUS_BUSY);
 }

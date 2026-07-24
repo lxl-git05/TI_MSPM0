@@ -134,9 +134,8 @@ void Task_Car_Yaw_Tick(float p[4])
 bool Task_Car_Yaw_IsExit(float p[4])
 {
 	float angle_tol = (p[1] > 0.0f) ? p[1] : 5.0f;
-	float gyro_tol  = (p[2] > 0.0f) ? p[2] : 7.0f;
 	// 注意：检查绝对目标值 PID_Angle.goalPoint（= startYaw + delta），而非增量 p[0]
-	if (ICM42688_Turn_Yaw_Is_Ok_Ex(PID_Angle.goalPoint, angle_tol, gyro_tol))
+	if (IMU_Turn_Yaw_Is_Ok_Ex(PID_Angle.goalPoint, angle_tol))
 	{
 		Motor_SetSpeed(&Motor_A, 0);
 		Motor_SetSpeed(&Motor_B, 0);

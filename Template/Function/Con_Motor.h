@@ -50,7 +50,7 @@ bool Motor_Is_Angle(Motor_Typedef *Motor , float Angle , float Tolerance , float
 //// 4. 清除累计位移
 //void Motor_Pos_Clear(void) ;
 
-// =================== MPU6050角度环 ===================
+// =================== IMU角度环 ===================
 
 extern Pid_Typedef PID_Angle ;	// 小车的yaw角度环
 

@@ -45,6 +45,18 @@ todo:
 
 去到D:\github\HUST_STI\HUST_STI_1\Templete\Templete_STM32F407ZGT6\Template_F407ZGT6\ICM42688_Portable_Lib，里面有所有最新的驱动和滤波代码，不需要加入互补滤波，直接加入M滤波和底层驱动即可，加入的就查看有没有需要更改的，然后去到Mode2实现一个例程，要求是和MPU6050的引脚基本一样，都是使用I2C驱动
 
++++
+
+首先去到D:\github\HUST_STI\HUST_STI_1\Templete\Templete_STM32F407ZGT6\Template_F407ZGT6\IMU_Portable_Lib，阅读Readme，明确MPU6050的M滤波思路，然后在本工程也新建这个库，并且最后导入IMU.c / .h库，删除Type库，并将本工程目前所有涉及陀螺仪的部分都替换成IMU的函数，实现陀螺仪底层解耦，也就是不再关心底层是MPU还是ICM
+
++++
+
+
+
+
+
+
+
 
 
 # 3. AT外存移植

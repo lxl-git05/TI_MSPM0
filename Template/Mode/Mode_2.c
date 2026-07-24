@@ -15,26 +15,27 @@
 void Mode_2_Setup(void)
 {
     OLED_Clear();
-
-    // Init(1): 自动采样标定陀螺零偏，请保持设备静置！
-    // Init(0): 跳过标定，使用默认值 或 AT24C02 恢复值
-    ICM42688_Mahony_Init(0);
+    OLED_Printf(0, 20,  OLED_6X8, "IMU");
+    OLED_Update();
+    
+    IMU_Mahony_Init(1) ;
 }
 
 void Mode_2_Loop(void)
 {
-    OLED_Printf(0, 0,  OLED_6X8, "R:%.1f", ICM_Mahony_Real.roll);
-    OLED_Printf(0, 12, OLED_6X8, "P:%.1f", ICM_Mahony_Real.pitch);
-    OLED_Printf(0, 24, OLED_6X8, "Y:%.1f", ICM_Mahony_Real.yaw);
+    OLED_Printf(0, 0,  OLED_6X8, "R:%.1f", IMU_Mahony_Real.roll);
+    OLED_Printf(0, 12, OLED_6X8, "P:%.1f", IMU_Mahony_Real.pitch);
+    OLED_Printf(0, 24, OLED_6X8, "Y:%.1f", IMU_Mahony_Real.yaw);
+#ifdef I2C_DEBUG_RESET_COUNT
+    OLED_Printf(0, 1,  OLED_6X8, "I2C_Rst:%lu", IIC_Reset_Count);
+#endif
 }
 
 void Mode_2_Tick(void)
 {
-    ICM42688_Mahony_Update_Tick();
-
     // 串口CSV输出（调试用，可注释掉）
     Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%.2f\r\n",
-                  ICM_Mahony_Real.roll, ICM_Mahony_Real.pitch, ICM_Mahony_Real.yaw,ICM_Yaw_Abs_Get());
+                  IMU_Mahony_Real.roll, IMU_Mahony_Real.pitch, IMU_Mahony_Real.yaw,IMU_Yaw_Abs_Get());
 }
 
 void Mode_2_Exit(void)

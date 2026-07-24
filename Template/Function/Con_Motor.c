@@ -1,5 +1,5 @@
 #include "Con_Motor.h"
-#include "ICM42688_Mahony.h"
+#include "IMU.h"
 
 Motor_Typedef Motor_A ;
 Motor_Typedef Motor_B ;
@@ -227,7 +227,7 @@ void PID_Angle_Init(void)
 // 记录当前yaw为基准 + 清空PID历史（每次旋转任务Setup调用，不再清零MPU_Real.yaw）
 void PID_Angle_Reset(void)
 {
-	PID_Angle_StartYaw = ICM_Yaw_Abs_Get();
+	PID_Angle_StartYaw = IMU_Yaw_Abs_Get();
 	PID_Param_Reset(&PID_Angle);
 }
 
@@ -240,7 +240,7 @@ void PID_Angle_Tar_Yaw(float delta)
 // 获取相对yaw角度（当前值 - 起始基准）
 float PID_Angle_Get_Yaw(void)
 {
-	return ICM_Yaw_Abs_Get() - PID_Angle_StartYaw;
+	return IMU_Yaw_Abs_Get() - PID_Angle_StartYaw;
 }
 
 // 20ms Tick: MPU更新→PID计算→差速输出（A反转 B正转 = 顺时针为正）
@@ -248,7 +248,7 @@ void PID_Angle_Tick(void)
 {
 	// 1. 更新MPU数据->这个作为必做任务，所以不需要在这里再调用
 	// 2. 获取真实yaw
-	PID_Angle.realPoint_Now = ICM_Yaw_Abs_Get();
+	PID_Angle.realPoint_Now = IMU_Yaw_Abs_Get();
 	// 3. PID计算
 	PID_Update(&PID_Angle, PID_Angle.realPoint_Now);
 	// 4. 差速控制: A反转 B正转（顺时针为正）

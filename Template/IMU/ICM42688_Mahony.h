@@ -2,7 +2,7 @@
 #define __ICM42688_MAHONY_H
 
 #include "ICM_42688_base.h"
-#include "Imu_Types.h"
+#include "IMU.h"
 
 // ==================== Mahony AHRS 参数 ====================
 // 参考 DAIMXA angle.c，适配 ICM-42688 (20ms Tick, 低噪声 70μg/√Hz)
@@ -35,10 +35,5 @@ void ICM42688_Mahony_Calibrate(int samples);
 // 绝对累计偏航角：顺时针持续增大，无 ±180° 跳变，可超过 360°
 float ICM_Yaw_Abs_Get(void);
 void  ICM_Yaw_Abs_Reset(void);     // 归零 yaw_abs（不影响 yaw 解算）
-
-// 检查转向到目标角度是否完成（可自定义双阈值版本）
-bool ICM42688_Turn_Yaw_Is_Ok_Ex(float targetYaw, float angle_tol, float gyro_tol);
-// 默认阈值版本（5.0° 角度容差, 7.0°/s 角速度容差）
-bool ICM42688_Turn_Yaw_Is_Ok(float targetYaw);
 
 #endif
