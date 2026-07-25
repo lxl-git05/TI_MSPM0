@@ -32,6 +32,18 @@
   - [10.1 中断模式 vs DMA 模式](#101-中断模式-vs-dma-模式)
   - [10.2 多中断环境优先级](#102-多中断环境优先级)
   - [10.3 高吞吐量场景](#103-高吞吐量场景)
+- [11. 实战示例代码](#11-实战示例代码)
+  - [示例 1：最小初始化](#示例-1最小初始化从头新建项目)
+  - [示例 2：调试日志打印](#示例-2调试日志打印serial1-做-printf)
+  - [示例 3：编码器数据上报](#示例-3编码器数据上报hex-协议一对多)
+  - [示例 4：PID 在线调参](#示例-4pid-在线调参abc-协议vofa-配合)
+  - [示例 5：双协议混合](#示例-5双协议混合同一串口同时收-hex-和-abc)
+  - [示例 6：树莓派指令通信](#示例-6树莓派指令通信命令--解析--应答)
+  - [示例 7：完整 Mode 生命周期](#示例-7完整-mode-生命周期setup--loop--tick--exit)
+  - [示例 8：错误处理](#示例-8错误处理检查错误码并分级响应)
+  - [示例 9：调试开关](#示例-9调试开关key-长按输出统计一键诊断)
+  - [示例 10：双车通信](#示例-10双车通信car1--car2-蓝牙)
+  - [示例 11：串口屏交互](#示例-11串口屏交互tjc-串口屏-abc-协议)
 - [附录 A：关键宏定义速查](#附录-a关键宏定义速查)
 - [附录 B：错误码速查](#附录-b错误码速查)
 
@@ -689,6 +701,664 @@ Serial_Initial(&Serial1, UART_0_INST, DMA, DMA_UART_0_RX_Channel_CHAN_ID,
    - **方案 A**：改用 DMA 接收（降低中断频率）
    - **方案 B**：双缓冲 `rxBuf[2][Serial_RX_BUF_SIZE]` + 乒乓切换 + 解析移到主循环
    - **方案 C**：RX 使用 DMA 双缓冲模式（DMA 自动乒乓）+ ISR 仅设标志位
+
+---
+
+## 11. 实战示例代码
+
+> 以下所有示例均可直接复制到项目中编译运行。前提：已 `#include "AllHeader.h"` 并在 `Initial_All()` 中调用过 `Serial_Init()`。
+
+### 示例 1：最小初始化（从头新建项目）
+
+**场景**：一个全新 CCS 项目，只启用 Serial1 做调试打印。
+
+**Step 1 — SysConfig**：在 `.syscfg` 中添加 UART_0，配置 TX=PA10、RX=PA11、115200 8N1，勾选 "Receive"。
+
+**Step 2 — Serial_porting.h**：确保至少启用 Serial1。
+
+```c
+#define Serial1_Enable      // UART_0 (TX=PA10, RX=PA11)
+//#define Serial2_Enable    // 暂时不需要，注释掉省 RAM
+//#define Serial_Debug      // 调试计数器，初期先打开
+```
+
+**Step 3 — AllHeader.h**：引入串口头文件。
+
+```c
+#include "Serial_porting.h"
+```
+
+**Step 4 — AllHeader.c**：在初始化函数中调用。
+
+```c
+#include "AllHeader.h"
+
+void Initial_All(void)
+{
+    // ... 其他初始化（GPIO、OLED 等）...
+
+    Serial_Init();          // ★ 串口初始化（必须在 NVIC 全局使能之前）
+
+    // __enable_irq();      // 全局使能中断（通常由 main 调用）
+}
+```
+
+**Step 5 — main.c 或 Mode 文件**：发送第一条消息。
+
+```c
+void Mode_X_Setup(void)
+{
+    Serial_printf(&Serial1, "System Ready.\r\n");
+    Serial_printf(&Serial1, "Firmware v1.0, Freq=%d MHz\r\n", 80);
+}
+```
+
+**验证**：用串口助手打开 COM 口（115200 8N1），应看到 `System Ready.`。
+
+---
+
+### 示例 2：调试日志打印（Serial1 做 printf）
+
+**场景**：在开发阶段用 Serial1 打印变量、状态机切换、错误信息。
+
+```c
+// ---- 带时间戳的日志宏 ----
+#ifdef Serial_Debug
+#define DEBUG_LOG(fmt, ...) \
+    Serial_printf(&Serial1, "[%dms] " fmt "\r\n", g_sys_tick, ##__VA_ARGS__)
+#else
+#define DEBUG_LOG(fmt, ...)  ((void)0)
+#endif
+
+// ---- 使用 ----
+void Mode_1_Loop(void)
+{
+    static int last_encoder_a = 0;
+    int enc_a = MyEncoder_Get_CNT(&Motor_A_Encoder);
+
+    if (enc_a != last_encoder_a)
+    {
+        DEBUG_LOG("EncA changed: %d → %d", last_encoder_a, enc_a);
+        last_encoder_a = enc_a;
+    }
+}
+```
+
+> **性能提示**：`DEBUG_LOG` 宏在非 debug 编译时完全不产生代码。调试时建议通过 Key 长按触发打印，避免每轮都输出。
+
+---
+
+### 示例 3：编码器数据上报（HEX 协议，一对多）
+
+**场景**：将两路编码器 + MPU6050 Yaw 角通过 Serial2 上报给树莓派，每 100ms 发一次。
+
+**发送端（MSPM0）**：
+
+```c
+void Mode_2_Setup(void)
+{
+    Serial_printf(&Serial2, "Encoder Report Start.\r\n");
+}
+
+void Mode_2_Loop(void)
+{
+    static uint32_t last_send = 0;
+
+    // 每 100ms 发一帧
+    if (g_sys_tick - last_send >= 100)
+    {
+        last_send = g_sys_tick;
+
+        uint16_t data[3];
+        data[0] = (uint16_t)(int16_t)MyEncoder_Get_CNT(&Motor_A_Encoder);  // 编码器A
+        data[1] = (uint16_t)(int16_t)MyEncoder_Get_CNT(&Motor_B_Encoder);  // 编码器B
+        data[2] = (uint16_t)(int16_t)MPU6050_Get_Yaw();                    // Yaw角
+
+        Serial_Send_HEX_Package(&Serial2, data, 3);
+    }
+}
+```
+
+**接收端（树莓派 Python）**：
+
+```python
+# 帧格式：FF AA 03 D0_H D0_L D0_CK D1_H D1_L D1_CK D2_H D2_L D2_CK 55 FE
+# 有效载荷：3 个 int16_t（编码器A, 编码器B, Yaw角）
+
+def parse_hex_frame(data):
+    if len(data) < 7 or data[0] != 0xFF or data[1] != 0xAA:
+        return None
+    LEN = data[2]
+    words = []
+    for i in range(LEN):
+        dh = data[3 + i*3]
+        dl = data[3 + i*3 + 1]
+        ck = data[3 + i*3 + 2]
+        val = (dh << 8) | dl
+        if (dh ^ dl) == ck:     # XOR 校验通过
+            words.append(val - 65536 if val > 32767 else val)  # int16
+    return words
+
+# 使用
+frame = parse_hex_frame(serial_bytes)
+if frame:
+    print(f"EncA={frame[0]}, EncB={frame[1]}, Yaw={frame[2]/10.0}°")
+```
+
+---
+
+### 示例 4：PID 在线调参（ABC 协议，Vofa+ 配合）
+
+**场景**：用 Vofa+ 或串口助手发送 ABC 帧实时调节 PID 参数，MSPM0 解析后立即生效。
+
+**MSPM0 端**：
+
+```c
+// 全局 PID 参数
+float g_kp = 5.0f, g_ki = 0.1f, g_kd = 2.0f;
+int   g_target_speed = 500;    // 目标速度（编码器脉冲/秒）
+
+void Mode_2_Loop(void)
+{
+    uint8_t has_abc = Serial_GetNewPackageFlag_ABC(&Serial2);
+    if (!has_abc) return;
+
+    // ---- 逐个字段匹配（顺序无关）----
+    if (Serial_Check_Str(&Serial2, "Kp"))
+    {
+        float new_kp;
+        if (Serial_SetFloatData(&Serial2, "Kp", "Kp=%f", &new_kp))
+        {
+            g_kp = new_kp;
+            Serial_printf(&Serial2, "@Kp=%.2f,OK$#\r\n", g_kp);  // 回传确认
+        }
+    }
+
+    if (Serial_Check_Str(&Serial2, "Ki"))
+    {
+        float new_ki;
+        if (Serial_SetFloatData(&Serial2, "Ki", "Ki=%f", &new_ki))
+            g_ki = new_ki;
+    }
+
+    if (Serial_Check_Str(&Serial2, "Kd"))
+    {
+        float new_kd;
+        if (Serial_SetFloatData(&Serial2, "Kd", "Kd=%f", &new_kd))
+            g_kd = new_kd;
+    }
+
+    // ---- 整数参数 ----
+    if (Serial_Check_Str(&Serial2, "Speed"))
+    {
+        int new_speed;
+        // Vofa+ 只能用浮点滑块 → 用 %.0f 模拟整数
+        if (Serial_SetIntData(&Serial2, "Speed", "Speed=%d", &new_speed))
+            g_target_speed = new_speed;
+    }
+
+    // ---- 精确命令 ----
+    if (Serial_CheckCmd(&Serial2, "@GET_PARAMS"))
+    {
+        Serial_printf(&Serial2,
+            "@Kp=%.2f,Ki=%.2f,Kd=%.2f,Speed=%d$#\r\n",
+            g_kp, g_ki, g_kd, g_target_speed);
+    }
+}
+```
+
+**Vofa+ 端配置**：
+
+```
+发送按钮1:  @Kp=8.00$#
+发送按钮2:  @Ki=0.20$#
+发送按钮3:  @Kd=3.00$#
+发送按钮4:  @Speed=600$#
+发送按钮5:  @GET_PARAMS$#
+```
+
+---
+
+### 示例 5：双协议混合（同一串口同时收 HEX 和 ABC）
+
+**场景**：Serial2 同时用 ABC 收调参指令、用 HEX 收传感器数据。
+
+```c
+void Mode_2_Loop(void)
+{
+    // ★ 每个协议只调一次，存结果
+    uint8_t has_hex = Serial_GetNewPackageFlag_HEX(&Serial2);
+    uint8_t has_abc = Serial_GetNewPackageFlag_ABC(&Serial2);
+
+    // ---- 处理 HEX（传感器数据）----
+    if (has_hex)
+    {
+        uint8_t len = Serial_GetHexLen(&Serial2);
+        for (uint8_t i = 0; i < len; i++)
+        {
+            int16_t val = Serial_GetHexData(&Serial2, i);
+            // 存入环形缓冲区供后续处理...
+        }
+    }
+
+    // ---- 处理 ABC（调参指令）----
+    if (has_abc)
+    {
+        if (Serial_Check_Str(&Serial2, "Kp"))
+        {
+            float kp;
+            Serial_SetFloatData(&Serial2, "Kp", "Kp=%f", &kp);
+            // 更新 PID...
+        }
+    }
+}
+```
+
+> **关键**：`GetNewPackageFlag_HEX` 和 `GetNewPackageFlag_ABC` 操作的是**不同**的标志位（`HEX_Data.frame_valid` 和 `ABC_Data.Serial_New_Package_Flag`），互不干扰。同一轮中如果 HEX 和 ABC 帧都到达，两者都能被消费。
+
+---
+
+### 示例 6：树莓派指令通信（命令 → 解析 → 应答）
+
+**场景**：树莓派通过 Serial2 发 ASC 指令控制小车执行动作。
+
+**通信协议定义**：
+
+| 指令 | 格式 | 含义 |
+|------|------|------|
+| 直行 | `@GO:SPEED$#` | 以指定速度直行 |
+| 转弯 | `@TURN:ANGLE$#` | 转指定角度（度） |
+| 停止 | `@STOP$#` | 立即停车 |
+| 询问状态 | `@STATUS$#` | 回复当前状态 |
+| HEX 数据下发 | HEX 帧（LEN=4） | [目标速度][目标角度][0][0] |
+
+**MSPM0 完整实现**：
+
+```c
+typedef enum { IDLE, RUNNING, TURNING, STOPPED } Car_State;
+static Car_State g_state = IDLE;
+static int g_cmd_speed = 0, g_cmd_angle = 0;
+
+void Mode_2_Setup(void)
+{
+    Serial_printf(&Serial2, "@READY$#\r\n");
+}
+
+void Mode_2_Loop(void)
+{
+    uint8_t has_hex = Serial_GetNewPackageFlag_HEX(&Serial2);
+    uint8_t has_abc = Serial_GetNewPackageFlag_ABC(&Serial2);
+
+    // ===== 方式1：HEX 指令（可靠，用于关键数据）=====
+    if (has_hex)
+    {
+        g_cmd_speed = Serial_GetHexData(&Serial2, 0);
+        g_cmd_angle = Serial_GetHexData(&Serial2, 1);
+
+        if (g_cmd_speed == 0 && g_cmd_angle == 0)
+            g_state = STOPPED;
+        else if (g_cmd_angle == 0)
+            g_state = RUNNING;
+        else
+            g_state = TURNING;
+
+        // HEX 应答也用 HEX 帧，包含 XOR 校验
+        uint16_t ack[1] = { (uint16_t)g_state };
+        Serial_Send_HEX_Package(&Serial2, ack, 1);
+    }
+
+    // ===== 方式2：ABC 指令（可读，用于调试/低频命令）=====
+    if (has_abc)
+    {
+        if (Serial_Check_Str(&Serial2, "GO"))
+        {
+            Serial_SetIntData(&Serial2, "GO", "GO:%d", &g_cmd_speed);
+            g_state = RUNNING;
+            g_cmd_angle = 0;
+            Serial_printf(&Serial2, "@GO_ACK:SPEED=%d$#\r\n", g_cmd_speed);
+        }
+        else if (Serial_Check_Str(&Serial2, "TURN"))
+        {
+            Serial_SetIntData(&Serial2, "TURN", "TURN:%d", &g_cmd_angle);
+            g_state = TURNING;
+            Serial_printf(&Serial2, "@TURN_ACK:ANGLE=%d$#\r\n", g_cmd_angle);
+        }
+        else if (Serial_CheckCmd(&Serial2, "@STOP"))
+        {
+            g_state = STOPPED;
+            g_cmd_speed = 0;
+            g_cmd_angle = 0;
+            Serial_printf(&Serial2, "@STOP_ACK$#\r\n");
+        }
+        else if (Serial_CheckCmd(&Serial2, "@STATUS"))
+        {
+            Serial_printf(&Serial2,
+                "@STATE=%d,SPEED=%d,ANGLE=%d$#\r\n",
+                (int)g_state, g_cmd_speed, g_cmd_angle);
+        }
+    }
+
+    // ===== 执行动作（根据全局状态）=====
+    switch (g_state)
+    {
+        case RUNNING:
+            // Motor_SetSpeed(g_cmd_speed);
+            break;
+        case TURNING:
+            // Stepper_Turn(g_cmd_angle);
+            break;
+        case STOPPED:
+            // Motor_Stop();
+            break;
+        default: break;
+    }
+}
+```
+
+---
+
+### 示例 7：完整 Mode 生命周期（Setup → Loop → Tick → Exit）
+
+**场景**：新建 Mode_5，展示标准四函数生命周期中串口的使用。
+
+```c
+// ======================= Mode_5.h =======================//
+#ifndef __MODE_5_H
+#define __MODE_5_H
+void Mode_5_Setup(void);
+void Mode_5_Loop(void);
+void Mode_5_Tick(void);    // 每 20ms 调用一次
+void Mode_5_Exit(void);
+#endif
+
+// ======================= Mode_5.c =======================//
+#include "Mode_5.h"
+#include "AllHeader.h"
+
+// 局部变量
+static float  g_kp, g_ki, g_kd;
+static uint32_t g_last_hex_report = 0;
+static uint32_t g_package_count  = 0;
+
+// ── Setup：进入模式时执行一次 ──
+void Mode_5_Setup(void)
+{
+    // 初始参数
+    g_kp = 5.0f;  g_ki = 0.1f;  g_kd = 2.0f;
+
+    Serial_printf(&Serial2, "@MODE5_READY$#\r\n");
+    OLED_Printf(0, 0, OLED_6X8, "Mode5:SerialTest");
+}
+
+// ── Loop：主循环，越快越好（被 while(1) 反复调用）──
+void Mode_5_Loop(void)
+{
+    // ★ 必须先存储 flag，再分支处理
+    uint8_t has_hex = Serial_GetNewPackageFlag_HEX(&Serial2);
+    uint8_t has_abc = Serial_GetNewPackageFlag_ABC(&Serial2);
+
+    // ---- 消费 HEX ----
+    if (has_hex)
+    {
+        g_package_count++;
+        uint8_t len = Serial_GetHexLen(&Serial2);
+
+        // 根据 LEN 区分数据类型
+        if (len == 3)
+        {
+            // 编码器上报（示例3）
+            int16_t enc_a  = Serial_GetHexData(&Serial2, 0);
+            int16_t enc_b  = Serial_GetHexData(&Serial2, 1);
+            int16_t yaw    = Serial_GetHexData(&Serial2, 2);
+            OLED_Printf(0, 10, OLED_6X8, "A:%d B:%d", enc_a, enc_b);
+        }
+        else if (len == 1)
+        {
+            // 单指令字（示例6 应答）
+            int16_t cmd = Serial_GetHexData(&Serial2, 0);
+            OLED_Printf(0, 20, OLED_6X8, "CMD:%d", cmd);
+        }
+    }
+
+    // ---- 消费 ABC ----
+    if (has_abc)
+    {
+        if (Serial_Check_Str(&Serial2, "Kp"))
+            Serial_SetFloatData(&Serial2, "Kp", "Kp=%f", &g_kp);
+        if (Serial_Check_Str(&Serial2, "Ki"))
+            Serial_SetFloatData(&Serial2, "Ki", "Ki=%f", &g_ki);
+        if (Serial_Check_Str(&Serial2, "Kd"))
+            Serial_SetFloatData(&Serial2, "Kd", "Kd=%f", &g_kd);
+    }
+
+    // ---- 按键触发调试 ----
+    if (Key_Check(KEY_2, KEY_LONG))
+        Serial_PrintDebug(&Serial2);
+}
+
+// ── Tick：每 20ms 被 TIMER_1 中断调用 ──
+void Mode_5_Tick(void)
+{
+    // 每 500ms 发送一次状态报告
+    if (g_sys_tick - g_last_hex_report >= 500)
+    {
+        g_last_hex_report = g_sys_tick;
+
+        // 用 HEX 发送编码器累计值（可靠）
+        uint16_t data[2];
+        data[0] = (uint16_t)(int16_t)MyEncoder_Get_Total_CNT(&Motor_A_Encoder);
+        data[1] = (uint16_t)(int16_t)MyEncoder_Get_Total_CNT(&Motor_B_Encoder);
+        Serial_Send_HEX_Package(&Serial2, data, 2);
+    }
+}
+
+// ── Exit：退出模式时执行一次 ──
+void Mode_5_Exit(void)
+{
+    Serial_printf(&Serial2, "@MODE5_EXIT$#\r\n");
+
+    // 清空残留帧（可选）
+    Serial_GetNewPackageFlag_HEX(&Serial2);
+    Serial_GetNewPackageFlag_ABC(&Serial2);
+}
+```
+
+---
+
+### 示例 8：错误处理（检查错误码并分级响应）
+
+**场景**：在 Loop 中监控串口通信质量，根据错误类型执行不同恢复策略。
+
+```c
+void Mode_2_Loop(void)
+{
+    uint8_t has_hex = Serial_GetNewPackageFlag_HEX(&Serial2);
+
+    if (has_hex)
+    {
+        uint8_t len = Serial_GetHexLen(&Serial2);
+        for (uint8_t i = 0; i < len; i++)
+        {
+            int16_t val = Serial_GetHexData(&Serial2, i);
+            // 处理数据...
+        }
+    }
+    else
+    {
+        // 没有新帧时，检查是否有错误发生
+        int err = Serial_GetError_HEX(&Serial2);
+
+        switch (err)
+        {
+            case Serial_Err_None:
+                // 一切正常，无操作
+                break;
+
+            case Serial_Err_HEX_Head:
+                // 帧头异常：可能是噪声触发的假帧头
+                // 不影响后续帧，状态机已自动恢复
+                break;
+
+            case Serial_Err_HEX_Tail:
+                // 帧尾异常：可能是线路噪声或帧被截断
+                // 连续发生时考虑降低波特率
+                static uint8_t tail_err_count = 0;
+                tail_err_count++;
+                if (tail_err_count > 10)
+                {
+                    Serial_printf(&Serial2, "@WARN:TailErr=%d$#\r\n", tail_err_count);
+                    tail_err_count = 0;
+                }
+                break;
+
+            case Serial_Err_HEX_Len_OverFlow:
+                // LEN 超限：发送端 bug 或协议不匹配
+                Serial_printf(&Serial2, "@FATAL:LEN_Overflow$#\r\n");
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // ABC 同样的错误检查
+    int abc_err = Serial_GetError_ABC(&Serial2);
+    if (abc_err != Serial_Err_None)
+    {
+        // ABC 错误通常不影响功能（下一帧会恢复正常）
+        // 仅做记录
+    }
+}
+```
+
+---
+
+### 示例 9：调试开关（Key 长按输出统计，一键诊断）
+
+**场景**：在任意 Mode 中用按键触发 `Serial_PrintDebug` 输出通信统计，帮助现场排查问题。
+
+```c
+// ---- Mode 中 ----
+void Mode_2_Loop(void)
+{
+    // ... 正常的串口收发 ...
+
+    // Key1 长按：打印 Serial2 调试统计
+    if (Key_Check(KEY_1, KEY_LONG))
+    {
+        Serial_printf(&Serial1, "\r\n");       // 空行分隔
+        Serial_PrintDebug(&Serial2);            // ★ 输出到 Serial1（调试口）
+    }
+
+    // Key2 长按：清零计数器（重新开始统计）
+    if (Key_Check(KEY_2, KEY_LONG))
+    {
+        Serial2.dbg_rx_bytes    = 0;
+        Serial2.dbg_rx_frames   = 0;
+        Serial2.dbg_parse_ok    = 0;
+        Serial2.dbg_frame_lost  = 0;
+        Serial2.dbg_err_head    = 0;
+        Serial2.dbg_err_tail    = 0;
+        Serial2.dbg_err_overflow = 0;
+        Serial2.dbg_err_hardware = 0;
+        Serial_printf(&Serial1, "Serial2 counters cleared.\r\n");
+    }
+}
+```
+
+**典型现场排查流程**：
+
+1. 运行小车 1 分钟 → Key1 长按查看统计
+2. 如果 `Lost > 0` → 主循环跟不上，加快 tick 频率
+3. 如果 `HW Errors > 1000` → 检查接线或换短 USB 线
+4. 如果 `Parse OK < Frames Det` → 通信质量差，检查共地
+5. Key2 长按清零 → 改变一个参数 → 再测 1 分钟 → 对比
+
+---
+
+### 示例 10：双车通信（Car1 ↔ Car2 蓝牙）
+
+**场景**：两辆小车通过蓝牙串口（Serial3）交换状态信息，用 HEX 协议保证数据可靠。
+
+**Car1 发送端**：
+
+```c
+void Car1_Report_Status(void)
+{
+    uint16_t data[4];
+    data[0] = (uint16_t)(int16_t)MyEncoder_Get_CNT(&Motor_A_Encoder); // 位置X
+    data[1] = (uint16_t)(int16_t)MyEncoder_Get_CNT(&Motor_B_Encoder); // 位置Y
+    data[2] = (uint16_t)(int16_t)MPU6050_Get_Yaw();                   // 朝向
+    data[3] = (uint16_t)g_car1_state;                                  // 状态码
+
+    Serial_Send_HEX_Package(&Serial3, data, 4);
+}
+```
+
+**Car2 接收端**：
+
+```c
+void Car2_Read_Car1(void)
+{
+    uint8_t has_hex = Serial_GetNewPackageFlag_HEX(&Serial3);
+    if (!has_hex) return;
+
+    uint8_t len = Serial_GetHexLen(&Serial3);
+    if (len != 4) return;          // 不是状态帧，忽略
+
+    int16_t car1_x     = Serial_GetHexData(&Serial3, 0);
+    int16_t car1_y     = Serial_GetHexData(&Serial3, 1);
+    int16_t car1_yaw   = Serial_GetHexData(&Serial3, 2);
+    int16_t car1_state = Serial_GetHexData(&Serial3, 3);
+
+    // 根据对方状态调整自身策略
+    switch (car1_state)
+    {
+        case 1:  /* Car1 在巡线 */   break;
+        case 2:  /* Car1 在路口 */   break;
+        case 3:  /* Car1 已完成 */   break;
+    }
+}
+```
+
+> **为什么双车通信用 HEX 而非 ABC**：HEX 帧每字带 XOR 校验，且解析快。蓝牙容易受干扰，用 HEX 可以识别并丢弃损坏的数据字（校验失败保留原值），ABC 受损则整帧丢弃。
+
+---
+
+### 示例 11：串口屏交互（TJC 串口屏 ABC 协议）
+
+**场景**：串口屏通过 Serial4 发送按键事件，MSPM0 解析后切换页面或更新显示。
+
+```c
+void Mode_2_Loop(void)
+{
+    uint8_t has_abc = Serial_GetNewPackageFlag_ABC(&Serial4);
+    if (!has_abc) return;
+
+    // 串口屏按键格式：@page0.btn1.press$#
+    if (Serial_Check_Str(&Serial4, "btn1"))
+    {
+        // 按键1被按下 → 切换到参数页面
+        Serial_printf(&Serial4, "page1.txt_PID=\"Kp=%.2f\"\xFF\xFF\xFF",
+                      g_kp);
+    }
+    else if (Serial_Check_Str(&Serial4, "btn2"))
+    {
+        // 按键2被按下 → 开始运行
+        g_state = RUNNING;
+        Serial_printf(&Serial4, "page0.txt_State=\"RUNNING\"\xFF\xFF\xFF");
+    }
+    else if (Serial_Check_Str(&Serial4, "slider"))
+    {
+        // 滑块值改变
+        int speed;
+        Serial_SetIntData(&Serial4, "slider", "slider=%d", &speed);
+        g_target_speed = speed;
+    }
+}
+```
+
+> **串口屏注意事项**：TJC 屏的结束符是 `\xFF\xFF\xFF`，不是 `$#`。需要在发送端手动拼接。
 
 ---
 
