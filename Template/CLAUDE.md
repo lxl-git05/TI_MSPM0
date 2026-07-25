@@ -70,9 +70,9 @@ ti_msp_dl_config.h (SysConfig 生成, 60+ 厂商头文件)
 | TIMER_1 | 20ms | `Timer_20ms_Callback` | 模式 tick 分发 | `MySystem/MyTimer.c` |
 | GROUP1 (GPIOB) | 异步 | `GROUP1_IRQHandler` | 编码器 A/B 电机测速 | `Mode/Mode_G.c` |
 | GROUP1 (GPIOA) | 异步 | `GROUP1_IRQHandler` | EC11 旋转编码器 | `Mode/Mode_G.c` |
-| UART_0 | 异步 | `UART_0_INST_IRQHandler` | Serial1 RX 中断（状态机） | `Function/Serial_porting.c` |
-| UART_1 | 异步 | `UART_1_INST_IRQHandler` | Serial2 RX 中断（状态机） | `Function/Serial_porting.c` |
-| UART_4 | 异步 | `UART_3_INST_IRQHandler` | Serial4 RX 中断（状态机） | `Function/Serial_porting.c` |
+| UART_0 | 异步 | `UART_0_INST_IRQHandler` | Serial1 RX 中断（状态机） | `Serial/Serial_porting.c` |
+| UART_1 | 异步 | `UART_1_INST_IRQHandler` | Serial2 RX 中断（状态机） | `Serial/Serial_porting.c` |
+| UART_3 | 异步 | `UART_3_INST_IRQHandler` | Serial4 RX 中断（状态机） | `Serial/Serial_porting.c` |
 
 ## 当前状态：整车控制算法开发阶段
 
@@ -82,8 +82,8 @@ ti_msp_dl_config.h (SysConfig 生成, 60+ 厂商头文件)
 |------|------|------|
 | MyPWM | `MySystem/MyPWM.h/c` | ✅ 结构体对齐 F407（Compare_Max/Min），SetCompare 双限幅 |
 | MyEncoder | `MySystem/MyEncoder.h/c` | ✅ MyEncoder_Pins 引脚对封装，双路编码器 ISR |
-| Serial | `Function/Serial_porting.h/c` | ✅ ★Status 0/1/2状态机(借鉴Car1)+错误中断处理(防FIFO锁死)+rx_temp暂存模式，阻塞发送 |
-| Serial_base | `Hardware/Serial_base.h/c` | ✅ 协议层不改动（纯逻辑） |
+| Serial | `Serial/Serial_porting.h/c` | ✅ ★Status 0/1/2状态机(借鉴Car1)+错误中断处理(防FIFO锁死)+rx_temp暂存模式，阻塞发送 |
+| Serial_base | `Serial/Serial_base.h/c` | ✅ 协议层不改动（纯逻辑） |
 | Encoder_Key | `Hardware/Encoder_Key.h/c` | ✅ EC11 旋转编码器，GPIOA 下降沿中断+方向判断，NVIC 参照 MyEncoder 模式 |
 | ICM42688 Driver | `IMU/ICM_42688_base.h/c` | ✅ MSPM0 DriverLib I2C 适配，±4g/±500°/s，重试+总线恢复 |
 | ICM42688 Mahony | `IMU/ICM42688_Mahony.h/c` | ✅ 四元数+PI重力修正(Mahony)，绝对yaw解绕，零偏标定 |
@@ -233,7 +233,7 @@ LCD_Param_Set_Float(2, &ki, 0.0f, 2.0f); // 滑块2→浮点 0.0~2.0 映射
 - `Function/Con_Motor.c` — ★电机控制三环（速度/角度/位置）+ PID_Car_Straight 整车直行（梯形变速+偏航修正）
 - `Function/Control.c` — ★全局任务表 Control_TaskTable + 全部任务回调（含 TASK_CAR_STRAIGHT）
 - `Function/Con_Task.h/c` — 任务队列调度器（含 Con_Task_Skip 强制跳过）
-- `Function/Serial_porting.c` — ★串口状态机 ISR(Status 0/1/2) + 错误中断处理 + HEX/ABC 协议解析
+- `Serial/Serial_porting.c` — ★串口状态机 ISR(Status 0/1/2) + 错误中断处理 + HEX/ABC 协议解析
 - `Hardware/Motor.h` — Motor_Typedef 三环 PID + Motor_Param_Typedef（含 Wheel_Cm=20cm）
 - `Hardware/Encoder_Key.c` — EC11 旋转编码器驱动（GPIOA 中断）
 - `README.md` — 引脚配置、UART/编码器/电机引脚表

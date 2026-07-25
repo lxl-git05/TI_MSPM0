@@ -8,28 +8,28 @@
 // 注意：以下"字"指 int16_t 数据（高低位合成后的完整数据）
 //       "高低位对"指 D_H + D_L（1个字占3字节：高位+低位+校验码）
 
-#define Serial_RX_MAX_WORDS  30   	 // 最大接收"字"的个数（高低位对的个数）
-                                     // 例：LEN=10 表示接收10个int16_t数据（占30字节数据区）
+#define Serial_RX_MAX_WORDS  256       // 最大接收"字"的个数（高低位对的个数）
+                                        // 例：LEN=10 表示接收10个int16_t数据（占30字节数据区）
 
 #define Serial_RX_BUF_SIZE   (3 * Serial_RX_MAX_WORDS + 5)
-                                     // 接收缓冲区总字节数 = 帧头2 + LEN1 + 数据(N*3) + 帧尾2
-                                     // 其中 N = Serial_RX_MAX_WORDS
+                                        // 接收缓冲区总字节数 = 帧头2 + LEN1 + 数据(N*3) + 帧尾2
+                                        // 其中 N = Serial_RX_MAX_WORDS
 
 // ========== ABC协议相关 ==========
-#define Serial_ABC_BUF_SIZE      40   // ABC字符串接收缓冲区大小（字节）
-#define Serial_Wait_Tail_MAX     25   // ABC帧尾等待超时阈值（防止死循环）
+#define Serial_ABC_BUF_SIZE      40     // ABC字符串接收缓冲区大小（字节）
+#define Serial_Wait_Tail_MAX     25     // ABC帧尾等待超时阈值（防止死循环）
 
 // ============== 错误码定义 ==============
 typedef enum {
     Serial_Err_None = 0x00,
 
     // ABC错误（0x01~0x0F）
-    Serial_Err_ABC_Head = 0x01,      // ABC帧头错误
-    Serial_Err_ABC_Tail = 0x02,      // ABC帧尾错误
+    Serial_Err_ABC_Head = 0x01,         // ABC帧头错误
+    Serial_Err_ABC_Tail = 0x02,         // ABC帧尾错误
 
     // HEX错误（0x10~0xFF）
-    Serial_Err_HEX_Head = 0x10,      // HEX帧头错误
-    Serial_Err_HEX_Tail = 0x20,      // HEX帧尾错误
+    Serial_Err_HEX_Head = 0x10,         // HEX帧头错误
+    Serial_Err_HEX_Tail = 0x20,         // HEX帧尾错误
     Serial_Err_HEX_Len_OverFlow = 0x30, // LEN值超过Serial_RX_MAX_WORDS上限
 } Serial_Error_Typedef;
 
@@ -82,9 +82,7 @@ extern Serial_Agreement_ABC_TypeDef Serial_Agreement_ABC;
 extern Serial_Agreement_HEX_TypeDef Serial_Agreement_HEX;
 
 // ============== 函数声明 ==============
-// ABC协议初始化
 void Serial_Agreement_ABC_Init(void);
-// HEX协议初始化
 void Serial_Agreement_HEX_Init(void);
 
 #endif // !__SERIAL_BASE_H

@@ -92,8 +92,8 @@ void Mode_4_Loop(void)
     OLED_Printf(0, 30, OLED_6X8, "S1:%s",Serial1.ABC_Data.Serial_New_Package_ABC) ;
     OLED_Printf(0, 40, OLED_6X8, "S2:%s",Serial2.ABC_Data.Serial_New_Package_ABC) ;
 
-    OLED_Printf(0 , 50, OLED_6X8, "S1:%x",Serial1.rxLen) ;
-    OLED_Printf(40 , 50, OLED_6X8, "S2:%x",Serial2.rxLen) ;
+    OLED_Printf(0 , 50, OLED_6X8, "S1:%x",Serial1.rxCnt) ;
+    OLED_Printf(40 , 50, OLED_6X8, "S2:%x",Serial2.rxCnt) ;
     OLED_Printf(70, 50, OLED_6X8, "Yaw:%.3f",IMU_Yaw_Abs_Get()) ;
 }
 
