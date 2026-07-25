@@ -15,6 +15,6 @@ void Initial_All(void)
     Timer_Counter_Init() ;
 
     // function
-    Serial_Init();
+    // Serial_Init();
 
 }
