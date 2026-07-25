@@ -1,6 +1,5 @@
 #include "Mode_4.h"
 #include "AllHeader.h"
-
 // ★ 任务表已迁移到 Control.c 作为全局共享表，直接引用即可
 // 新任务只需在 Control.c 的 Control_TaskTable 中注册
 
@@ -100,7 +99,7 @@ void Mode_4_Loop(void)
 
 void Mode_4_Tick(void)
 {
-	Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%.2f\n",PID_Angle.goalPoint , PID_Angle.realPoint_Now , PID_Angle.setPoint,MPU_Yaw_Abs_Get()) ;
+	Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%.2f\n",PID_Angle.goalPoint , PID_Angle.realPoint_Now , PID_Angle.setPoint,IMU_Yaw_Abs_Get()) ;
 }
 
 void Mode_4_Exit(void)
