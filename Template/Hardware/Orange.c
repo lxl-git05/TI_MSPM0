@@ -7,7 +7,7 @@ float x_real = 0.0f;	// 1. x偏差
 float y_real = 0.0f;	// 2. y偏差
 int Oran_Item[4] = {0}; // 3.4.5.6. 三角形 正方形 五角星 圆形 入画数量
 bool isHomeIn = false ;	// 7. 终点入画判断
-
+bool isOver  = false  ;	// 8. 本题结束
 
 // 香橙派数据更新,在Mode_G实现20ms固定更新
 void Oran_Update(void)
@@ -27,6 +27,7 @@ void Oran_Update(void)
 			Oran_Item[2]   = Serial_GetHexData(&Serial2 , 5) ;
 			Oran_Item[3]   = Serial_GetHexData(&Serial2 , 6) ;
 			isHomeIn   	   = Serial_GetHexData(&Serial2 , 7) ;
+			isOver	   	   = Serial_GetHexData(&Serial2 , 8) ;
 		}
         // 
 		else if (Oran_cmd == 1)

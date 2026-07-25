@@ -18,7 +18,7 @@ TI MSPM0G3507 (Cortex-M0+) 智能小车竞赛项目。支持巡线、路口识�
 | Con_Motor | `Function/` | 电机控制（速度环+角度环+位置环+整车直行） |
 | Mode | `Mode/` | 应用模式（Manager/Mode_1/Mode_2/Mode_3/Mode_4） |
 | App | `App/` | 状态机/菜单/统一初始化 |
-| Tools | `Tools/` | 工具（LED闪烁/LED_Flash/Timer_Counter） |
+| Tools | `Tools/` | 工具（LED闪烁/LED_Flash/Timer_Counter/TJC_LCD） |
 
 ## 全局依赖链
 
@@ -72,7 +72,7 @@ ti_msp_dl_config.h (SysConfig 生成, 60+ 厂商头文件)
 | GROUP1 (GPIOA) | 异步 | `GROUP1_IRQHandler` | EC11 旋转编码器 | `Mode/Mode_G.c` |
 | UART_0 | 异步 | `UART_0_INST_IRQHandler` | Serial1 RX 中断（状态机） | `Function/Serial_porting.c` |
 | UART_1 | 异步 | `UART_1_INST_IRQHandler` | Serial2 RX 中断（状态机） | `Function/Serial_porting.c` |
-| UART_4 | 异步 | `UART_4_INST_IRQHandler` | Serial4 RX 中断（状态机） | `Function/Serial_porting.c` |
+| UART_4 | 异步 | `UART_3_INST_IRQHandler` | Serial4 RX 中断（状态机） | `Function/Serial_porting.c` |
 
 ## 当前状态：整车控制算法开发阶段
 
@@ -196,6 +196,13 @@ PID_Car_Straight_Tick();                // 20ms: 平均距离→PID→梯形限�
 Con_Task_Enqueue(TASK_CAR_STRAIGHT, 100, 2, 0, 0);  // 直行100cm, 容差2cm
 Con_Task_Enqueue(TASK_CAR_STRAIGHT, 0, 0, 0, 0);    // 永远直行, Con_Task_Skip停止
 Con_Task_Skip();                        // 强制跳过当前任务（保留队列后续任务）
+
+// ===== TJC_LCD 串口屏调参 =====
+TJC_LCD_Process();                      // Loop首行调用，解析Serial4 ABC数据
+if (LCD_Key_Pressed(LCD_KEY_1)) { }     // 按键检测（读后清零）
+LCD_Param_Set(1, &kp, 0, 100);          // 滑块1→整型 0~100 映射
+LCD_Param_Set_Float(2, &ki, 0.0f, 2.0f); // 滑块2→浮点 0.0~2.0 映射
+// 移植：在 #include "TJC_LCD.h" 前 #define TJC_LCD_SERIAL Serial2 等
 ```
 
 ### 文件修改规范
@@ -219,7 +226,8 @@ Con_Task_Skip();                        // 强制跳过当前任务（保留队�
 - `IMU/IMU.c` — Turn_Yaw到位检测实函数（基于IMU_Yaw_Abs_Get）
 - `IMU/ICM_42688_base.h/c` — ICM42688 I2C驱动（MSPM0适配）
 - `IMU/ICM42688_Mahony.h/c` — Mahony AHRS 四元数滤波（纯数学，零移植成本）
-- `Mode/Mode_2.c` — 综合测试模式（Encoder+Serial1/2）+ IMU OLED显示
+- `Mode/Mode_2.c` — ★TJC_LCD调参演示（虚拟按键+滑块映射+OLED实时显示）
+- `Tools/TJC_LCD.h/c` — ★TJC串口屏调参库（虚拟按键+滑块→变量映射，移植配置宏）
 - `Mode/Mode_3.c` — PID调参模式（MODE3_SELECT=1: Speed/Angle/Pos/Straight 4循环切换）
 - `Mode/Mode_4.c` — Con_Task 演示模式（任务序列+OLED+按键入队）
 - `Function/Con_Motor.c` — ★电机控制三环（速度/角度/位置）+ PID_Car_Straight 整车直行（梯形变速+偏航修正）
