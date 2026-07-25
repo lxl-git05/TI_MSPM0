@@ -335,7 +335,7 @@ UART3.rxPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric7";
 
 UART4.targetBaudRate                   = 115200;
 UART4.enabledInterrupts                = ["RX"];
-UART4.$name                            = "UART_4";
+UART4.$name                            = "UART_3";
 UART4.peripheral.rxPin.$assign         = "PA25";
 UART4.peripheral.txPin.$assign         = "PA26";
 UART4.txPinConfig.direction            = scripting.forceWrite("OUTPUT");

@@ -319,3 +319,15 @@
 | Mode_4.c | ./Mode/Mode_4.c | 修改 | OLED switch 新增 TASK_CAR_STRAIGHT 标签 ">>> Car Straight" |
 
 > **架构**: 位置环分两层——①单电机层 Motorx_Pos_Update_Tick（同Angle模式，供Mode_3调参）；②整车层 PID_Car_Straight_Tick（双编码器平均+IMU yaw P修正，Kp=5.0）。TASK_CAR_STRAIGHT 的特殊语义：p[0]≤0 时 IsExit 永远返回 false，需外部 Con_Task_Skip() 强制退出（用于"一直直走"场景）。
+
+## 2026-07-25 | 实现TJC_LCD串口屏调参库 + 修复Serial4 ISR
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| TJC_LCD.h | ./Tools/TJC_LCD.h | 修改 | 填充API声明：LCD_KEY_1~6宏、LCD_Param_Set/Pressed函数 |
+| TJC_LCD.c | ./Tools/TJC_LCD.c | 修改 | 核心实现：Serial4 ABC协议解析、按键/滑块状态管理、0-100→[min,max]映射 |
+| AllHeader.h | ./App/AllHeader.h | 修改 | tools层新增 #include "TJC_LCD.h" |
+| AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All() tools段新增 TJC_LCD_Init() |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | LCD演示：4个虚拟按键(Kp±/Kd±) + 2个滑块(Kp 0-100整数 / Ki 0.0-2.0浮点) |
+| Serial_porting.c | ./Function/Serial_porting.c | 修改 | ★修复Serial4 ISR函数名 UART_4→UART_3（解决Default_Handler死循环） |
+| Serial_porting.h | ./Function/Serial_porting.h | 修改 | 注释修正 UART_4→UART_3 |

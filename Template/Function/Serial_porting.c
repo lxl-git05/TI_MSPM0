@@ -67,9 +67,9 @@ void Serial_Init(void)
 #endif
 
 #ifdef Serial4_Enable
-    // ----- Serial4 (UART_4, 串口屏, 115200) -----
-    Serial4.uart  = UART_4_INST;
-    Serial4.IRQN  = UART_4_INST_INT_IRQN;
+    // ----- Serial4 (UART_3, 串口屏, 115200) -----
+    Serial4.uart  = UART_3_INST;
+    Serial4.IRQN  = UART_3_INST_INT_IRQN;
     Serial4.rxLen = 0;
     Serial4.rxOverflow = false;
     Serial4.Status = 0;
@@ -99,7 +99,7 @@ void Serial_Init(void)
         DL_UART_MAIN_INTERRUPT_BREAK_ERROR);
 #endif
 #ifdef Serial4_Enable
-    DL_UART_Main_enableInterrupt(UART_4_INST,
+    DL_UART_Main_enableInterrupt(UART_3_INST,
         DL_UART_MAIN_INTERRUPT_OVERRUN_ERROR |
         DL_UART_MAIN_INTERRUPT_FRAMING_ERROR |
         DL_UART_MAIN_INTERRUPT_BREAK_ERROR);
@@ -508,13 +508,13 @@ void UART_2_INST_IRQHandler(void)
 }
 
 #ifdef Serial4_Enable
-void UART_4_INST_IRQHandler(void)
+void UART_3_INST_IRQHandler(void)
 {
     Serial_RX_FLAG_Typedef Rx_State;
-    switch (DL_UART_Main_getPendingInterrupt(UART_4_INST))
+    switch (DL_UART_Main_getPendingInterrupt(UART_3_INST))
     {
         case DL_UART_MAIN_IIDX_RX:
-            Serial4.rx_temp = DL_UART_Main_receiveData(UART_4_INST);
+            Serial4.rx_temp = DL_UART_Main_receiveData(UART_3_INST);
 
             Rx_State = Serial_Rx_State_Check(&Serial4);
 
@@ -529,7 +529,7 @@ void UART_4_INST_IRQHandler(void)
         case DL_UART_MAIN_IIDX_PARITY_ERROR:
         case DL_UART_MAIN_IIDX_FRAMING_ERROR:
         case DL_UART_MAIN_IIDX_NOISE_ERROR:
-            DL_UART_Main_receiveData(UART_4_INST);
+            DL_UART_Main_receiveData(UART_3_INST);
             break;
 
         default:

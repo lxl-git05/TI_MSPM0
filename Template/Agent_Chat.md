@@ -149,15 +149,61 @@ else
 
 
 
+# 6. LCD调参
 
+我现在在准备使用TJC_LCD进行调参，使用Serial4检测是否能接收到消息，但是现在只要串口屏发送消息就会进入
 
+```c
+/* This is the code that gets called when the processor receives an unexpected  */
+/* interrupt.  This simply enters an infinite loop, preserving the system state */
+/* for examination by a debugger.                                               */
+void Default_Handler(void)
+{
+    /* Enter an infinite loop. */
+    while (1) {
+    }
+}
 
+```
 
+为什么会这样
 
++++
 
+现在我建立了一个TJC_LCD库，用来进行调试，目前有两种信息：
 
++ 按键信息：按下松开后会发送：`@LCD_KEY_X$#` , X取1-6
++ 滑块信息：滑块滑动后会发送：`@LCD_Param_1=%d$#`，%d取0-100
 
+那么需要的伪代码
 
+```c
+// 1. LCD虚拟按键
+if (LCD_Key(1-6,使用宏定义))
+{
+    // 业务逻辑
+}
+// 2. 滑块模块
+LCD_Param(&变量名,min值,max值)	// 实现变量赋值,滑块发送的是0-100，那么min->max需要进行映射，如果是整数就取整数，小数就正常映射
+```
+
++ 具体Serial4解析其实就是以下函数：
+
+```c
+// ============== ABC协议 ==============
+uint8_t Serial_GetNewPackageFlag_ABC(Serial_Typedef *pSerial);
+int Serial_GetError_ABC(Serial_Typedef *pSerial);
+bool Serial_SetFloatData(Serial_Typedef *pSerial, char *KeyWord, char *cmd, float *Data);
+bool Serial_SetIntData(Serial_Typedef *pSerial, char *KeyWord, char *cmd, int *Data);
+bool Serial_Check_Str(Serial_Typedef *pSerial, char *KeyWord);     // 子串匹配（strstr）
+bool Serial_CheckCmd(Serial_Typedef *pSerial, char *cmd);          // 精确匹配（strcmp，借鉴待移植库）
+```
+
++ 开始进行计划，可以否认我的API，也可以提出改进意见，包括LCD端和TI板子端，实验代码写在Mode2，库写在TJC_LCD.c/.h里面
+
++++
+
+加入宏定义：包含串口号、按键个数、滑块个数等，方便后续移植
 
 
 

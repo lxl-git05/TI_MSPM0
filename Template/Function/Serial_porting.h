@@ -53,7 +53,7 @@ extern Serial_Typedef Serial2;   // UART_1 — 树莓派通信 (115200)
 extern Serial_Typedef Serial3;   // UART_2 — PB15/PB16 (115200)
 #endif
 #ifdef Serial4_Enable
-extern Serial_Typedef Serial4;   // UART_4 — 串口屏 (115200)
+extern Serial_Typedef Serial4;   // UART_3 — 串口屏 (115200)
 #endif
 
 // ============== 初始化/发送 ==============
