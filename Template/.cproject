@@ -48,6 +48,7 @@
                                     <listOptionValue value="E:/TI/TI_MSPM0/Template/Mode"/>
                                     <listOptionValue value="E:/TI/TI_MSPM0/Template/MySystem"/>
                                     <listOptionValue value="E:/TI/TI_MSPM0/Template/Software"/>
+                                    <listOptionValue value="E:/TI/TI_MSPM0/Template/Serial"/>
                                 </option>
                                 <option id="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.DEFINE.1117539790" superClass="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.DEFINE" valueType="definedSymbols">
                                     <listOptionValue value="${COM_TI_MSPM0_SDK_SYMBOLS}"/>

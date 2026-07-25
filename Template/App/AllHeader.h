@@ -23,7 +23,6 @@
 
 // function层
 #include "MPU6050_Angle.h"
-// #include "Serial_porting.h"
 #include "Control.h"
 
 
@@ -32,6 +31,9 @@
 #include "Mode_1.h"
 #include "Mode_2.h"
 #include "Mode_3.h"
+
+// 串口
+#include "Serial_Drive.h"
 
 // ================== 初始化函数 ==================
 void Initial_All(void) ;
