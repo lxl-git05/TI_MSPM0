@@ -14,7 +14,7 @@ void Initial_All(void)
     Flash_Mode_Init() ;
     Timer_Counter_Init() ;
 
-    // function
-    // Serial_Init();
+    // function — 串口初始化
+    Serial_Init();
 
 }

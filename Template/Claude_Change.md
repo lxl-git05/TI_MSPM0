@@ -81,3 +81,40 @@
 | Serial_porting.c | ./Function/Serial_porting.c | 修改 | ISR完全重写为显式状态机(switch-case)；新增 Serial_SendBytes/Serial_Send_HEX_Package/Serial_CheckCmd；Head2验证防止0xFF误触发 |
 | CLAUDE.md | ./CLAUDE.md | 修改 | 更新标题：状态机重构记录 |
 | Claude_Change.md | ./Claude_Change.md | 修改 | 本轮变更记录 |
+
+## 2026-07-25 19:00 | Serial1 接收回显函数实现
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Serial_Drive.h | ./Serial/Serial_Drive.h | 修改 | 添加完整 Serial1 API：Init/SendByte/SendString/SendData/Printf/GetRxCount/GetRxBuffer/ClearRxBuffer/SetEchoMode/GetEchoMode |
+| Serial_Drive.c | ./Serial/Serial_Drive.c | 修改 | 实现 UART_0_INST_IRQHandler (逐字节RX+缓冲+回显)、Serial1_Init (DMA清理+NVIC使能)、阻塞发送、缓冲管理 |
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | 完整重写为串口回显测试界面：OLED 6行布局(Y=0/10/20/30/40/50)、Key1单击切换回显/Key1长按清缓冲/Key2单击发送测试消息/Key2长按打印摘要、20ms Tick刷新 |
+| AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All 中 Serial_Init() → Serial1_Init() |
+| serial1-echo-mode2-guide.md | (memory) | 新增 | 记录 Serial1 开发规范：Mode_2 独占工作区、Key1/2 单击长按、OLED Y=10倍数、串口驱动逻辑在 Serial_Drive |
+
+## 2026-07-25 20:30 | Serial_porting 优化：错误中断+FIFO防锁+ISR去重+LEN溢出检测
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Serial_porting.c | ./Serial/Serial_porting.c | 修改 | 4项优化：(1)非DMA模式补全DL_UART_MAIN_INTERRUPT_RX使能(之前只启用了RX_TIMEOUT_ERROR，可能导致逐字节RX不触发)；(2)DMA和非DMA模式均启用OVERRUN/FRAMING/BREAK错误中断(防止噪声FIFO锁死)；(3)4个ISR重复代码统一为Serial_RxISR_Dispatch+Serial_Rx_ProcessByte静态函数(从~120行缩减到~30行)；(4)HEX帧收到LEN字段后按预期帧长提前检测溢出(而非等到773字节缓冲区满) |
+| Serial_porting.h | ./Serial/Serial_porting.h | 修改 | 新增 dbg_parse_ok 成功解析计数器（与 dbg_rx_frames 状态机帧检测分开统计） |
+
+## 2026-07-25 20:45 | 加入成功解析计数器 dbg_parse_ok
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Serial_porting.h | ./Serial/Serial_porting.h | 修改 | 新增 `dbg_parse_ok` 字段（校验全部通过的成功解析次数），与 `dbg_rx_frames`（状态机帧检测次数）区分 |
+| Serial_porting.c | ./Serial/Serial_porting.c | 修改 | `dbg_rx_frames++` 移至 `Serial_Rx_ProcessByte`（状态机层）；`dbg_parse_ok++` 放在 `Serial_Parse_HEX/ABC` 成功路径（解析层）；`Serial_PrintDebug` 新增 `Parse OK` 行 |
+
+## 2026-07-25 21:00 | 拆分 Overflow/HW Errors 计数器 + 丢帧检测
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Serial_porting.h | ./Serial/Serial_porting.h | 修改 | 新增 `dbg_hardware`（硬件错误）和 `dbg_frame_lost`（丢帧检测）两个独立计数器 |
+| Serial_porting.c | ./Serial/Serial_porting.c | 修改 | ISR 错误中断改用 `dbg_hardware++`（与协议层 `dbg_overflow` 分离）；HEX/ABC 解析成功前检测 flag 是否已置位→`dbg_frame_lost++`；`Serial_PrintDebug` 新增 `Lost` 和 `HW Errors` 行 |
+
+## 2026-07-25 21:15 | Serial 模块完整说明书
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| README.md | ./Serial/README.md | 新增 | 串口模块完整说明书：架构、硬件配置、协议格式（HEX/ABC）、状态机、API参考、调试打印字段解释、移植步骤（新增实例/换MCU）、常见坑点速查表、高级主题（DMA/中断优先级/高吞吐量）|
