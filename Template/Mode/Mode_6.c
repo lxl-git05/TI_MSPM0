@@ -16,6 +16,7 @@ void Mode_6_Loop(void)
     OLED_Printf(0, 0, OLED_6X8, "===Mode6===") ;
     OLED_Printf(0, 20, OLED_8X16, "isHomeIn:%d",isHomeIn) ;
     OLED_Printf(0, 40, OLED_8X16, "X:%.1f Y:%.1f",x_real , y_real) ;
+    OLED_Printf(0, 55, OLED_8X16, "yaw:%.2f",IMU_Yaw_Abs_Get()) ;
     if (Key_Check(KEY_2, KEY_SINGLE))
     {
         Start = 1 ;
