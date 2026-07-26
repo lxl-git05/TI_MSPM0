@@ -2,6 +2,7 @@
 #include "string.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include "Timer_Counter.h"
 
 // ============== 全局实例 ==============
 #ifdef Serial1_Enable
@@ -304,7 +305,8 @@ static void Serial_Parse_HEX(Serial_Typedef *pSerial)
     }
 
     // 调试
-    Serial_printf(&Serial1, "%d,%d,%d,%d,%d\n",Serial2.HEX_Data.data[0],Serial2.HEX_Data.data[1],Serial2.HEX_Data.data[2],Serial2.HEX_Data.data[3],Serial2.HEX_Data.data[4]);
+    // Timer_Counter_Func() ;
+    // Serial_printf(&Serial1, "%d,%d,%d,%d,%d\n",Serial2.HEX_Data.data[0],Serial2.HEX_Data.data[1],Serial2.HEX_Data.data[2],Serial2.HEX_Data.data[3],Serial2.HEX_Data.data[4]);
     // 检测丢帧：旧帧未被主循环消费就被新帧覆盖
 #ifdef Serial_Debug
     if (pSerial->HEX_Data.frame_valid)

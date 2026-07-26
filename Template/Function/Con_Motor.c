@@ -259,6 +259,20 @@ float PID_Angle_Get_Yaw(void)
 	return IMU_Yaw_Abs_Get() - PID_Angle_StartYaw;
 }
 
+// 配置旋转速度:High
+void PID_Angle_Speed_High_On(void)
+{
+	PID_Angle.OutMax = 100 ;
+	PID_Angle.OutMin =-100 ;
+}
+
+// 配置旋转速度:Low
+void PID_Angle_Speed_Low_On(void)
+{
+	PID_Angle.OutMax = 20 ;
+	PID_Angle.OutMin =-20 ;
+}
+
 // 20ms Tick: MPU更新→PID计算→差速输出（A反转 B正转 = 顺时针为正）
 void PID_Angle_Tick(void)
 {

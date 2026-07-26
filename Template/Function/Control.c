@@ -253,6 +253,10 @@ void Task_Oran_Track_Tick(float p[4])
 {
     // 20ms: 读取视觉数据 → PID计算 → 电机差速驱动
     Oran_XY_PID_Update();
+	// 打印调试信息
+	Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",PID_Oran_X.goalPoint , PID_Oran_X.realPoint_Now , PID_Oran_X.setPoint,PID_Oran_Y.goalPoint , PID_Oran_Y.realPoint_Now , PID_Oran_Y.setPoint) ; 
+	// Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",PID_Oran_X.goalPoint , PID_Oran_X.realPoint_Now , PID_Oran_X.setPoint) ; 
+	// Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",PID_Oran_Y.goalPoint , PID_Oran_Y.realPoint_Now , PID_Oran_Y.setPoint) ; 
 }
 
 bool Task_Oran_Track_IsExit(float p[4])

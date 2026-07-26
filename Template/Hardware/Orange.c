@@ -43,7 +43,7 @@ void Oran_Update(void)
 Pid_Typedef PID_Oran_X ;
 Pid_Typedef PID_Oran_Y ;
 #define Oran_XY_X_Check ( -1)	// X纠正方向
-#define Oran_XY_Y_Check ( 1)	// Y纠正方向
+#define Oran_XY_Y_Check (  1)	// Y纠正方向
 
 
 void Oran_PID_Func_X(void)

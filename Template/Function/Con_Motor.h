@@ -62,6 +62,8 @@ void PID_Angle_Reset(void) ;        // 记录当前yaw为基准 + 清空PID历�
 void PID_Angle_Tar_Yaw(float delta);// 配置相对增量角度（+顺时针/-逆时针，基于Reset时刻的yaw基准）
 float PID_Angle_Get_Yaw(void) ;     // 获取相对yaw角度（当前值 - 起始基准）
 void PID_Angle_Tick(void) ;         // 20ms Tick: MPU更新→PID→差速输出(A-/B+)
+void PID_Angle_Speed_High_On(void) ;// 配置旋转速度:High
+void PID_Angle_Speed_Low_On(void) ; // 配置旋转速度:Low
 
 //// 位置环
 //// ================= 电机编码器双轮外环 =================

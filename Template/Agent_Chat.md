@@ -207,6 +207,17 @@ bool Serial_CheckCmd(Serial_Typedef *pSerial, char *cmd);          // 精确匹�
 
 
 
+串口Orange通信解析帧意义：
+
+```c
+Oran_cmd：模式，0为工作模式
+x_real: 相对目标值的水平旋转偏移(也就是说PID的goal恒为0，只要real接近0就算是追踪到位了)
+y_real: 相对目标值的直线行驶偏移
+Oran_Item: 需要追踪的物品在摄像头内画面的各自的个数(0为没有。0以上为个数)
+isHomeIn：  终点是否入画
+isOver：暂时没有用
+```
+
 
 
 

@@ -6,7 +6,7 @@
 // ============== 串口使能宏（注释即禁用）==============
 #define Serial1_Enable      // UART_0 (TX=PA10, RX=PA11)
 #define Serial2_Enable      // UART_1 (TX=PA8,  RX=PA9)
-//#define Serial3_Enable      // UART_2 (TX=PB15, RX=PB16)
+#define Serial3_Enable      // UART_2 (TX=PB15, RX=PB16)
 #define Serial4_Enable      // UART_3 (TX=PA26, RX=PA25)
 
 // ============== 调试模式（注释即关闭）==============
