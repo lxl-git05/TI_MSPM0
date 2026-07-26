@@ -56,6 +56,9 @@ MyPWM_Typedef MyPWM_Motor_A_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C0_IDX
 MyPWM_Typedef MyPWM_Motor_B_IN1 = {PWM_MOTOR_PWM_INST, GPIO_PWM_MOTOR_PWM_C1_IDX, 1000.0f, 0.0f, 4000000, 0};
 MyPWM_Typedef MyPWM_Stepper1    = {PWM_Stepper1_INST, GPIO_PWM_Stepper1_C0_IDX, 65535.0f, 0.0f, PWM_Stepper1_INST_CLK_FREQ, PWM_Stepper1_INST_INT_IRQN};
 MyPWM_Typedef MyPWM_Stepper2    = {PWM_Stepper2_INST, GPIO_PWM_Stepper2_C0_IDX, 65535.0f, 0.0f, PWM_Stepper2_INST_CLK_FREQ, PWM_Stepper2_INST_INT_IRQN};
+// 舵机 PWM（TIMG8: 1MHz时钟, period=20000 → 50Hz, 1us/count）
+MyPWM_Typedef MyPWM_Servo1     = {PWM_Servo_INST, GPIO_PWM_Servo_C0_IDX, 2500.0f, 500.0f, PWM_Servo_INST_CLK_FREQ, 0};
+MyPWM_Typedef MyPWM_Servo2     = {PWM_Servo_INST, GPIO_PWM_Servo_C1_IDX, 2500.0f, 500.0f, PWM_Servo_INST_CLK_FREQ, 0};
 
 // ====================================================================
 // Encoder 实例定义

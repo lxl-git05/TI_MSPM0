@@ -17,6 +17,8 @@ extern MyPWM_Typedef MyPWM_Motor_A_IN1;  // Fre:20kHz(消音), ARR:1000
 extern MyPWM_Typedef MyPWM_Motor_B_IN1;
 extern MyPWM_Typedef MyPWM_Stepper1;     // 步进电机1 (TIMG6, PA21)
 extern MyPWM_Typedef MyPWM_Stepper2;     // 步进电机2 (TIMG7, PA23)
+extern MyPWM_Typedef MyPWM_Servo1;      // 舵机1 (TIMG8 CCP0, PA29, 50Hz)
+extern MyPWM_Typedef MyPWM_Servo2;      // 舵机2 (TIMG8 CCP1, PA2,  50Hz)
 
 // PWM初始化 — 校验配置是否合理
 void MyPWM_Init(MyPWM_Typedef *pwm);

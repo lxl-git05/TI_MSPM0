@@ -13,6 +13,7 @@
 #include "RGB.h"
 #include "Encoder_Key.h"
 #include "Stepper_PWM.h"
+#include "Servo.h"
 #include "Orange.h"
 
 // Hardware层

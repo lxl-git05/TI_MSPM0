@@ -11,20 +11,6 @@ typedef struct {
     const char *name;  // 任务 "Speed"
 } TuneLabel;
 
-static const TuneLabel s_labels[TUNE_COUNT] = {
-    { "Motor_A", "Speed"    },  // TUNE_MOTOR_A_SPEED
-    { "Motor_A", "Angle"    },  // TUNE_MOTOR_A_ANGLE
-    { "Motor_A", "Pos"      },  // TUNE_MOTOR_A_POS
-    { "Motor_B", "Speed"    },  // TUNE_MOTOR_B_SPEED
-    { "Motor_B", "Angle"    },  // TUNE_MOTOR_B_ANGLE
-    { "Motor_B", "Pos"      },  // TUNE_MOTOR_B_POS
-    { "Car",     "Straight" },  // TUNE_CAR_STRAIGHT
-    { "Gyro",    "YawPID"   },  // TUNE_GYRO_YAW
-    { "Gyro",    "Cal"      },  // TUNE_GYRO_CAL
-    { "Stepper", "S1"       },  // TUNE_STEPPER_S1
-    { "Stepper", "S2"       },  // TUNE_STEPPER_S2
-};
-
 // ==================== 菜单状态 ====================
 static int8_t s_cursor = 0;  // 当前浏览位置
 
@@ -273,6 +259,21 @@ void Tune_Stepper_S2_Tick(float p[4])
 bool Tune_AlwaysFalse(float p[4]) { return false; }
 
 // ==================== 任务描述表（同 Control_TaskTable）====================
+// 修改次序只需要将下面两个表各自位置交换即可
+static const TuneLabel s_labels[TUNE_COUNT] = {
+    { "Motor_A", "Speed"    },  // TUNE_MOTOR_A_SPEED
+    { "Motor_A", "Angle"    },  // TUNE_MOTOR_A_ANGLE
+    { "Motor_A", "Pos"      },  // TUNE_MOTOR_A_POS
+    { "Motor_B", "Speed"    },  // TUNE_MOTOR_B_SPEED
+    { "Motor_B", "Angle"    },  // TUNE_MOTOR_B_ANGLE
+    { "Motor_B", "Pos"      },  // TUNE_MOTOR_B_POS
+    { "Car",     "Straight" },  // TUNE_CAR_STRAIGHT
+    { "Gyro",    "YawPID"   },  // TUNE_GYRO_YAW
+    { "Gyro",    "Cal"      },  // TUNE_GYRO_CAL
+    { "Stepper", "S1"       },  // TUNE_STEPPER_S1
+    { "Stepper", "S2"       },  // TUNE_STEPPER_S2
+};
+
 Task_Descriptor_Typedef Menu_Tune_Table[TUNE_COUNT] = {
     // TUNE_MOTOR_A_SPEED
     { Tune_MotorA_Speed_Setup, Tune_MotorA_Speed_Run, Tune_AlwaysFalse, Tune_MotorA_Speed_Tick },
@@ -331,6 +332,11 @@ void Menu_Tune_Init(void)
 
 int Menu_Tune_Cursor(void) { return s_cursor; }
 
+void LCD_Check_CMD(void)
+{
+    if (LCD_Cmd_Check("LCD_IMU_Check")) {s_cursor = TUNE_GYRO_CAL ; Con_Task_Enqueue(s_cursor , 0 , 0 , 0 , 0) ;}
+}
+
 void Menu_Tune_Loop(void)
 {
     // Con_Task_Loop 必须每帧调用（负责出队→Setup→Run→IsExit）
@@ -339,12 +345,13 @@ void Menu_Tune_Loop(void)
     if (Con_Task_IsBusy())
     {
         // ---- 任务运行中：Run 回调已处理 OLED + Serial1 ----
-        if (Key_Check(KEY_1, KEY_LONG))
+        if (Key_Check(KEY_1, KEY_LONG) || LCD_Cmd_Check("LCD_Param_Skip"))
             Con_Task_Skip();
     }
     else
     {
         // ---- 浏览模式：KEY_1单击下一项, KEY_1长按入队 ----
+        LCD_Check_CMD() ;
         if (Key_Check(KEY_1, KEY_SINGLE))
             s_cursor = NEXT_CURSOR(s_cursor);
 

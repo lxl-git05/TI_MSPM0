@@ -383,3 +383,17 @@
 | Menu_Param.c | ./Function/Menu_Param.c | 修改 | 新增3个Tick：Gyro_Cal输出biasX/Y/Z(%.4f)，Stepper1/2输出Pos_Tar/Pos_Now/Speed_Now；Menu_Tune_Table三处NULL→新Tick；头注释更新 |
 
 > **当前状态**：11个调参任务全部有Tick输出，无NULL Tick。PID任务输出goal/real/set，GyroCal输出三轴偏置，Stepper输出位置+速度。
+
+## 2026-07-26 16:00 | 新增舵机驱动库 + Mode_5循环演示
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Servo.h | ./Hardware/Servo.h | 新增 | 舵机驱动头文件：Servo_Typedef结构体（PWM+角度/脉宽范围）、Init/SetAngle/SetPulse_us/GetAngle API |
+| Servo.c | ./Hardware/Servo.c | 新增 | 舵机驱动实现：Init中SetLoadValue(20000→50Hz)+归中，SetAngle线性映射角度→脉宽→Compare，双层限幅（MyPWM层+Servo层） |
+| MySystem.c | ./MySystem/MySystem.c | 修改 | 新增 MyPWM_Servo1(CCP0/PA29) + MyPWM_Servo2(CCP1/PA2) 实例，Compare_Max=2500/Min=500 |
+| MyPWM.h | ./MySystem/MyPWM.h | 修改 | 新增 MyPWM_Servo1/2 extern 声明 |
+| AllHeader.h | ./App/AllHeader.h | 修改 | 新增 #include "Servo.h" |
+| AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All() 中新增 Servo_Init x2（0~180°/500~2500us） |
+| Mode_5.c | ./Mode/Mode_5.c | 修改 | 舵机循环演示：双舵机同步0°→180°→0°，步进1°/tick(20ms)=50°/s，Exit时归中90° |
+
+> **SysConfig配置**：用户已将 PWM4(PWM_Servo/TIMG8) 的 clockDivider=8、prescale=3（总分频×32→1MHz）。PWM周期由C代码 MyPWM_SetLoadValue(20000) 运行时设置（50Hz）。每个计数=1µs，pulse_us值直接等于Compare值。

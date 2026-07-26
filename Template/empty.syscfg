@@ -262,8 +262,11 @@ PWM3.peripheral.$assign                 = "TIMG7";
 PWM3.peripheral.ccp0Pin.$assign         = "PA23";
 
 PWM4.$name                              = "PWM_Servo";
-PWM4.timerStartTimer                    = true;
 PWM4.pwmMode                            = "EDGE_ALIGN_UP";
+PWM4.timerCount                         = 20000;
+PWM4.timerStartTimer                    = true;
+PWM4.clockDivider                       = 8;
+PWM4.clockPrescale                      = 4;
 PWM4.peripheral.$assign                 = "TIMG8";
 PWM4.peripheral.ccp0Pin.$assign         = "PA29";
 PWM4.peripheral.ccp1Pin.$assign         = "PA2";
@@ -333,20 +336,13 @@ UART3.peripheral.txPin.$assign = "PB15";
 UART3.txPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric6";
 UART3.rxPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric7";
 
-UART4.targetBaudRate                   = 115200;
-UART4.enabledInterrupts                = ["RX"];
-UART4.$name                            = "UART_3";
-UART4.peripheral.rxPin.$assign         = "PA25";
-UART4.peripheral.txPin.$assign         = "PA26";
-UART4.txPinConfig.direction            = scripting.forceWrite("OUTPUT");
-UART4.txPinConfig.hideOutputInversion  = scripting.forceWrite(false);
-UART4.txPinConfig.onlyInternalResistor = scripting.forceWrite(false);
-UART4.txPinConfig.passedPeripheralType = scripting.forceWrite("Digital");
-UART4.txPinConfig.$name                = "ti_driverlib_gpio_GPIOPinGeneric16";
-UART4.rxPinConfig.hideOutputInversion  = scripting.forceWrite(false);
-UART4.rxPinConfig.onlyInternalResistor = scripting.forceWrite(false);
-UART4.rxPinConfig.passedPeripheralType = scripting.forceWrite("Digital");
-UART4.rxPinConfig.$name                = "ti_driverlib_gpio_GPIOPinGeneric17";
+UART4.$name                    = "UART_3";
+UART4.targetBaudRate           = 115200;
+UART4.enabledInterrupts        = ["RX"];
+UART4.peripheral.rxPin.$assign = "PA25";
+UART4.peripheral.txPin.$assign = "PA26";
+UART4.txPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric16";
+UART4.rxPinConfig.$name        = "ti_driverlib_gpio_GPIOPinGeneric17";
 
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future
