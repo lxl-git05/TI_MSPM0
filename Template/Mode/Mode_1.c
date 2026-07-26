@@ -50,7 +50,7 @@ void Mode_1_Loop(void)
 
 		// 各种模式
 		// 1. 模式1: KEY_0长按 → IMU重新标定并写入AT内存
-		if (sub_mode == 1 && Key_Check(KEY_0, KEY_LONG))
+		if ((sub_mode == 1 && Key_Check(KEY_0, KEY_LONG)) || LCD_Cmd_Check("LCD_IMU_Check"))
 		{
             // OLED展示
             OLED_Printf(0, 40, OLED_8X16, "IMU_Check...") ;

@@ -331,3 +331,55 @@
 | Mode_2.c | ./Mode/Mode_2.c | 修改 | LCD演示：4个虚拟按键(Kp±/Kd±) + 2个滑块(Kp 0-100整数 / Ki 0.0-2.0浮点) |
 | Serial_porting.c | ./Function/Serial_porting.c | 修改 | ★修复Serial4 ISR函数名 UART_4→UART_3（解决Default_Handler死循环） |
 | Serial_porting.h | ./Function/Serial_porting.h | 修改 | 注释修正 UART_4→UART_3 |
+
+## 2026-07-26 | TJC_LCD 极简重写（无Init/Process，自包含函数+flag恢复模式）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| TJC_LCD.h | ./Tools/TJC_LCD.h | 修改 | 重写：移除Init/Process/Key_Pressed/Param_Set，新增LCD_Key_Check/Set_Int/Float/Cmd_Check，LCD_PARAM_X宏 |
+| TJC_LCD.c | ./Tools/TJC_LCD.c | 修改 | 重写：无状态设计，每函数独立获取/恢复flag，strstr+sscanf解析，内置0-100→[min,max]映射 |
+| AllHeader.c | ./App/AllHeader.c | 修改 | 移除 TJC_LCD_Init() 调用（无Init设计不需要） |
+| Mode_5.c | ./Mode/Mode_5.c | 修改 | TJC_LCD实验：4按键(Kp±/Kd±)+2滑块(整数+浮点映射)+通用指令Reset |
+
+## 2026-07-26 15:00 | Mode_6 物品搜索→定位→夹取状态机
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Mode_6.c | ./Mode/Mode_6.c | 修改 | ★实现5状态机：Init(等按键)→No_First(自转搜索:90°→360°CCW, Oran_Item[0]>0即中断)→No_Item(停车等待)→Find_Item(TASK_ORAN_TRACK逼近)→Get_Item(Elec_ON+等500ms)→Over；新增Search_Phase_Typedef子阶段枚举+Con_Task_Init+Exit电机/电磁铁清理 |
+
+## 2026-07-26 15:45 | Mode_2 找寻终点（方案A风格）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | ★方案A风格实现找寻终点：3函数API(Find_Home_Start/Run/Tick)，内部直接操作PID_Angle_*/Oran_XY_PID_Update不依赖Con_Task；状态机Init→Rotate45(相对旋转45°+发@Find_Home:1$#)→Tracking(x/y对齐±10+稳定200ms)→Over；预留后续封装为TASK_FIND_HOME的接口 |
+
+## 2026-07-26 17:00 | Mode_3 统一调参菜单（Menu_Param 任务队列框架）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Menu_Param.h | ./Function/Menu_Param.h | 重写 | 任务队列菜单框架API：TuneTaskID枚举（12项含哨兵）+TuneTaskDef描述结构体（category/name/type/pid/stp/回调）+Menu_Tune_Init/Loop/Tick/GetActive |
+| Menu_Param.c | ./Function/Menu_Param.c | 重写 | ★核心实现（~340行）：参照Con_Task模式，s_tune_table[]静态任务表（11个调参目标）、BROWSE/ACTIVE双状态机、KEY_1/KEY_2导航（分类跳转+子项切换）、Serial1 ABC协议路由（PID: Kp/Ki/Kd/Goal, Stepper: Speed/Pos/Stop）、PID指针判断自动Tick分发（Motorx_Angle/Pos_Update_Tick, PID_Car_Straight/PID_Angle_Tick）、IMU校准回调 |
+| Mode_3.c | ./Mode/Mode_3.c | 重写 | 替换MODE3_SELECT全部旧代码（~300行→25行薄封装）：Setup→Menu_Tune_Init, Loop→Menu_Tune_Loop, Tick→Menu_Tune_Tick, Exit→Motor_Stop+OLED_Clear |
+| AllHeader.h | ./App/AllHeader.h | 修改 | Function层新增 #include "Menu_Param.h" |
+| Debug/makefile | ./Debug/makefile | 修改 | ORDERED_OBJS新增 ./Function/Menu_Param.o |
+| Debug/Function/subdir_vars.mk | ./Debug/Function/subdir_vars.mk | 修改 | 6个列表(C_SRCS/C_DEPS/OBJS+QUOTED变体)均新增 Menu_Param 条目 |
+
+> **架构**：参照 Con_Task 的枚举+描述表模式，Menu_Param 提供统一的调参任务队列框架。新增调参目标只需两步：①TuneTaskID枚举加ID ②s_tune_table[]数组加行，无需改动框架代码。任务类型支持PID（OLED显示Kp/Ki/Kd/Goal/Real/Set+Serial1调参+自动电机控制）、ACTION（一次性回调）、STEPPER（开环Speed/Pos/Stop）。导航：KEY_1分类跳转/KEY_2子项切换/KEY_1_LONG激活-退出。Mode_1保持不变（IMU偏置+ParamEdit）。
+
+## 2026-07-26 14:00 | 所有PID Tick补全Serial1调试输出
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Menu_Param.h | ./Function/Menu_Param.h | 修改 | 新增 Tune_MotorB_Speed_Tick 声明（补全 Motor_B Speed Tick） |
+| Menu_Param.c | ./Function/Menu_Param.c | 修改 | 7个PID Tick全部加入Serial_printf输出(goalPoint/realPoint_Now/setPoint)；新建Tune_MotorB_Speed_Tick；头注释更新；Menu_Tune_Table[3] NULL→Tune_MotorB_Speed_Tick |
+
+> **改动范围**：仅涉及8个PID调参任务的20ms Tick（Motor_A/B Speed/Angle/Pos + Car_Straight + Gyro_Yaw），Gyro_Cal/Stepper1/2的NULL Tick保持不变。导航逻辑、按键映射、菜单渲染全部未改。
+
+## 2026-07-26 14:10 | Gyro_Cal/Stepper 补全 Tick 调试输出
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Menu_Param.h | ./Function/Menu_Param.h | 修改 | 新增 Tune_Gyro_Cal_Tick / Tune_Stepper_S1_Tick / Tune_Stepper_S2_Tick 声明 |
+| Menu_Param.c | ./Function/Menu_Param.c | 修改 | 新增3个Tick：Gyro_Cal输出biasX/Y/Z(%.4f)，Stepper1/2输出Pos_Tar/Pos_Now/Speed_Now；Menu_Tune_Table三处NULL→新Tick；头注释更新 |
+
+> **当前状态**：11个调参任务全部有Tick输出，无NULL Tick。PID任务输出goal/real/set，GyroCal输出三轴偏置，Stepper输出位置+速度。

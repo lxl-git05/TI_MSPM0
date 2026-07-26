@@ -1,72 +1,31 @@
 #include "Mode_5.h"
 #include "AllHeader.h"
 
-// ==================== 寻迹测试 ====================
-
-bool Is_X = false ;
-float Goal_XY ;
-
 void Mode_5_Setup(void)
 {
     Oran_XY_Init() ;
 }
 
+float Ste_Angle ;
+
 void Mode_5_Loop(void)
 {
-    // 切换
-    if (Key_Check(KEY_1, KEY_LONG))
+    OLED_Printf(0, 20, OLED_6X8, "Stepper2");
+    if (LCD_Key_Check(LCD_KEY_1))
     {
-        Is_X = !Is_X ;
+        Stepper_PWM_Pos_Set_Abs(&Stepper2, Ste_Angle, 400, 200) ;
     }
-    // OLED展示
-    OLED_Printf(0, 0, OLED_8X16, "===Mode_5===") ;
-    if (Is_X)
-    {
-        if (Serial_GetNewPackageFlag_ABC(&Serial1))
-        {
-            // 得到数据
-            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Oran_X.Kp) ;
-            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Oran_X.Ki) ;
-            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Oran_X.Kd) ;
-            Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Goal_XY) ;
-            PID_Oran_X.goalPoint = Goal_XY ;
-        }
-    }
-    else 
-    {
-        if (Serial_GetNewPackageFlag_ABC(&Serial1))
-        {
-            // 得到数据
-            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Oran_Y.Kp) ;
-            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Oran_Y.Ki) ;
-            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Oran_Y.Kd) ;
-            Serial_SetFloatData(&Serial1, "Goal", "Goal=%f", &Goal_XY) ;
-            PID_Oran_Y.goalPoint = Goal_XY ;
-        }
-    }
-    OLED_Printf(0, 20, OLED_6X8, "Yaw:%.4f",IMU_Yaw_Abs_Get()) ;
-    OLED_Printf(0, 30, OLED_6X8, "Tar%s , Goal:%.2f",Is_X ? "X" : "Y" , Goal_XY) ;
-    OLED_Printf(0, 40, OLED_6X8, "Time:%.2f",time_ms) ;
+    LCD_Set_Float(1, &Ste_Angle, -500, 500) ;
+    OLED_Printf(0, 40, OLED_6X8, "%.2f",Ste_Angle) ;
 }
 
 void Mode_5_Tick(void)
 {
-    Timer_Counter_Begin() ;
-    // PID 计算
-    Oran_XY_PID_Update() ;
-    Timer_Counter_End() ;
-    // 打印
-    if (Is_X)
-    {
-        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n" , PID_Oran_X.goalPoint , PID_Oran_X.realPoint_Now , PID_Oran_X.setPoint) ;
-    }
-    else 
-    {
-        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n" , PID_Oran_Y.goalPoint , PID_Oran_Y.realPoint_Now , PID_Oran_Y.setPoint) ;
-    }
+    
+    
 }
 
 void Mode_5_Exit(void)
 {
-    OLED_Clear();
+    
 }

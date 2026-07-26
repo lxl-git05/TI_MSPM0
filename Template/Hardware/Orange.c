@@ -9,6 +9,16 @@ int Oran_Item[4] = {0}; // 3.4.5.6. 三角形 正方形 五角星 圆形 入画�
 bool isHomeIn = false ;	// 7. 终点入画判断
 bool isOver  = false  ;	// 8. 本题结束
 
+/*
+串口Orange通信解析帧意义:
+	Oran_cmd：模式，0为工作模式
+	x_real: 相对目标值的水平旋转偏移(也就是说PID的goal恒为0，只要real接近0就算是追踪到位了)
+	y_real: 相对目标值的直线行驶偏移
+	Oran_Item: 需要追踪的物品在摄像头内画面的各自的个数(0为没有。0以上为个数)
+	isHomeIn：  终点是否入画
+	isOver：暂时没有用
+*/
+
 // 香橙派数据更新,在Mode_G实现20ms固定更新
 void Oran_Update(void)
 {
@@ -20,8 +30,8 @@ void Oran_Update(void)
         // 寻物资模式
 		if (Oran_cmd == 0)
 		{
-			x_real  	   = Serial_GetHexData(&Serial2 , 1) - 1000 ;	// 去掉偏置
-			y_real  	   = Serial_GetHexData(&Serial2 , 2) - 1000 ;	// 去掉偏置
+			x_real  	   = Serial_GetHexData(&Serial2 , 1) - 2000 ;	// 去掉偏置
+			y_real  	   = Serial_GetHexData(&Serial2 , 2) - 2000 ;	// 去掉偏置
 			Oran_Item[0]   = Serial_GetHexData(&Serial2 , 3) ;
 			Oran_Item[1]   = Serial_GetHexData(&Serial2 , 4) ;
 			Oran_Item[2]   = Serial_GetHexData(&Serial2 , 5) ;

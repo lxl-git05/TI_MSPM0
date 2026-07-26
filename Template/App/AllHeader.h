@@ -33,6 +33,7 @@
 #include "Con_Motor.h"
 #include "Con_Stepper.h"
 #include "Con_Task.h"
+#include "Menu_Param.h"
 
 // 脱机阈值功能
 #include "ParamEdit.h"

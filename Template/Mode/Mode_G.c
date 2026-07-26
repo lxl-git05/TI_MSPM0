@@ -32,7 +32,6 @@ void Mode_G_Setup(void)
 void Mode_G_Loop(void)
 {
     // ===== 全局按键（所有模式共享）=====
-    TJC_LCD_Process() ;   // 虚拟按键+滑块:★解析串口屏数据（必须首行）
     // Key2 单击: 切换 LED 闪烁模式
     if (Key_Check(KEY_0, KEY_SINGLE))
     {
