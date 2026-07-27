@@ -11,8 +11,14 @@ extern int Oran_Item[4];// 目标位置
 extern bool isHomeIn   ;// 家是否入画
 extern bool isOver     ;// 本题是否结束
 
+// Orange通信脱机阈值调节:暂时设置6个
+extern int Oran_Param[6] ;
+
 // 香橙派数据更新,在Mode_G实现20ms固定更新
 void Oran_Update(void) ;
+
+// 香橙派处理
+void Oran_Send_Data(int* Data)  ;
 
 // 香橙派寻迹PID
 extern Pid_Typedef PID_Oran_X ;

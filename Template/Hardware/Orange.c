@@ -9,6 +9,8 @@ int Oran_Item[4] = {0}; // 3.4.5.6. 三角形 正方形 五角星 圆形 入画�
 bool isHomeIn = false ;	// 7. 终点入画判断
 bool isOver  = false  ;	// 8. 本题结束
 
+// Orange通信脱机阈值调节:暂时设置6个
+int Oran_Param[6] ;
 /*
 串口Orange通信解析帧意义:
 	Oran_cmd：模式，0为工作模式
@@ -42,10 +44,26 @@ void Oran_Update(void)
         // 
 		else if (Oran_cmd == 1)
 		{
-
+			Oran_Param[0] = Serial_GetHexData(&Serial2 , 1) ;
+			Oran_Param[1] = Serial_GetHexData(&Serial2 , 2) ;
+			Oran_Param[2] = Serial_GetHexData(&Serial2 , 3) ;
+			Oran_Param[3] = Serial_GetHexData(&Serial2 , 4) ;
+			Oran_Param[4] = Serial_GetHexData(&Serial2 , 5) ;
+			Oran_Param[5] = Serial_GetHexData(&Serial2 , 6) ;
         }
 
     }
+}
+
+// 香橙派处理
+void Oran_Send_Data(int* Data) 
+{
+	if (Data == &Oran_Param[0]) {Serial_printf(&Serial2 , "@Oran_Param_1:%d$#",Oran_Param[0]);}
+	if (Data == &Oran_Param[1]) {Serial_printf(&Serial2 , "@Oran_Param_2:%d$#",Oran_Param[1]);}
+	if (Data == &Oran_Param[2]) {Serial_printf(&Serial2 , "@Oran_Param_3:%d$#",Oran_Param[2]);}
+	if (Data == &Oran_Param[3]) {Serial_printf(&Serial2 , "@Oran_Param_4:%d$#",Oran_Param[3]);}
+	if (Data == &Oran_Param[4]) {Serial_printf(&Serial2 , "@Oran_Param_5:%d$#",Oran_Param[4]);}
+	if (Data == &Oran_Param[5]) {Serial_printf(&Serial2 , "@Oran_Param_6:%d$#",Oran_Param[5]);}
 }
 
 // ======================= 香橙派寻迹PID =======================

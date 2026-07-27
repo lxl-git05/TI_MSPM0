@@ -330,48 +330,111 @@ void Tune_Y8_Track_Tick(float p[4])
     }
 }
 
+// ==================== TUNE_ORANGE_PARAM ====================
+// 香橙派通信脱机阈值参数调节（移植自 Mode_4）
+// Param_Loop 提供完整 EC11 编辑体验（进入/退出/导航/调节/AT24C02保存）
+// KEY_1 长按 = 进入/退出 Param 编辑模式（由 Param_Loop 处理）
+// KEY_2 单击 = 向香橙派请求参数数据（@start:6$#）
+// 退出任务：切换 Mode 或 LCD_Param_Skip 命令
+
+void Tune_Orange_Setup(float p[4])
+{
+    Param_Init();
+    Param_Register("Param_1", &Oran_Param[0], 1, PARAM_INT32);
+    Param_Register("Param_2", &Oran_Param[1], 1, PARAM_INT32);
+    Param_Register("Param_3", &Oran_Param[2], 1, PARAM_INT32);
+    Param_Register("Param_4", &Oran_Param[3], 1, PARAM_INT32);
+    Param_Register("Param_5", &Oran_Param[4], 1, PARAM_INT32);
+    Param_Register("Param_6", &Oran_Param[5], 1, PARAM_INT32);
+
+    // 向香橙派请求当前参数数据
+    Serial_printf(&Serial2, "@start:6$#");
+
+    OLED_Clear();
+}
+
+void Tune_Orange_Run(float p[4])
+{
+    // ---- Param_Loop 处理 EC11 编辑状态机 ----
+    // 非编辑态：检查 KEY_1 长按→进入编辑（Param_Loop 内部处理）
+    // 编辑态：EC11 旋转调值 + KEY_1 单击/双击导航 + KEY_3 保存 AT24C02 + KEY_1 长按退出
+    Param_Loop();
+
+    // ---- 非编辑态：显示 Orange 专用 UI ----
+    if (!Param_IsActive())
+    {
+        OLED_Printf(0, 0, OLED_6X8, "Orange Param");
+        for (int i = 0; i < 6; i++)
+        {
+            OLED_Printf(0, 8 + i * 8, OLED_6X8, "P%d:%d", i + 1, Oran_Param[i]);
+        }
+        OLED_Printf(0, 56, OLED_6X8, "K1_L:Enter");
+
+        if (Key_Check(KEY_2, KEY_SINGLE))
+            Serial_printf(&Serial2, "@start:6$#");
+    }
+    // 编辑态：Param_Loop 已通过 Param_Show() 渲染 OLED，此处不重复绘制
+}
+
+void Tune_Orange_Tick(float p[4])
+{
+    // 20ms 输出 6 个参数到 Serial1 供远程监控
+    Serial_printf(&Serial1, "%d,%d,%d,%d,%d,%d\n",
+        Oran_Param[0], Oran_Param[1], Oran_Param[2],
+        Oran_Param[3], Oran_Param[4], Oran_Param[5]);
+}
+
 // ==================== 任务描述表（同 Control_TaskTable）====================
 // 修改次序只需要将下面两个表各自位置交换即可
 static const TuneLabel s_labels[TUNE_COUNT] = {
-    { "Motor_A", "Speed"    },  // TUNE_MOTOR_A_SPEED
-    { "Motor_A", "Angle"    },  // TUNE_MOTOR_A_ANGLE
-    { "Motor_A", "Pos"      },  // TUNE_MOTOR_A_POS
-    { "Motor_B", "Speed"    },  // TUNE_MOTOR_B_SPEED
-    { "Motor_B", "Angle"    },  // TUNE_MOTOR_B_ANGLE
-    { "Motor_B", "Pos"      },  // TUNE_MOTOR_B_POS
-    { "Car",     "Straight" },  // TUNE_CAR_STRAIGHT
-    { "Gyro",    "YawPID"   },  // TUNE_GYRO_YAW
+    { "Orange",  "Param"    },  // TUNE_ORANGE_PARAM
     { "Gyro",    "Cal"      },  // TUNE_GYRO_CAL
+    { "Y8",      "Track"    },  // TUNE_Y8_TRACK
+    { "Gyro",    "YawPID"   },  // TUNE_GYRO_YAW
     { "Stepper", "S1"       },  // TUNE_STEPPER_S1
     { "Stepper", "S2"       },  // TUNE_STEPPER_S2
-    { "Y8",      "Track"    },  // TUNE_Y8_TRACK
+
+    
+    // 不常用,暂时放最后
+    // { "Motor_A", "Speed"    },  // TUNE_MOTOR_A_SPEED
+    // { "Motor_A", "Angle"    },  // TUNE_MOTOR_A_ANGLE
+    // { "Motor_A", "Pos"      },  // TUNE_MOTOR_A_POS
+    // { "Motor_B", "Speed"    },  // TUNE_MOTOR_B_SPEED
+    // { "Motor_B", "Angle"    },  // TUNE_MOTOR_B_ANGLE
+    // { "Motor_B", "Pos"      },  // TUNE_MOTOR_B_POS
+    // { "Car",     "Straight" },  // TUNE_CAR_STRAIGHT
 };
 
 Task_Descriptor_Typedef Menu_Tune_Table[TUNE_COUNT] = {
-    // TUNE_MOTOR_A_SPEED
-    { Tune_MotorA_Speed_Setup, Tune_MotorA_Speed_Run, Tune_AlwaysFalse, Tune_MotorA_Speed_Tick },
-    // TUNE_MOTOR_A_ANGLE
-    { Tune_MotorA_Angle_Setup, Tune_MotorA_Angle_Run, Tune_AlwaysFalse, Tune_MotorA_Angle_Tick },
-    // TUNE_MOTOR_A_POS
-    { Tune_MotorA_Pos_Setup,   Tune_MotorA_Pos_Run,   Tune_AlwaysFalse, Tune_MotorA_Pos_Tick },
-    // TUNE_MOTOR_B_SPEED
-    { Tune_MotorB_Speed_Setup, Tune_MotorB_Speed_Run, Tune_AlwaysFalse, Tune_MotorB_Speed_Tick },
-    // TUNE_MOTOR_B_ANGLE
-    { Tune_MotorB_Angle_Setup, Tune_MotorB_Angle_Run, Tune_AlwaysFalse, Tune_MotorB_Angle_Tick },
-    // TUNE_MOTOR_B_POS
-    { Tune_MotorB_Pos_Setup,   Tune_MotorB_Pos_Run,   Tune_AlwaysFalse, Tune_MotorB_Pos_Tick },
-    // TUNE_CAR_STRAIGHT
-    { Tune_Car_Straight_Setup, Tune_Car_Straight_Run, Tune_AlwaysFalse, Tune_Car_Straight_Tick },
-    // TUNE_GYRO_YAW
-    { Tune_Gyro_Yaw_Setup,     Tune_Gyro_Yaw_Run,     Tune_AlwaysFalse, Tune_Gyro_Yaw_Tick },
+    // TUNE_ORANGE_PARAM
+    { Tune_Orange_Setup,       Tune_Orange_Run,       Tune_AlwaysFalse, Tune_Orange_Tick },
     // TUNE_GYRO_CAL
     { Tune_Gyro_Cal_Setup,     Tune_Gyro_Cal_Run,     Tune_Gyro_Cal_IsExit, Tune_Gyro_Cal_Tick },
+    // TUNE_Y8_TRACK
+    { Tune_Y8_Track_Setup,     Tune_Y8_Track_Run,     Tune_AlwaysFalse, Tune_Y8_Track_Tick },
+    // TUNE_GYRO_YAW
+    { Tune_Gyro_Yaw_Setup,     Tune_Gyro_Yaw_Run,     Tune_AlwaysFalse, Tune_Gyro_Yaw_Tick },
     // TUNE_STEPPER_S1
     { NULL,                    Tune_Stepper_S1_Run,   Tune_AlwaysFalse, Tune_Stepper_S1_Tick },
     // TUNE_STEPPER_S2
     { NULL,                    Tune_Stepper_S2_Run,   Tune_AlwaysFalse, Tune_Stepper_S2_Tick },
-    // TUNE_Y8_TRACK
-    { Tune_Y8_Track_Setup,     Tune_Y8_Track_Run,     Tune_AlwaysFalse, Tune_Y8_Track_Tick },
+    
+    
+    // 不常用,暂时放最后
+    // // TUNE_MOTOR_A_SPEED
+    // { Tune_MotorA_Speed_Setup, Tune_MotorA_Speed_Run, Tune_AlwaysFalse, Tune_MotorA_Speed_Tick },
+    // // TUNE_MOTOR_A_ANGLE
+    // { Tune_MotorA_Angle_Setup, Tune_MotorA_Angle_Run, Tune_AlwaysFalse, Tune_MotorA_Angle_Tick },
+    // // TUNE_MOTOR_A_POS
+    // { Tune_MotorA_Pos_Setup,   Tune_MotorA_Pos_Run,   Tune_AlwaysFalse, Tune_MotorA_Pos_Tick },
+    // // TUNE_MOTOR_B_SPEED
+    // { Tune_MotorB_Speed_Setup, Tune_MotorB_Speed_Run, Tune_AlwaysFalse, Tune_MotorB_Speed_Tick },
+    // // TUNE_MOTOR_B_ANGLE
+    // { Tune_MotorB_Angle_Setup, Tune_MotorB_Angle_Run, Tune_AlwaysFalse, Tune_MotorB_Angle_Tick },
+    // // TUNE_MOTOR_B_POS
+    // { Tune_MotorB_Pos_Setup,   Tune_MotorB_Pos_Run,   Tune_AlwaysFalse, Tune_MotorB_Pos_Tick },
+    // // TUNE_CAR_STRAIGHT
+    // { Tune_Car_Straight_Setup, Tune_Car_Straight_Run, Tune_AlwaysFalse, Tune_Car_Straight_Tick },
 };
 
 // ==================== 菜单浏览 OLED ====================

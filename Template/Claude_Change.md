@@ -422,3 +422,10 @@
 | 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
 |--------|----------------------|----------|------|
 | Menu_Param.c | ./Function/Menu_Param.c | 修改 | TUNE_Y8_TRACK新增KEY_2单击切换双模：s_y8_mode=0→展示模式(OLED 8路二进制+角度+停电机)，s_y8_mode=1→巡线模式(Serial1调参+PID显示+电机差速)；Tick同步分流(展示=Y8_Data_Update只读，巡线=Y8_PID_Update全控) |
+
+## 2026-07-27 17:00 | Mode_4 香橙派参数调节移植到 Menu_Param 作为 TUNE_ORANGE_PARAM 任务
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Menu_Param.h | ./Function/Menu_Param.h | 修改 | 新增 TUNE_ORANGE_PARAM 枚举（索引12）+ Tune_Orange_Setup/Run/Tick 回调声明 |
+| Menu_Param.c | ./Function/Menu_Param.c | 修改 | 新增 Tune_Orange_Setup（Param_Init+注册6个Oran_Param+@start:6$#请求），Tune_Orange_Run（Param_Loop提供EC11编辑体验+非编辑态OLED显示6参数+KEY_2请求数据），Tune_Orange_Tick（20ms Serial1 CSV输出），s_labels/Menu_Tune_Table 分别追加行 |

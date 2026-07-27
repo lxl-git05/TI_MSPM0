@@ -237,6 +237,8 @@ void Param_Loop(void)
         {
             ParamItem *item = &ParamList[cursor];
             Param_Add(item, item->step * delta);
+            // 如果是Oran的数据还需要跟进发送
+            Oran_Send_Data((int*)item->var) ;
         }
     }
 
