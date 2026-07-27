@@ -434,3 +434,254 @@ typedef enum {
 4. **队列容量：** 50 个任务，足够使用。`Con_Task_Clear()` 在 Mode_3_Exit 时清空。
 5. **边界检查：** 任务类型越界会导致 LED 快闪 + 死循环（防御性编程）。
 6. **Tick 不阻塞：** 所有 Tick 在 ISR 上下文中执行，必须快速返回。不要在里面加延时或重量级操作。
+
+---
+
+## 12. Agent 移植任务规范（给 AI Agent 用）
+
+> 本节是结构化指令，供 Agent 快速移植 Mode_X 到 Menu_Param。人阅读也可参考。
+
+### 12.1 移植检查清单（Agent 自检）
+
+每移植一个任务，Agent 必须完成以下 5 步，缺一不可：
+
+| 步骤 | 文件 | 操作 | 验证方法 |
+|------|------|------|----------|
+| 1 | `Function/Menu_Param.h` | 在 `TUNE_COUNT` 前加枚举值 | 枚举连续、声明签名匹配 |
+| 2 | `Function/Menu_Param.h` | 加 `Setup/Run/Tick` 回调声明 | 签名：`void Tune_Xxx_Setup(float p[4])` |
+| 3 | `Function/Menu_Param.c` | 在 `s_labels[]` 追加标签行 | 与枚举索引位置一致 |
+| 4 | `Function/Menu_Param.c` | 在 `Menu_Tune_Table[]` 追加表项行 | `{ Setup, Run, IsExit, Tick }` 四字段 |
+| 5 | `Function/Menu_Param.c` | 实现 3~4 个回调函数 | 编译通过 |
+
+### 12.2 标准移植模板（Agent 填空用）
+
+Agent 移植时，直接复制以下模板填入 `{PLACEHOLDER}` 即可：
+
+#### 步骤 1+2：Menu_Param.h — 枚举 + 声明
+
+```c
+// 在 TUNE_COUNT 之前插入：
+    TUNE_{TASK_NAME},         // {一句话描述}
+
+// 在 Tune_AlwaysFalse 声明之前插入：
+void Tune_{TaskName}_Setup     (float p[4]);
+void Tune_{TaskName}_Run       (float p[4]);
+void Tune_{TaskName}_Tick      (float p[4]);
+// 如果需要自定义 IsExit（如 Gyro_Cal），加：
+bool Tune_{TaskName}_IsExit    (float p[4]);
+```
+
+#### 步骤 3：s_labels[] 追加
+
+```c
+    { "{Cat}",    "{Name}"    },  // TUNE_{TASK_NAME}
+```
+
+- `{Cat}` 用现有分类名（Motor_A/Motor_B/Car/Gyro/Stepper/Y8/Orange）或新分类（≤7 字符）
+- `{Name}` 用任务名（≤8 字符）
+
+#### 步骤 4：Menu_Tune_Table[] 追加
+
+```c
+    // TUNE_{TASK_NAME}
+    { Tune_{TaskName}_Setup,       Tune_{TaskName}_Run,       Tune_AlwaysFalse, Tune_{TaskName}_Tick },
+```
+
+- IsExit 通常用 `Tune_AlwaysFalse`（手动 Skip 退出）
+- 只有交互型任务（如 Gyro_Cal）才需要自定义 IsExit
+
+#### 步骤 5：回调实现（在 s_labels 之前插入）
+
+**模板 A — PID 型：**
+
+```c
+// ==================== TUNE_{TASK_NAME} ====================
+void Tune_{TaskName}_Setup(float p[4])
+{
+    {初始化目标值，如 Motor_SetSpeed(&Motor_A, xxx)}
+}
+
+void Tune_{TaskName}_Run(float p[4])
+{
+    if (Serial_RoutePID(&{PID结构体}))
+        {Goal 变化后的处理，如 Motor_SetSpeed(&Motor_A, xxx)};
+    OLED_ShowPID("{Cat}", "{Name}", &{PID结构体});
+}
+
+void Tune_{TaskName}_Tick(float p[4])
+{
+    {20ms 硬件更新函数};
+    Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",
+        {PID}.goalPoint, {PID}.realPoint_Now, {PID}.setPoint);
+}
+```
+
+**模板 B — 交互型（带状态机 + 按键触发）：**
+
+```c
+// ==================== TUNE_{TASK_NAME} ====================
+static int      s_{task}_state = 0;
+static uint32_t s_{task}_timer = 0;
+
+void Tune_{TaskName}_Setup(float p[4])
+{
+    s_{task}_state = 0;
+    OLED_Clear();
+    OLED_Printf(0, 0, OLED_6X8, "{Title}:");
+}
+
+void Tune_{TaskName}_Run(float p[4])
+{
+    OLED_Printf(0, 10, OLED_6X8, "{关键参数展示}");
+
+    if (s_{task}_state == 0)
+    {
+        OLED_Printf(0, 50, OLED_6X8, "K2:{Action} K1:Back");
+        if (Key_Check(KEY_2, KEY_SINGLE))
+        {
+            s_{task}_state = 1;
+            s_{task}_timer = Timer_Get_Ms();
+        }
+    }
+    else if (s_{task}_state == 1)
+    {
+        OLED_Printf(0, 50, OLED_6X8, "Working...");
+        if (Timer_Get_Ms() - s_{task}_timer >= {超时ms})
+        {
+            {执行操作};
+            s_{task}_state = 2;
+        }
+    }
+}
+
+bool Tune_{TaskName}_IsExit(float p[4]) { return (s_{task}_state == 2); }
+
+void Tune_{TaskName}_Tick(float p[4])
+{
+    Serial_printf(&Serial1, "{CSV格式}\n", {参数...});
+}
+```
+
+**模板 C — 纯 Run 型（无 PID，无状态机）：**
+
+```c
+// ==================== TUNE_{TASK_NAME} ====================
+void Tune_{TaskName}_Setup(float p[4])
+{
+    {可选初始化};
+    OLED_Clear();
+}
+
+void Tune_{TaskName}_Run(float p[4])
+{
+    {OLED 显示关键数据};
+    {按键处理 — 注意避开 KEY_1 长按（框架用于 Skip）};
+    {Serial1 ABC 命令处理};
+}
+
+void Tune_{TaskName}_Tick(float p[4])
+{
+    Serial_printf(&Serial1, "{CSV格式}\n", {参数...});
+}
+```
+
+### 12.3 Agent 适配常见组件指南
+
+Agent 遇到以下组件时，按下方模式适配：
+
+#### 12.3.1 模式有自己的状态机 / 独占按键
+
+> 例：Mode_4 的 `Param_Loop()` 占用 KEY_1 长按
+
+**方案：**
+1. Run 回调中调用第三方状态机（如 `Param_Loop()`）
+2. 如果第三方占用了 KEY_1 长按，则任务的 Skip 按键会被覆盖，这是**可接受的**（与原 Mode 行为一致）
+3. 在任务注释里明确写出按键冲突和退出方式
+
+```c
+// 注释模板：
+// KEY_1 长按 = {由第三方处理的功能}（由 {第三方函数} 处理）
+// 退出任务：切换 Mode 或 LCD_Param_Skip 命令
+```
+
+#### 12.3.2 模式依赖 Serial2/Serial3 而非 Serial1
+
+Menu_Param 框架的 `Serial_RoutePID()` 和 Tick 输出默认走 Serial1。如果原 Mode 使用其他串口：
+
+- **Tick 输出**：直接改 `Serial_printf` 的目标串口
+- **ABC 调参**：不要用 `Serial_RoutePID()`，自己在 Run 中处理 ABC 协议
+
+```c
+// 自定义串口 ABC 处理示例：
+if (Serial_GetNewPackageFlag_ABC(&Serial{2/3/4}))
+{
+    Serial_SetFloatData(&Serial{2/3/4}, "Kp", "Kp=%f", &pid->Kp);
+    // ...
+}
+```
+
+#### 12.3.3 模式需要 EC11 旋转编码器
+
+如果原 Mode 使用 EC11（通过 `Encoder_Get()`），注意：
+
+- **Menu_Param 框架不调用 `Encoder_Get()`**，由各任务自行调用
+- 如果使用 `Param_Loop()`（ParamEdit 库），它内部会调用 `Encoder_Get()`
+- 如果自己实现 EC11 处理，在 Run 中调用 `Encoder_Get()` 并在 Tick 中清零（或 Run 中清零）
+
+#### 12.3.4 模式需要 MIDDLE_KEY / KEY_3 等非常用按键
+
+- `KEY_1` 在 Menu_Param 中用于导航（浏览模式: 单击下一项 / 长按入队；运行模式: 长按 Skip）
+- `KEY_1` 的单击在任务运行中**空闲**（Menu_Param 不消费），可复用
+- `KEY_2` 单击完全空闲，推荐用作任务内部辅助按键
+- `KEY_3`（EC11 按键）完全空闲
+- `KEY_0` 留给 Mode_G 切换模式，任务内**不要占用**
+
+### 12.4 已有移植案例（Agent 参考）
+
+| 任务 | 枚举 | 模板类型 | 源文件 | 复杂度 | 特殊处理 |
+|------|------|----------|--------|--------|----------|
+| Y8 Track | `TUNE_Y8_TRACK` | A (PID) + 双模切换 | `Mode/Mode_5.c` | 中 | KEY_2 切换展示/巡线模式，Tick 分流 |
+| Orange Param | `TUNE_ORANGE_PARAM` | C (纯Run) + Param_Loop | `Mode/Mode_4.c` | 低 | 复用 ParamEdit 库，KEY_1 冲突已文档化 |
+
+**Agent 移植前必须阅读源 Mode 文件和对应 Menu_Param.c 中的回调实现。** 直接用 Read 工具打开对比学习。
+
+### 12.5 编译验证
+
+Agent 移植完成后，告诉用户运行以下命令验证编译：
+
+```bash
+# 在 CCS 中 Build Project，或命令行：
+make -C Debug -j8
+```
+
+常见编译错误：
+- `undefined reference to Tune_Xxx_Setup` → 忘了在 .c 中实现回调
+- `TUNE_COUNT undeclared` → 枚举值插入位置错误（应在 TUNE_COUNT 之前）
+- `implicit declaration` → 忘了在 .h 中加声明
+
+### 12.6 Agent 输出规范
+
+Agent 完成移植后，输出格式：
+
+```
+## {任务名} — {源Mode} → Menu_Param 任务
+
+### 修改文件
+- `Function/Menu_Param.h` — 枚举 + 声明
+- `Function/Menu_Param.c` — 标签 + 表项 + 回调实现
+
+### 回调说明
+| 回调 | 行为 |
+|------|------|
+| Setup | ... |
+| Run   | ... |
+| Tick  | ... |
+
+### 按键分配
+| 按键 | 功能 |
+|------|------|
+| ... | ... |
+
+### 退出方式
+- KEY_1 长按 Skip / LCD_Param_Skip / 切换 Mode
+```

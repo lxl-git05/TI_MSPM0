@@ -387,9 +387,9 @@ void Tune_Orange_Tick(float p[4])
 // ==================== 任务描述表（同 Control_TaskTable）====================
 // 修改次序只需要将下面两个表各自位置交换即可
 static const TuneLabel s_labels[TUNE_COUNT] = {
+    { "Y8",      "Track"    },  // TUNE_Y8_TRACK
     { "Orange",  "Param"    },  // TUNE_ORANGE_PARAM
     { "Gyro",    "Cal"      },  // TUNE_GYRO_CAL
-    { "Y8",      "Track"    },  // TUNE_Y8_TRACK
     { "Gyro",    "YawPID"   },  // TUNE_GYRO_YAW
     { "Stepper", "S1"       },  // TUNE_STEPPER_S1
     { "Stepper", "S2"       },  // TUNE_STEPPER_S2
@@ -406,12 +406,12 @@ static const TuneLabel s_labels[TUNE_COUNT] = {
 };
 
 Task_Descriptor_Typedef Menu_Tune_Table[TUNE_COUNT] = {
+    // TUNE_Y8_TRACK
+    { Tune_Y8_Track_Setup,     Tune_Y8_Track_Run,     Tune_AlwaysFalse, Tune_Y8_Track_Tick },
     // TUNE_ORANGE_PARAM
     { Tune_Orange_Setup,       Tune_Orange_Run,       Tune_AlwaysFalse, Tune_Orange_Tick },
     // TUNE_GYRO_CAL
     { Tune_Gyro_Cal_Setup,     Tune_Gyro_Cal_Run,     Tune_Gyro_Cal_IsExit, Tune_Gyro_Cal_Tick },
-    // TUNE_Y8_TRACK
-    { Tune_Y8_Track_Setup,     Tune_Y8_Track_Run,     Tune_AlwaysFalse, Tune_Y8_Track_Tick },
     // TUNE_GYRO_YAW
     { Tune_Gyro_Yaw_Setup,     Tune_Gyro_Yaw_Run,     Tune_AlwaysFalse, Tune_Gyro_Yaw_Tick },
     // TUNE_STEPPER_S1

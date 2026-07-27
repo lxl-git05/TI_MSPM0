@@ -429,3 +429,4 @@
 |--------|----------------------|----------|------|
 | Menu_Param.h | ./Function/Menu_Param.h | 修改 | 新增 TUNE_ORANGE_PARAM 枚举（索引12）+ Tune_Orange_Setup/Run/Tick 回调声明 |
 | Menu_Param.c | ./Function/Menu_Param.c | 修改 | 新增 Tune_Orange_Setup（Param_Init+注册6个Oran_Param+@start:6$#请求），Tune_Orange_Run（Param_Loop提供EC11编辑体验+非编辑态OLED显示6参数+KEY_2请求数据），Tune_Orange_Tick（20ms Serial1 CSV输出），s_labels/Menu_Tune_Table 分别追加行 |
+| Menu_Param_Manual.md | ./Menu_Param_Manual.md | 修改 | 新增第12节「Agent移植任务规范」：检查清单、三种标准模板（PID/交互/纯Run）、组件适配指南（按键冲突/串口/EC11）、已有案例参考表、编译验证命令、Agent输出规范 |
