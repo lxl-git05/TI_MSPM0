@@ -75,6 +75,8 @@ void Timer_20ms_Callback(void)
     IMU_Mahony_Update_Tick();
     // 2. 香橙派数据更新
     Oran_Update() ;
+    // 3. 蓝牙数据更新
+    // BLE_Update() ;
     // 当前模式的 Tick
     switch (curr_mode)
     {

@@ -1,0 +1,356 @@
+\documentclass[UTF-8,zihao=-4]{ctexart}
+
+% ================================================
+%  基础宏包
+% ================================================
+\usepackage{geometry}   % 设置页边距
+\usepackage{graphicx}   % 插入图片
+\usepackage{amsmath}    % 数学公式
+\usepackage{amssymb}    % 数学符号
+\usepackage{float}      % 控制图表浮动位置, [H]表示强制在此处
+\usepackage{hyperref}   % 生成超链接
+\usepackage{listings}   % 插入代码
+\usepackage{xcolor}     % 定义颜色
+\usepackage{booktabs}   % 三线表宏包
+\usepackage{tabularx}   % 等宽表格
+\usepackage{fancyhdr}   % 自定义页眉页脚
+\usepackage{caption}    % 图表标题格式定制
+\usepackage{array}      % 表格列格式
+
+% ================================================
+%  表格内容居中的 X 列类型
+% ================================================
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+% ================================================
+%  字体设置
+% ================================================
+\setCJKmainfont{SimSun}[BoldFont=SimHei]  % 宋体正文，加粗映射到黑体
+\setCJKsansfont{SimHei}                   % 黑体，用于标题
+\setmainfont{Times New Roman}              % 新罗马，英文/数字
+
+% ================================================
+%  页面设置
+% ================================================
+\geometry{a4paper, left=2.5cm, right=2.5cm, top=3cm, bottom=2.5cm}
+\setlength{\baselineskip}{22pt} % 正文行距固定值22磅
+
+% ================================================
+%  标题格式设置
+% ================================================
+% 一级标题 (1.)：黑体四号，大间距
+% 二级标题 (1.1)：黑体小四，中间距
+% 三级标题 (1.1.1)：黑体小四，小间距
+\ctexset{
+    section = {
+        format = {\heiti\zihao{4}},
+        aftername = {\quad},
+        beforeskip = {14pt},
+        afterskip = {8pt},
+    },
+    subsection = {
+        format = {\heiti\zihao{-4}},
+        aftername = {\quad},
+        beforeskip = {10pt},
+        afterskip = {5pt},
+    },
+    subsubsection = {
+        format = {\heiti\zihao{-4}},
+        aftername = {\quad},
+        beforeskip = {6pt},
+        afterskip = {2pt},
+    },
+}
+
+% ================================================
+%  图表标题格式：黑体/新罗马5号加粗
+% ================================================
+\DeclareCaptionFont{wuhao}{\zihao{5}}
+\captionsetup{
+    font = {wuhao, bf},
+    labelfont = {wuhao, bf},
+    textfont = {wuhao, bf},
+}
+
+% ================================================
+%  超链接设置
+% ================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,
+    urlcolor=blue,
+    citecolor=black,
+}
+
+% ================================================
+%  页眉页脚设置
+% ================================================
+\pagestyle{fancy}
+\fancyhf{}                         % 清空所有页眉页脚
+\renewcommand{\headrulewidth}{0pt} % 去掉页眉的横线
+\rfoot{\thepage}                   % 页码在右下角
+
+% ================================================
+%  代码块样式定义
+% ================================================
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+%================================================
+%==============  文档开始  ======================
+%================================================
+\begin{document}
+
+% ================================================
+%  扉页（封面）—— 不标页码
+% ================================================
+\thispagestyle{empty}
+
+\begin{center}
+    \vspace*{2cm}
+
+    {\heiti\zihao{3} [题号]：[题目]}
+
+    \vfill
+
+    \includegraphics[width=0.55\linewidth]{../pic/电赛logo.png}
+
+    \vfill
+
+    {\songti\zihao{4} [日期]}
+
+    \vspace{2cm}
+
+\end{center}
+
+\newpage
+
+% ================================================
+%  摘要 —— 不标页码
+%  格式：中文宋体/英文Times New Roman，小四，顶格，行距22磅
+%  字数：≤300汉字
+% ================================================
+\thispagestyle{empty}
+
+\noindent
+{\zihao{-4}\textbf{摘要：}}{\zihao{-4}
+% [ 摘要内容模板 —— 三个自然段 ]
+% 第一部分：概述系统。本作品设计并制作了一个基于[核心控制器型号]的[系统名称]。系统采用[总体技术方案]，集成了[主要传感器/模块]等，实现了赛题要求的[核心功能]。
+% 第二部分：阐述算法。在算法方面，采用了[核心算法1]与[核心算法2]等关键技术，对[处理对象]进行处理，结合[控制器名称]实现了[控制目标]，完成了题目要求的各项任务。
+% 第三部分：总结陈述。经测试，本作品能够稳定、可靠地完成指定任务，各项指标均满足或优于题目要求。
+[ 此处填写摘要内容... ]
+}
+
+\vspace{1cm}
+
+\noindent
+{\zihao{-4}\textbf{关键词：}}{\zihao{-4} [关键词一] [关键词二] [关键词三] [关键词四]} % <-- 关键词之间用空格分隔
+
+\newpage
+
+% ================================================
+%  目录 —— 不标页码
+% ================================================
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+
+% ================================================
+%  正文开始 —— 从第1页起标页码
+% ================================================
+\setcounter{page}{1}
+
+%================================================
+%  1. 系统方案设计
+%================================================
+\section{系统方案设计}
+
+\subsection{方案论证与选择}
+
+\subsubsection{[关键模块一]的论证与选择}
+    % 方案一：[名称/型号]。优点：[优点]。缺点：[缺点]。
+    % 方案二：[名称/型号]。优点：[优点]。缺点：[缺点]。
+    % 方案比较与选择：[结论与理由]
+    [ 此处填写论证内容... ]
+
+\subsubsection{[关键模块二]的论证与选择}
+    % 同上论证模板
+    [ 此处填写论证内容... ]
+
+\subsubsection{[关键模块三]的论证与选择}
+    % 同上论证模板
+    [ 此处填写论证内容... ]
+
+\subsection{总体方案描述}
+    % 简要介绍系统的总体构成，说明各个模块的功能和关系。
+    本系统以 [核心控制器型号] 微控制器为核心，主要由电源模块、主控模块、传感器模块、驱动模块以及执行机构等部分组成。系统整体功能框图如图\ref{fig:system_block}所示。
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.85\linewidth]{../pic/your_block_diagram.png}
+    \caption{系统整体功能框图}
+    \label{fig:system_block}
+\end{figure}
+
+%================================================
+%  2. 理论分析与计算
+%================================================
+\section{理论分析与计算}
+    % 本章节对应评分标准中的"理论分析"，需要展示核心算法的原理和必要的计算。
+    % 根据题目要求自行拆分为 \subsection 和 \subsubsection
+
+\subsection{核心理论/模型分析}
+    % 描述系统所基于的核心理论模型。
+    % 给出必要的原理图和数学模型。
+    [ 此处填写核心理论分析... ]
+
+\subsection{关键算法分析}
+    % 详细介绍所使用的关键算法（如PID、滤波、数据融合等）。
+    % 给出关键数学公式，并解释各符号含义。
+    [ 此处填写关键算法分析... ]
+    例如，某算法的关键公式如式\ref{eq:example}所示：
+    \begin{equation} \label{eq:example}
+        y(t) = K_p e(t) + K_i \int_0^t e(\tau)d\tau + K_d \frac{de(t)}{dt}
+    \end{equation}
+    其中，$e(t)$ 表示误差，$K_p$、$K_i$、$K_d$ 分别为比例、积分、微分系数。
+
+\subsection{相关参数计算}
+    % 根据题目要求和系统设计，进行必要的参数计算。
+    [ 此处填写相关参数的计算过程和结果... ]
+
+%================================================
+%  3. 电路与程序设计
+%================================================
+\section{电路与程序设计}
+
+\subsection{电路设计分析}
+
+\subsubsection{[核心模块电路一]}
+    % [ 电路设计说明 ]
+    % \begin{figure}[H]
+    %     \centering
+    %     \includegraphics[width=0.7\textwidth]{../pic/your_circuit_1.png}
+    %     \caption{[模块一名称]电路原理图}
+    %     \label{fig:circuit_1}
+    % \end{figure}
+
+\subsubsection{[核心模块电路二]}
+    % [ 电路设计说明 ]
+
+\subsection{控制程序设计}
+
+\subsubsection{主程序设计思路}
+    % 描述主程序结构，建议使用状态机思想。
+    [ 此处填写主程序设计思路... ]
+
+\subsubsection{程序流程图}
+    % \begin{figure}[H]
+    %     \centering
+    %     \includegraphics[width=0.6\textwidth]{../pic/your_flowchart.png}
+    %     \caption{主程序流程图}
+    %     \label{fig:main_flowchart}
+    % \end{figure}
+
+\subsubsection{核心代码片段（可选）}
+% \begin{lstlisting}[language={[编程语言]}, caption={[代码功能描述]}, label={lst:code_example}]
+% // 在此粘贴核心功能代码
+% \end{lstlisting}
+
+\subsection{视觉程序设计}
+    % 描述视觉处理程序的设计思路、流程图、关键算法等
+    [ 此处填写视觉程序设计内容... ]
+
+%================================================
+%  4. 设计报告测试方案与测试结果
+%================================================
+\section{设计报告测试方案与测试结果}
+
+\subsection{测试环境}
+    \begin{itemize}
+        \item \textbf{测试场地：} [描述测试场地的尺寸、材质等]
+        \item \textbf{环境条件：} [描述光照、温度等环境因素]
+        \item \textbf{测试仪器：} [列出所用仪器，如示波器、万用表、秒表、卷尺等]
+    \end{itemize}
+
+\subsection{测试方案}
+    % 针对赛题要求的各项测试指标，分别描述测试步骤、操作方法和数据记录方式。
+    \begin{enumerate}
+        \item 步骤1：[测试内容描述]。
+        \item 步骤2：[测试内容描述]。
+        \item 步骤3：[测试内容描述]。
+        % ... 根据需要添加更多步骤
+    \end{enumerate}
+
+\subsection{测试结果与数据}
+    % 使用三线表清晰地展示测试结果。
+
+\subsubsection{[测试项目一]}
+    % [测试说明文字]
+
+    \begin{table}[H]
+        \centering
+        \caption{[测试项名称] (要求: [指标要求])}
+        \label{tab:test1}
+        \begin{tabularx}{\textwidth}{CCCC}
+            \toprule
+            测试序号 & 测试结果 & 是否满足要求 & 备注 \\
+            \midrule
+            1 & & & \\
+            2 & & & \\
+            3 & & & \\
+            \bottomrule
+        \end{tabularx}
+    \end{table}
+
+\subsubsection{[测试项目二]}
+    % [测试说明文字]
+
+    \begin{table}[H]
+        \centering
+        \caption{[测试项名称] (要求: [指标要求])}
+        \label{tab:test2}
+        \begin{tabularx}{\textwidth}{CCCC}
+            \toprule
+            测试序号 & 测试结果 & 是否满足要求 & 备注 \\
+            \midrule
+            1 & & & \\
+            2 & & & \\
+            3 & & & \\
+            \bottomrule
+        \end{tabularx}
+    \end{table}
+
+    % ... 根据需要添加更多测试表格
+
+\subsection{测试结果分析}
+    % 分析实际运行中可能出现的误差来源或性能瓶颈，并提出改进方向。
+    \begin{enumerate}
+        \item \textbf{[误差/瓶颈来源一]：} [详细描述该问题及其对系统的影响]。改进方法：[提出具体的改进措施或优化方向]。
+        \item \textbf{[误差/瓶颈来源二]：} [详细描述该问题及其对系统的影响]。改进方法：[提出具体的改进措施或优化方向]。
+        \item \textbf{[误差/瓶颈来源三]：} [详细描述该问题及其对系统的影响]。改进方法：[提出具体的改进措施或优化方向]。
+    \end{enumerate}
+
+\end{document}
