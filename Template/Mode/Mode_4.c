@@ -1,28 +1,42 @@
 #include "Mode_4.h"
 #include "AllHeader.h"
 
+uint16_t send_data[4] = {1,2,3,4} ;
+uint16_t get_data[4]  = {0} ;
+
 void Mode_4_Setup(void)
 {
     OLED_Clear();
-    OLED_Printf(0, 20,  OLED_6X8, "IMU");
-    OLED_Update();
 }
 
 void Mode_4_Loop(void)
 {
-    OLED_Printf(0, 0,  OLED_6X8, "R:%.1f", IMU_Mahony_Real.roll);
-    OLED_Printf(0, 12, OLED_6X8, "P:%.1f", IMU_Mahony_Real.pitch);
-    OLED_Printf(0, 24, OLED_6X8, "Y:%.1f", IMU_Mahony_Real.yaw);
-#ifdef I2C_DEBUG_RESET_COUNT
-    OLED_Printf(0, 36,  OLED_6X8, "I2C_Rst:%lu", IIC_Reset_Count);
-#endif
+    if (Key_Check(KEY_1, KEY_SINGLE))
+    {
+        Serial_Send_HEX_Package(&Serial3 , send_data , 4) ;
+        send_data[0] += 1 ;
+        send_data[1] += 2 ;
+        send_data[2] += 3 ;
+        send_data[3] += 4 ;
+    }
+    if (Key_Check(KEY_2, KEY_SINGLE))
+    {
+        Serial_printf(&Serial3, "Hello\r\n") ;
+    }
+    if (Serial_GetNewPackageFlag_HEX(&Serial3))
+    {
+        for (int i = 0 ; i < 4 ; i ++)
+        {
+            get_data[i] = Serial_GetHexData(&Serial3, i) ;
+        }
+    }
+    OLED_Printf(0, 20, OLED_8X16, "%d,%d,%d,%d" , get_data[0],get_data[1],get_data[2],get_data[3]) ;
+    OLED_Printf(0, 40, OLED_8X16, "%s",Serial3.ABC_Data.Serial_New_Package_ABC) ;
 }
 
 void Mode_4_Tick(void)
 {
-    // 串口CSV输出（调试用，可注释掉）
-    Serial_printf(&Serial1, "%.2f,%.2f,%.2f,%.2f\r\n",
-                  IMU_Mahony_Real.roll, IMU_Mahony_Real.pitch, IMU_Mahony_Real.yaw,IMU_Yaw_Abs_Get());
+    
 }
 
 void Mode_4_Exit(void)
