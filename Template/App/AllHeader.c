@@ -19,6 +19,7 @@ void Initial_All(void)
     Serial_Init();
     Encoder_Init();             // EC11 旋转编码器（GPIOA中断初始化）
     Oran_XY_Init() ;            // 香橙派寻迹PID初始化（默认参数→随后Param可覆盖）
+    Y8_Init() ;                 // Y8 8路巡线模块初始化（硬件+PID）
     Param_AT24C02_Init() ;      // AT24C02初始化+从EEPROM恢复参数
     Stepper_Init();             // 步进电机初始化（PWM + PID + 限位）
     // 舵机初始化（TIMG8, 50Hz, 1us分辨率, 0~180°/500~2500us）

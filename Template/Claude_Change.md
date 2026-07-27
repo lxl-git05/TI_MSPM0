@@ -397,3 +397,28 @@
 | Mode_5.c | ./Mode/Mode_5.c | 修改 | 舵机循环演示：双舵机同步0°→180°→0°，步进1°/tick(20ms)=50°/s，Exit时归中90° |
 
 > **SysConfig配置**：用户已将 PWM4(PWM_Servo/TIMG8) 的 clockDivider=8、prescale=3（总分频×32→1MHz）。PWM周期由C代码 MyPWM_SetLoadValue(20000) 运行时设置（50Hz）。每个计数=1µs，pulse_us值直接等于Compare值。
+
+## 2026-07-27 15:30 | 移植Y8_Driver巡线模块并在Mode_5编写OLED演示
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Y8_Driver.h | ./Hardware/Y8_Driver.h | 新增 | Y8 8路巡线传感器驱动头文件（从F407移植），声明Y8_Data[8]/Y8_Width[8]/Y8_Bias/PID_Track和4个API函数 |
+| Y8_Driver.c | ./Hardware/Y8_Driver.c | 新增 | Y8驱动实现（从F407移植）：硬件移位寄存器协议(CLK+DAT)、多采样投票滤波(P>50%)、加权位置→atan2角度、5窗口滑动中值滤波、PID巡线一体化。适配MSPM0: 延时us*4(@32MHz)、GPIO名MyGPIO_Y8_CLK/DAT |
+| AllHeader.h | ./App/AllHeader.h | 修改 | Hardware层新增 #include "Y8_Driver.h" |
+| AllHeader.c | ./App/AllHeader.c | 修改 | Initial_All() 中新增 Y8_Init()（硬件+巡线PID初始化） |
+| Mode_5.c | ./Mode/Mode_5.c | 修改 | 实现Y8巡线OLED演示：每20ms Tick读取传感器→5次采样滤波→显示8路状态方块(实心=黑线)/角度偏移/原始字节/黑线计数，Key0双击切模式 |
+| subdir_vars.mk | ./Debug/Hardware/subdir_vars.mk | 修改 | 注册 Y8_Driver.c 到构建系统（C_SRCS/C_DEPS/OBJS 及其 __QUOTED 变体） |
+| makefile | ./Debug/makefile | 修改 | ORDERED_OBJS 新增 ./Hardware/Y8_Driver.o，clean 新增对应 .o/.d 清理 |
+
+## 2026-07-27 16:00 | Mode_5 Y8巡线功能集成到Menu_Param调参菜单
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Menu_Param.h | ./Function/Menu_Param.h | 修改 | 新增 TUNE_Y8_TRACK 枚举（TUNE_COUNT之前）+ Setup/Run/Tick 回调声明 |
+| Menu_Param.c | ./Function/Menu_Param.c | 修改 | 新增 TUNE_Y8_TRACK 完整实现：Setup清零PID+设定goal=0，Run用Serial1 ABC协议调Kp/Ki/Kd+OLED_ShowPID显示6行，Tick调用Y8_PID_Update+CSV输出；s_labels加{"Y8","Track"}，任务表加表项；文件头加#include "Y8_Driver.h" |
+
+## 2026-07-27 16:20 | TUNE_Y8_TRACK增加KEY_2切换展示模式
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Menu_Param.c | ./Function/Menu_Param.c | 修改 | TUNE_Y8_TRACK新增KEY_2单击切换双模：s_y8_mode=0→展示模式(OLED 8路二进制+角度+停电机)，s_y8_mode=1→巡线模式(Serial1调参+PID显示+电机差速)；Tick同步分流(展示=Y8_Data_Update只读，巡线=Y8_PID_Update全控) |

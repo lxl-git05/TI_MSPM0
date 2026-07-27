@@ -20,6 +20,7 @@ typedef enum {
     TUNE_GYRO_CAL,           // IMU校准(一次性)
     TUNE_STEPPER_S1,         // 步进电机1（开环）
     TUNE_STEPPER_S2,         // 步进电机2（开环）
+    TUNE_Y8_TRACK,           // Y8 巡线PID跟踪
     TUNE_COUNT
 } TuneTaskID;
 
@@ -55,6 +56,9 @@ void Tune_Stepper_S1_Run     (float p[4]);
 void Tune_Stepper_S2_Run     (float p[4]);
 void Tune_Stepper_S1_Tick    (float p[4]);
 void Tune_Stepper_S2_Tick    (float p[4]);
+void Tune_Y8_Track_Setup     (float p[4]);
+void Tune_Y8_Track_Run       (float p[4]);
+void Tune_Y8_Track_Tick      (float p[4]);
 bool Tune_AlwaysFalse        (float p[4]);
 
 // ==================== 任务表（同 Control_TaskTable）====================

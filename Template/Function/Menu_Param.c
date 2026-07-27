@@ -4,6 +4,7 @@
 // Serial1: Kp/Ki/Kd/Goal 修改PID, Speed/Pos/Stop 控制步进
 #include "AllHeader.h"
 #include "Menu_Param.h"
+#include "Y8_Driver.h"
 
 // ==================== 菜单显示名（用于OLED）====================
 typedef struct {
@@ -258,6 +259,77 @@ void Tune_Stepper_S2_Tick(float p[4])
 // ==================== 通用：永不自动退出 ====================
 bool Tune_AlwaysFalse(float p[4]) { return false; }
 
+// ==================== TUNE_Y8_TRACK ====================
+static uint8_t s_y8_mode = 1;  // 0=8路展示, 1=PID巡线跟踪
+
+void Tune_Y8_Track_Setup(float p[4])
+{
+    PID_Track.goalPoint = 0.0f;     // 巡线目标：居中（角度偏移=0）
+    PID_Param_Reset(&PID_Track);     // 清零历史积分+误差
+    s_y8_mode = 1;                   // 默认进入巡线模式
+}
+
+void Tune_Y8_Track_Run(float p[4])
+{
+    // KEY_2 单击: 切换 展示模式↔巡线模式
+    if (Key_Check(KEY_2, KEY_SINGLE))
+    {
+        s_y8_mode = !s_y8_mode;
+        if (s_y8_mode == 0)
+        {
+            Motor_Stop(&Motor_A);       // 切到展示：停止电机
+            Motor_Stop(&Motor_B);
+        }
+        else
+        {
+            PID_Param_Reset(&PID_Track); // 切到巡线：清积分重新开始
+        }
+    }
+
+    if (s_y8_mode == 0)
+    {
+        // ========== 展示模式: 8路传感器原始状态 ==========
+        OLED_Printf(0, 0, OLED_6X8, "Y8 Display       ");
+        // 8路二进制 (1=白/0=黑)
+        OLED_Printf(0, 16, OLED_8X16, "%d%d%d%d%d%d%d%d",
+            Y8_Data[0], Y8_Data[1], Y8_Data[2], Y8_Data[3],
+            Y8_Data[4], Y8_Data[5], Y8_Data[6], Y8_Data[7]);
+        // 滤波后角度
+        OLED_Printf(0, 40, OLED_6X8, "Angle:%.1f deg   ", Y8_Bias);
+        OLED_Printf(0, 50, OLED_6X8, "K2:Track  L:Back ");
+    }
+    else
+    {
+        // ========== 巡线模式: Serial1 ABC调参 + OLED PID六行显示 ==========
+        if (Serial_GetNewPackageFlag_ABC(&Serial1))
+        {
+            Serial_SetFloatData(&Serial1, "Kp", "Kp=%f", &PID_Track.Kp);
+            Serial_SetFloatData(&Serial1, "Ki", "Ki=%f", &PID_Track.Ki);
+            Serial_SetFloatData(&Serial1, "Kd", "Kd=%f", &PID_Track.Kd);
+        }
+        OLED_ShowPID("Y8", "Track", &PID_Track);
+        // 覆盖末行：保留Set值 + 模式切换提示
+        OLED_Printf(0, 50, OLED_6X8, "Set:%.1f K2:Displ", PID_Track.setPoint);
+    }
+}
+
+void Tune_Y8_Track_Tick(float p[4])
+{
+    if (s_y8_mode == 0)
+    {
+        // 展示模式: 只读传感器，不控电机
+        Y8_Data_Update();
+    }
+    else
+    {
+        // 巡线模式: 传感器→滤波→PID→Motor差速
+        Y8_PID_Update();
+        // Serial1 CSV 输出（同其他PID任务格式: goal,real,set）
+        Serial_printf(&Serial1, "%.2f,%.2f,%.2f\n",
+            PID_Track.goalPoint, PID_Track.realPoint_Now, PID_Track.setPoint);
+    }
+}
+
 // ==================== 任务描述表（同 Control_TaskTable）====================
 // 修改次序只需要将下面两个表各自位置交换即可
 static const TuneLabel s_labels[TUNE_COUNT] = {
@@ -272,6 +344,7 @@ static const TuneLabel s_labels[TUNE_COUNT] = {
     { "Gyro",    "Cal"      },  // TUNE_GYRO_CAL
     { "Stepper", "S1"       },  // TUNE_STEPPER_S1
     { "Stepper", "S2"       },  // TUNE_STEPPER_S2
+    { "Y8",      "Track"    },  // TUNE_Y8_TRACK
 };
 
 Task_Descriptor_Typedef Menu_Tune_Table[TUNE_COUNT] = {
@@ -297,6 +370,8 @@ Task_Descriptor_Typedef Menu_Tune_Table[TUNE_COUNT] = {
     { NULL,                    Tune_Stepper_S1_Run,   Tune_AlwaysFalse, Tune_Stepper_S1_Tick },
     // TUNE_STEPPER_S2
     { NULL,                    Tune_Stepper_S2_Run,   Tune_AlwaysFalse, Tune_Stepper_S2_Tick },
+    // TUNE_Y8_TRACK
+    { Tune_Y8_Track_Setup,     Tune_Y8_Track_Run,     Tune_AlwaysFalse, Tune_Y8_Track_Tick },
 };
 
 // ==================== 菜单浏览 OLED ====================
