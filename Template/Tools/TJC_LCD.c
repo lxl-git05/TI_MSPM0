@@ -85,3 +85,39 @@ bool LCD_Cmd_Check(char *keyword)
     TJC_LCD_SERIAL.ABC_Data.Serial_New_Package_Flag = 1;
     return false;
 }
+
+// ============== 波形发送：MCU → LCD（TJC 原生命令，\xFF\xFF\xFF 终止）==============
+void TJC_LCD_Wave_Send_Float(uint8_t ch, float value)
+{
+    if (ch > 3) return;
+    char buf[48];
+    int len = snprintf(buf, sizeof(buf),
+        "data%d.val=%d\xFF\xFF\xFF", ch, (int)(value*100));
+    if (len > 0 && len < (int)sizeof(buf))
+        Serial_SendBytes(&TJC_LCD_SERIAL, (uint8_t *)buf, (uint16_t)len);
+}
+
+// ============== ABC Float100 参数接收：LCD → MCU ==============
+bool LCD_Get_ABC_Float100(char *keyword, float *value)
+{
+    if (keyword == NULL || value == NULL) return false;
+    if (!Serial_GetNewPackageFlag_ABC(&TJC_LCD_SERIAL)) return false;
+
+    // 构造期望前缀: "Kp=", "Ki=", "Kd=", "Goal="
+    char expected[16];
+    snprintf(expected, sizeof(expected), "%s=", keyword);
+
+    if (strstr(TJC_LCD_SERIAL.ABC_Data.Serial_New_Package_ABC, expected) != NULL)
+    {
+        int int_val = 0;
+        // %*[^=] 跳过 '=' 之前所有字符, = 匹配 '=', %d 读取整数
+        sscanf(TJC_LCD_SERIAL.ABC_Data.Serial_New_Package_ABC,
+               "%*[^=]=%d", &int_val);
+        *value = int_val / 100.0f;
+        return true;
+    }
+
+    // 不匹配：恢复 flag 给后续函数
+    TJC_LCD_SERIAL.ABC_Data.Serial_New_Package_Flag = 1;
+    return false;
+}

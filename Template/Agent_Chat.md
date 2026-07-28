@@ -223,6 +223,34 @@ bool     Serial_CheckCmd(Serial_Typedef *pSerial, char *cmd);               // �
 - [ ] 伪代码：`bool LCD_Cmd_Check("LCD可能的指令")`
 - [ ] 我只会在loop里面跑LCD的各个函数，对调参的实时性没有那么高
 
++++
+
+现在我给我的LCD屏幕新增了波形显示模式(可以显示最多4个参数，其使用定时器处理)
+
+```c
+
+```
+
+并且还有PID的KpKiKdGoal的调试滑块，由于LCD不支持发送浮点数，所以我采用了发送的4个数据(kp Ki Kd Goal)都乘以100，比如：
+
+```c
+
+```
+
++ 你需要帮我建立函数
+  + MCU对LCD波形图的控件的赋值：s0控件，4个通道
+  + LCD对MCU的Kp Ki Kd Goal的赋值
+
++++
+
+
+
+
+
+
+
+
+
 
 # 7. 模拟题业务逻辑
 

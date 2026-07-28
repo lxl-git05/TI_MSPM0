@@ -430,3 +430,22 @@
 | Menu_Param.h | ./Function/Menu_Param.h | 修改 | 新增 TUNE_ORANGE_PARAM 枚举（索引12）+ Tune_Orange_Setup/Run/Tick 回调声明 |
 | Menu_Param.c | ./Function/Menu_Param.c | 修改 | 新增 Tune_Orange_Setup（Param_Init+注册6个Oran_Param+@start:6$#请求），Tune_Orange_Run（Param_Loop提供EC11编辑体验+非编辑态OLED显示6参数+KEY_2请求数据），Tune_Orange_Tick（20ms Serial1 CSV输出），s_labels/Menu_Tune_Table 分别追加行 |
 | Menu_Param_Manual.md | ./Menu_Param_Manual.md | 修改 | 新增第12节「Agent移植任务规范」：检查清单、三种标准模板（PID/交互/纯Run）、组件适配指南（按键冲突/串口/EC11）、已有案例参考表、编译验证命令、Agent输出规范 |
+
+## 2026-07-27 17:30 | 修复 Stepper1/2 接入后程序死机（TIMG6/TIMG7 ISR 缺少中断清除）
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Mode_G.c | ./Mode/Mode_G.c | 修改 | TIMG6_IRQHandler 和 TIMG7_IRQHandler 新增 `DL_TimerG_clearInterruptStatus(INST, DL_TIMER_INTERRUPT_ZERO_EVENT)` 清除中断标志，修复中断风暴导致 CPU 死锁问题 |
+
+## 2026-07-28 10:00 | TJC_LCD 新增波形发送 + PID Float100 接收 API
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| TJC_LCD.h | ./Tools/TJC_LCD.h | 修改 | 新增 `TJC_LCD_Wave_Send_Float(ch, value)` 波形发送声明 + `LCD_Get_ABC_Float100(keyword, *value)` Float100 参数接收声明 |
+| TJC_LCD.c | ./Tools/TJC_LCD.c | 修改 | 实现 `TJC_LCD_Wave_Send_Float`（TJC 原生命令 `dataN.val=xxx\xFF\xFF\xFF`，ch 0~3）+ `LCD_Get_ABC_Float100`（ABC 帧解析 `keyword=整数`，÷100 返回 float，flag-restoring 模式） |
+
+## 2026-07-28 10:15 | Mode_2 LCD 波形+PID 演示
+
+| 文件名 | 文件路径（相对工作区） | 操作类型 | 说明 |
+|--------|----------------------|----------|------|
+| Mode_2.c | ./Mode/Mode_2.c | 修改 | 从 IMU 演示切换为 Motor_A 角度环模式：PID 参数直接操作 `Motor_A.PID_Angle`（`Serial_SetFloatData` + `LCD_Get_ABC_Float100` 双路接收），Goal 变化自动 `Motor_SetAngle`；OLED 显示 Kp/Ki/Kd/Goal/Real/Set 六行；Tick 中 `Motorx_Angle_Update_Tick(&Motor_A,1)` + 波形发送 ch0=Goal/ch1=Real/ch2=Set/ch3 暂留；Exit 停电机 |

@@ -152,6 +152,7 @@ void TIMG6_IRQHandler(void)
     {
         case DL_TIMER_IIDX_ZERO:
             Stepper_PWM_Pulse_Count(&Stepper1);
+            DL_TimerG_clearInterruptStatus(PWM_Stepper1_INST, DL_TIMER_INTERRUPT_ZERO_EVENT);
             break;
         default:
             break;
@@ -167,6 +168,7 @@ void TIMG7_IRQHandler(void)
     {
         case DL_TIMER_IIDX_ZERO:
             Stepper_PWM_Pulse_Count(&Stepper2);
+            DL_TimerG_clearInterruptStatus(PWM_Stepper2_INST, DL_TIMER_INTERRUPT_ZERO_EVENT);
             break;
         default:
             break;
