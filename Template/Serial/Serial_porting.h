@@ -90,6 +90,7 @@ int      Serial_GetError_HEX(Serial_Typedef *pSerial);
 // ============== ABC 协议 ==============
 uint8_t  Serial_GetNewPackageFlag_ABC(Serial_Typedef *pSerial);
 int      Serial_GetError_ABC(Serial_Typedef *pSerial);
+void     Serial_Clear_ABC(Serial_Typedef *pSerial);                             // 清空 ABC 接收缓冲+flag+错误
 bool     Serial_SetFloatData(Serial_Typedef *pSerial, char *KeyWord, char *cmd, float *Data);
 bool     Serial_SetIntData(Serial_Typedef *pSerial, char *KeyWord, char *cmd, int *Data);
 bool     Serial_Check_Str(Serial_Typedef *pSerial, char *KeyWord);          // 子串匹配

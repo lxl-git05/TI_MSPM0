@@ -432,6 +432,14 @@ int Serial_GetError_ABC(Serial_Typedef *pSerial)
     return (int)pSerial->ABC_Data.err;
 }
 
+void Serial_Clear_ABC(Serial_Typedef *pSerial)
+{
+    memset(pSerial->ABC_Data.Serial_New_Package_ABC, 0,
+           sizeof(pSerial->ABC_Data.Serial_New_Package_ABC));
+    pSerial->ABC_Data.Serial_New_Package_Flag = 0;
+    pSerial->ABC_Data.err = Serial_Err_None;
+}
+
 bool Serial_SetFloatData(Serial_Typedef *pSerial, char *KeyWord, char *cmd, float *Data)
 {
     if (strstr(pSerial->ABC_Data.Serial_New_Package_ABC, KeyWord) != NULL)
